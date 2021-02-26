@@ -31,12 +31,10 @@ Features
 Acknowledgement
 -------
 
-This project has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823852.
-
-Credits
--------
-
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
+This project has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823852.
+
