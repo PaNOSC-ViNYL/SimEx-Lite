@@ -10,9 +10,9 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = ['numpy']
 
-setup_requirements = ['pytest-runner','numpy']
+setup_requirements = ['pytest-runner']
 
 test_requirements = ['pytest>=3', ]
 
