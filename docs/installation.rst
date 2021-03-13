@@ -12,7 +12,7 @@ To install SimEx-Lite, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install SimExLite
+    $ pip install SimEx-Lite
 
 This is the preferred method to install SimEx-Lite, as it will always install the most recent stable release.
 
@@ -34,11 +34,12 @@ You can either clone the public repository:
 
     $ git clone git://github.com/PaNOSC-ViNYL/SimEx-Lite
 
-Or download the `tarball`_:
+.. TODO: Fix tarball
+.. Or download the `tarball`_:
 
-.. code-block:: console
+.. .. code-block:: console
 
-    $ curl -OJL https://github.com/PaNOSC-ViNYL/SimEx-Lite/tarball/master
+..     $ curl -OJL https://github.com/PaNOSC-ViNYL/SimEx-Lite/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
