@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/JunCEEE/SimEx-Lite
+    $ git clone git://github.com/PaNOSC-ViNYL/SimEx-Lite
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/JunCEEE/SimEx-Lite/tarball/master
+    $ curl -OJL https://github.com/PaNOSC-ViNYL/SimEx-Lite/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/JunCEEE/SimEx-Lite
-.. _tarball: https://github.com/JunCEEE/SimEx-Lite/tarball/master
+.. _Github repo: https://github.com/PaNOSC-ViNYL/SimEx-Lite
+.. _tarball: https://github.com/PaNOSC-ViNYL/SimEx-Lite/tarball/master
