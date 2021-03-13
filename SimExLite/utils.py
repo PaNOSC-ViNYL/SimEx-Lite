@@ -16,17 +16,16 @@ def gaussian(x, mu, sig):
 
 
 class curve_fitting:
-    """Curve fitting wrapper class"""
-    def __init__(self, func, xdata, ydata):
-        """
+    """Curve fitting wrapper class
 
-        :param func: The function to fit.
-        :type func: function
-        :param xdata: The x-axis data.
-        :type xdata: 1darray_like
-        :param ydata: The y-axis data.
-        :type ydata: 1darray_like
-        """
+    :param func: The function to fit.
+    :type func: function
+    :param xdata: The x-axis data.
+    :type xdata: 1darray_like
+    :param ydata: The y-axis data.
+    :type ydata: 1darray_like
+    """
+    def __init__(self, func, xdata, ydata):
         self.__func = func
         self.__xdata = xdata
         self.__ydata = ydata
@@ -81,7 +80,7 @@ class curve_fitting:
         self.__update()
 
     def plotResults(self):
-        """Plot the fitting results."""
+        """Plot fitting results."""
 
         xdata = self.xdata
         ydata = self.ydata
@@ -100,7 +99,6 @@ class curve_fitting:
 
         :param xdata: The x-axis data.
         :type xdata: 1darray_like
-        ...
         :return: The predicted y-axis data.
         :rtype: 1darray
         """

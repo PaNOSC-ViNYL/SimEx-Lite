@@ -3,14 +3,14 @@ SimEx-Lite
 ==========
 
 
-.. image:: https://img.shields.io/pypi/v/SimExLite.svg
-        :target: https://pypi.python.org/pypi/SimExLite
+.. image:: https://img.shields.io/pypi/v/SimEx-Lite.svg
+        :target: https://pypi.python.org/pypi/SimEx-Lite
 
-.. image:: https://img.shields.io/travis/JunCEEE/SimExLite.svg
-        :target: https://travis-ci.com/JunCEEE/SimExLite
+.. image:: https://img.shields.io/travis/JunCEEE/SimEx-Lite.svg
+        :target: https://travis-ci.com/JunCEEE/SimEx-Lite
 
-.. image:: https://readthedocs.org/projects/SimExLite/badge/?version=latest
-        :target: https://SimExLite.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/SimEx-Lite/badge/?version=latest
+        :target: https://SimEx-Lite.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 
@@ -20,7 +20,7 @@ The core package of the SIMEX platform providing the calculator interfaces.
 
 
 * Free software: GNU General Public License v3
-* Documentation: https://SimExLite.readthedocs.io.
+* Documentation: https://SimEx-Lite.readthedocs.io.
 
 
 Features
