@@ -20,7 +20,8 @@ The core package of the SIMEX platform providing the calculator interfaces.
 
 
 * Free software: GNU General Public License v3
-* Documentation: https://SimEx-Lite.readthedocs.io.
+* Documentation: https://SimEx-Lite.readthedocs.io
+* GitHub: https://github.com/PaNOSC-ViNYL/SimEx-Lite
 
 
 Features
