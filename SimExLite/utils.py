@@ -10,7 +10,7 @@ from scipy.optimize import curve_fit
 
 
 def gaussian(x, mu, sig):
-    """Gaussian function"""
+    """Gaussian function definded as in :func:`numpy.random.normal`"""
     return 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(
         -np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
