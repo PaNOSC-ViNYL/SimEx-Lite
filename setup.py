@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 """The setup script."""
 
 from setuptools import setup, find_packages
@@ -10,11 +9,13 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['numpy']
+requirements = ['numpy', 'matplotlib', 'scipy']
 
 setup_requirements = ['pytest-runner']
 
-test_requirements = ['pytest>=3', ]
+test_requirements = [
+    'pytest>=3',
+]
 
 setup(
     author="Juncheng E",
@@ -31,7 +32,8 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    description="The core package of the SIMEX platform providing the calculator interfaces.",
+    description=
+    "The core package of the SIMEX platform providing the calculator interfaces.",
     entry_points={
         'console_scripts': [
             'SimExLite=SimExLite.cli:main',
