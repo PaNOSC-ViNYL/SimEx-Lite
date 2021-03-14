@@ -9,7 +9,7 @@ SimEx-Lite
 .. image:: https://img.shields.io/travis/PaNOSC-ViNYL/SimEx-Lite.svg
         :target: https://travis-ci.com/PaNOSC-ViNYL/SimEx-Lite
 
-.. image:: https://readthedocs.org/projects/SimEx-Lite/badge/?version=latest
+.. image:: https://readthedocs.org/projects/simex-lite/badge/?version=latest
         :target: https://SimEx-Lite.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
