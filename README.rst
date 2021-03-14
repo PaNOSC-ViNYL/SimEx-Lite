@@ -6,7 +6,7 @@ SimEx-Lite
 .. image:: https://img.shields.io/pypi/v/SimEx-Lite.svg
         :target: https://pypi.python.org/pypi/SimEx-Lite
 
-.. image:: https://img.shields.io/travis/PaNOSC-ViNYL/SimEx-Lite.svg
+.. image:: https://travis-ci.com/PaNOSC-ViNYL/SimEx-Lite.svg?branch=main
         :target: https://travis-ci.com/PaNOSC-ViNYL/SimEx-Lite
 
 .. image:: https://readthedocs.org/projects/simex-lite/badge/?version=latest
