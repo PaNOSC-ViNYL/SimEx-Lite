@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Juncheng E 
+# Copyright (C) 2021 Juncheng E
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
@@ -16,15 +16,6 @@ def gaussian(x, mu, sig):
 
 
 class curve_fitting:
-    """Curve fitting wrapper class
-
-    :param func: The function to fit.
-    :type func: function
-    :param xdata: The x-axis data.
-    :type xdata: 1darray_like
-    :param ydata: The y-axis data.
-    :type ydata: 1darray_like
-    """
     def __init__(self, func, xdata, ydata):
         self.__func = func
         self.__xdata = xdata
@@ -32,8 +23,6 @@ class curve_fitting:
         self.__update()
 
     def __update(self):
-        """Update the parameters when the function or data changed."""
-
         self.__popt, self.__pcov = curve_fit(self.func, self.xdata, self.ydata)
         self.__residuals = self.ydata - self.func(self.xdata, *self.popt)
         ss_res = np.sum(self.__residuals**2)
@@ -79,9 +68,7 @@ class curve_fitting:
         self.__ydata = val
         self.__update()
 
-    def plotResults(self):
-        """Plot fitting results."""
-
+    def plotResults(self, xlabel=None, ylabel=None):
         xdata = self.xdata
         ydata = self.ydata
         popt = self.popt
@@ -92,24 +79,19 @@ class curve_fitting:
         plt.figure()
         plt.plot(xdata, ydata, 'bo', label='data')
         plt.plot(xdata, self.func(xdata, *popt), 'g--', label='fitting')
+        if xlabel:
+            plt.xlabel(xlabel)
+        if ylabel:
+            plt.ylabel(ylabel)
         plt.legend()
+        plt.savefig('fitting.png', dpi=300)
 
     def predict(self, xdata):
-        """To predict the ydata based on the fitting model.
-
-        :param xdata: The x-axis data.
-        :type xdata: 1darray_like
-        :return: The predicted y-axis data.
-        :rtype: 1darray
-        """
         return self.func(xdata, *self.popt)
 
     def plotPredict(self, xdata):
-        """To predict and plot the ydata based on the fitting model.
-
-        :param xdata: The x-axis data.
-        :type xdata: 1darray_like
-        """
         ydata = self.func(xdata, *self.popt)
         plt.figure()
         plt.plot(xdata, ydata)
+        plt.savefig('predict.png', dpi=300)
+)
