@@ -94,4 +94,3 @@ class curve_fitting:
         plt.figure()
         plt.plot(xdata, ydata)
         plt.savefig('predict.png', dpi=300)
-)

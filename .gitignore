@@ -1,3 +1,6 @@
+# Tests
+tests/testFiles
+
 # Mac
 *.DS_Store
 *.code-workspace

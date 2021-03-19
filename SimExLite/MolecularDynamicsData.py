@@ -9,7 +9,6 @@ class MolecularDynamicsData:
     :param input_path: Path to data file
     :type input_path: str
     """
-
     def __init__(self, input_path=None):
         self.input_path = input_path
         self.file_format = self.__getFileFormat()
@@ -24,16 +23,12 @@ class MolecularDynamicsData:
 
         """
         if h5py.is_hdf5(self.input_path):
-            with h5py.File(self.input_path,'r') as h5:
-                try:
-                    version = h5['/info/package_version'][()]
+            with h5py.File(self.input_path, 'r') as h5:
+                    version = h5['/info/package_version'][()].decode('ascii')
                     if version.find('XMDYN') != -1:
                         return "XMDYN"
-
-
-
-
-
+                    else:
+                        return "UNKNOWN"
 
 
 # %%

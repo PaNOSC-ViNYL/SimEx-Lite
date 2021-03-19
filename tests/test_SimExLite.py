@@ -23,55 +23,6 @@
 ####################################################################################
 import pytest
 
-from SimExLite import SimExLite
-
-
-@pytest.fixture
-def rotationParam():
-    """Rotation parameters"""
-    return rotation_parameters()
-
-def PMIParam():
-    """PMI snapshot parameters"""
-    return pmi_snapshot_parameters(
-        slice_interval=100,
-        number_of_slices=2,
-        pmi_start_ID=1,
-        pmi_stop_ID=1,
-    )
-
-def beamParam():
-    """Beam parameters"""
-
-def detectorGeom():
-    """Detector geometry parameters"""
-
-def testCalcWithPMIParam(rotationParam, PMIParam):
-    """Test the construction of the class with parameters given as a dict."""
-
-    parameters = pysingfelDiffractorParameters(
-        calculate_Compton=False,
-        number_of_diffraction_patterns=2,
-        pmi_snapshot_parameters=PMIParam,
-        rotation_parameters=rotationParam,
-        beam_parameters=self.beam,
-        detector_geometry=self.detector_geometry,
-    )
-
-def testCalcWithSimpleParam(rotationParam, PMIParam):
-    """Test the construction of the class with parameters given as a dict."""
-
-    parameters = pysingfelDiffractorParameters(
-        calculate_Compton=False,
-        number_of_diffraction_patterns=2,
-        rotation_parameters=rotationParam,
-        beam_parameters=self.beam,
-        detector_geometry=self.detector_geometry,
-    )
-
-# Construct the object.
-diffractor = SingFELPhotonDiffractor(parameters=parameters,
-                                     input_path=self.input_h5,
-                                     output_path='diffr_out.h5')
-
-self.assertIsInstance(diffractor, SingFELPhotonDiffractor)
+import SimExLite.SimExLite
+import SimExLite.utils
+import SimExLite.MolecularDynamicsData
