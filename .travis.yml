@@ -25,5 +25,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: JunCEEE/SimExLite
+    repo: JunCEEE/SimEx-Lite
     python: 3.8
