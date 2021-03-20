@@ -24,11 +24,14 @@ class MolecularDynamicsData:
         """
         if h5py.is_hdf5(self.input_path):
             with h5py.File(self.input_path, 'r') as h5:
+                try:
                     version = h5['/info/package_version'][()].decode('ascii')
-                    if version.find('XMDYN') != -1:
-                        return "XMDYN"
-                    else:
-                        return "UNKNOWN"
+                except KeyError:
+                    return "UNKNOWN"
+                if version.find('XMDYN') != -1:
+                    return "XMDYN"
+                else:
+                    return "UNKNOWN"
 
 
 # %%
