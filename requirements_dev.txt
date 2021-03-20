@@ -9,6 +9,5 @@ Sphinx==3.5.2
 twine==1.14.0
 pytest==6.1.2
 
-keyring==22.3.0
 h5py==3.1.0
 ase==3.21.1
