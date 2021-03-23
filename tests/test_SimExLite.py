@@ -25,4 +25,3 @@ import pytest
 
 import SimExLite.SimExLite
 import SimExLite.utils
-import SimExLite.MolecularDynamicsData
