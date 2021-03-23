@@ -1,6 +1,6 @@
 """Test MolecularDynamicsData"""
 
-from SimExLite.MolecularDynamicsData import MolecularDynamicsData
+from SimExLite.SampleData import MolecularDynamicsData
 import h5py
 
 

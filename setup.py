@@ -9,7 +9,11 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['numpy', 'matplotlib', 'scipy', 'ase']
+with open('requirements.txt') as readme_file:
+    readme = readme_file.read()
+    requirements = readme.split()
+
+# requirements = ['numpy', 'matplotlib', 'scipy', 'ase']
 
 setup_requirements = ['pytest-runner']
 
