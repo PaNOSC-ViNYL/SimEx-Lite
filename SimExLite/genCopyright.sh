@@ -20,7 +20,6 @@ $cs Copyright (C) $year $authors
 $cs Contact: $contact <$email>
 $cs This file is part of $project which is released under $license.
 $cs See file LICENSE or go to <$url> for full license details.
-
 EOF
 
 if [[ "$2" != "add" || -z "$1" ]]

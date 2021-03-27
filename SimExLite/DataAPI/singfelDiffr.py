@@ -1,3 +1,7 @@
+# Copyright (C) 2021 Juncheng E 
+# Contact: Juncheng E <juncheng.e@xfel.eu>
+# This file is part of SimEx-Lite which is released under GNU General Public License v3.
+# See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """singfelDiffr module to read and write a singfel diffr output data"""
 import numpy as np
 import h5py
@@ -47,7 +51,8 @@ class singfelDiffr:
                     pattern_list.append(h5[path_to_data][...])
             except KeyError:
                 indices_tmp = [key for key in h5['data'].keys()]
-                print('The first few existed indices: {}'.format(indices_tmp[:3]))
+                print('The first few existed indices: {}'.format(
+                    indices_tmp[:3]))
                 raise KeyError('Cannot find pattern index: {}'.format(ix))
 
         self.__array = np.array(pattern_list)

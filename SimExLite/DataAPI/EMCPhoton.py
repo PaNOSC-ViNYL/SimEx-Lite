@@ -1,3 +1,7 @@
+# Copyright (C) 2021 Juncheng E, Shen Zhou (National University of Singapore)
+# Contact: Juncheng E <juncheng.e@xfel.eu>
+# This file is part of SimEx-Lite which is released under GNU General Public License v3.
+# See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """EMCPhoton module to read and write a EMC photon sparse binary file"""
 
 import os
@@ -176,7 +180,7 @@ def plotEMCPhoton(fn, idx=0, shape=None):
 
     :param idx: The index of the pattern to plot
     :type idx: int
-    :param shape: the array shape of the diffraction pattern
+    :param shape: The array shape of the diffraction pattern
     :type shape: int, optional
     """
     sPattern = parse_bin_PatternsSOne(fn)

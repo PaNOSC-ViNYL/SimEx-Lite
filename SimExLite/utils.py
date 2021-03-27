@@ -2,6 +2,7 @@
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
+"""utils module"""
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -100,3 +101,9 @@ def isLegacySimExH5(fn: str):
     """Check if the data is a legacy SimEx HDF5 file"""
     with h5py.File(fn, 'r') as h5:
         return h5.keys() >= {"data", "info", "params"}
+
+
+def saveSimpleH5(arr: np.array, fn: str):
+    """Save a simple HDF5 file"""
+    with h5py.File(fn, 'w') as h5:
+        h5.create_dataset(data=arr, chunks=True)
