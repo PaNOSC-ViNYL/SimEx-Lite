@@ -3,7 +3,7 @@
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """EMCPhoton module to read and write a EMC photon sparse binary file"""
-# -*- coding: future_fstrings -*-     # should work even without -*-
+# -*- coding: future_fstrings -*-
 
 
 import os
