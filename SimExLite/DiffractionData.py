@@ -29,8 +29,8 @@ data_type_dict = {
 class DiffractionData:
     """The diffraction data class
 
-    :param fn: The data file name
-    :type fn: str
+    :param input_file: The data file name to read
+    :type input_file: str
     :param keep_original: If keep the original data array, defaults to `True`. If set to
     `False`, all the changes will apply to func:`DiffractionData.array`.
     It's recommended to set it to `False` when the array is large.
@@ -42,22 +42,26 @@ class DiffractionData:
     :type parameters: dict
     """
     def __init__(self,
-                 fn: str,
+                 input_file: str = None,
                  keep_original=True,
                  arr: np.array = None,
                  parameters=None) -> None:
         super().__init__()
-        self.fn = fn
         self.keep_original = keep_original
+
+        if arr is None and input_file is None:
+            raise ValueError("Need least one `arr` or `input_file`")
+
         if arr is not None:
             # Writting mode
             self.__array = arr
         else:
             # Reading mode
+            self.input_file = input_file
             # Check if the file exists
-            with open(self.fn, 'r') as f:
+            with open(self.input_file, 'r') as f:
                 f.close()
-            self.type_id_read = getDataType(self.fn)
+            self.type_id_read = getDataType(self.input_file)
         if parameters is not None:
             self.parameters = parameters
 
@@ -73,7 +77,7 @@ class DiffractionData:
         if type_id_read == '0':
             raise TypeError("UNKNOWN data format.")
         elif type_id_read == '1':
-            data = singfelDiffr(self.fn)
+            data = singfelDiffr(self.input_file)
             data.getArray(index_range)
             self.__array = data.array
 

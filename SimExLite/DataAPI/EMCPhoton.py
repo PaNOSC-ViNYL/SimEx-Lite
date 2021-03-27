@@ -1,10 +1,9 @@
+# -*- coding: future_fstrings -*-
 # Copyright (C) 2021 Juncheng E, Shen Zhou (National University of Singapore)
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """EMCPhoton module to read and write a EMC photon sparse binary file"""
-# -*- coding: future_fstrings -*-
-
 
 import os
 from pathlib import Path
