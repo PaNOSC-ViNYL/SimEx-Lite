@@ -5,7 +5,7 @@ import h5py
 
 
 def test_XMDYNData():
-    MDD = MolecularDynamicsData("./testFiles/pmi_out_test.h5")
+    MDD = MolecularDynamicsData("./testFiles/xmdyn.h5")
     assert MDD.file_format == "XMDYN"
 
 

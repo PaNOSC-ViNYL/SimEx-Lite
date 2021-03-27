@@ -5,8 +5,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LogNorm
 from scipy.optimize import curve_fit
+import h5py
 
 
 def gaussian(x, mu, sig):
@@ -94,3 +94,9 @@ class curve_fitting:
         plt.figure()
         plt.plot(xdata, ydata)
         plt.savefig('predict.png', dpi=300)
+
+
+def isLegacySimExH5(fn: str):
+    """Check if the data is a legacy SimEx HDF5 file"""
+    with h5py.File(fn, 'r') as h5:
+        return h5.keys() >= {"data", "info", "params"}
