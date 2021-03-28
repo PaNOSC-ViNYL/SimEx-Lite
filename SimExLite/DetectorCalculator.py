@@ -12,17 +12,21 @@ class gaussianNoisePrameters(Parameters):
 
     :param mu: The averange ADU for one photon
     :type mu: float
-
     :param sigs_popt: [slop, intercept]
     :type sigs_popt: list-like
+    :param index_range: The indices of the diffraction patterns to dump to the numpy array,
+    defaults to `None` meaning to take all the patterns. The array can be accessed by
+    func:`DiffractionData.array`.
+    :type index_range: list-like or `int`, optional
     """
-    def __init__(self, mu, sigs_popt):
+    def __init__(self, mu, sigs_popt, index_range=None):
         super().__init__()
         self.mu = mu
         self.sigs_popt = sigs_popt
+        self.index_range = index_range
 
 
-class gaussianNoise(BaseCalculator):
+class gaussianNoiseCalculator(BaseCalculator):
     """Implement Gaussian noise to input diffraction data"""
     def __init__(self,
                  input_path,
@@ -38,9 +42,10 @@ class gaussianNoise(BaseCalculator):
     def backengine(self):
         """ Method to do the actual calculation."""
         diffr_data = DiffractionData(self.input_path, keep_original=False)
+        diffr_data.getArray(self.parameters.index_range)
         diffr_data.addGaussianNoise(self.parameters.mu,
                                     self.parameters.sigs_popt)
-        self.__data = diffr_data
+        self._set_data(diffr_data)
         return 0
 
     def saveH5(self, data_format='simple'):
@@ -49,4 +54,15 @@ class gaussianNoise(BaseCalculator):
         :param data_format: What format to save the data in.
         :type data_format: str
         """
-        self.data.saveAs(data_format, self.output_path)
+        try:
+            self.data.saveAs(data_format, self.output_path)
+        except TypeError:
+            raise TypeError("Unrecognized output_path")
+
+    def saveEMC(self):
+        """Save noised diffraction data in a EMC sparse photon file"""
+
+        try:
+            self.data.saveAs('emc', self.output_path)
+        except TypeError:
+            raise TypeError("Unrecognized output_path")

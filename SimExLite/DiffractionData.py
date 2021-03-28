@@ -4,7 +4,6 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Diffraction Data APIs"""
 
-import os
 from tqdm import tqdm
 import numpy as np
 import h5py
@@ -14,8 +13,6 @@ from SimExLite.utils import isLegacySimExH5
 from SimExLite.DataAPI.singfelDiffr import singfelDiffr
 import SimExLite.DataAPI.EMCPhoton as EMC
 import SimExLite.utils as utils
-
-import argparse
 
 data_type_dict = {
     '0': 'UNKOWN',
