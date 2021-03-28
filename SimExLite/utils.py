@@ -16,6 +16,20 @@ def gaussian(x, mu, sig):
         -np.power(x - mu, 2.) / (2 * np.power(sig, 2.)))
 
 
+def linear(x: np.array, a: float, b: float):
+    """Linear function y = ax + b
+
+    :param a: slope
+    :type a: float
+    :param b: intercept
+    :type b: float
+
+    :return: y
+    :rtype: `numpy.array`
+    """
+    return a * x + b
+
+
 class curve_fitting:
     def __init__(self, func, xdata, ydata):
         self.__func = func
@@ -69,7 +83,7 @@ class curve_fitting:
         self.__ydata = val
         self.__update()
 
-    def plotResults(self, xlabel=None, ylabel=None):
+    def plotResults(self, xlabel=None, ylabel=None, fn='fitting.png'):
         xdata = self.xdata
         ydata = self.ydata
         popt = self.popt
@@ -85,16 +99,16 @@ class curve_fitting:
         if ylabel:
             plt.ylabel(ylabel)
         plt.legend()
-        plt.savefig('fitting.png', dpi=300)
+        plt.savefig(fn, dpi=300)
 
     def predict(self, xdata):
         return self.func(xdata, *self.popt)
 
-    def plotPredict(self, xdata):
+    def plotPredict(self, xdata, fn='predict.png'):
         ydata = self.func(xdata, *self.popt)
         plt.figure()
         plt.plot(xdata, ydata)
-        plt.savefig('predict.png', dpi=300)
+        plt.savefig(fn, dpi=300)
 
 
 def isLegacySimExH5(fn: str):
@@ -106,4 +120,10 @@ def isLegacySimExH5(fn: str):
 def saveSimpleH5(arr: np.array, fn: str):
     """Save a simple HDF5 file"""
     with h5py.File(fn, 'w') as h5:
-        h5.create_dataset(data=arr, chunks=True)
+        h5.create_dataset('data', data=arr, chunks=True)
+
+
+def loadSimpleH5(fn: str) -> np.array:
+    """Load a simple HDF5 file"""
+    with h5py.File(fn, 'r') as h5:
+        return h5['data'][...]

@@ -11,7 +11,7 @@ SB = SimpleBeam(photon_energy=8.05e3,
 
 
 def test_construct():
-    assert pytest.approx(SB.wavelength.to('angstrom').to_tuple()[0], 0.01) == 1.54
+    assert pytest.approx(SB.wavelength.to('angstrom').to_tuple()[0],
+                         0.01) == 1.54
     assert pytest.approx(SB.photons_per_pulse.to_tuple()[0], 0.01) == 8.1e11
     assert pytest.approx(SB.fluence.to('J/cm**2').to_tuple()[0], 0.01) == 4.6e2
-

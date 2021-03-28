@@ -89,7 +89,7 @@ class DiffractionData:
         """
         processed = self.processed
         print("Adding beam stop...")
-        for i, img in tqdm(enumerate(processed)):
+        for i, img in enumerate(tqdm(processed)):
             processed[i] = addBeamStop(img, stop_rad)
 
     def saveAs(self, data_format: str, file_name: str, save_original=False):
@@ -103,7 +103,7 @@ class DiffractionData:
         :type data_format: str
         :param file_name: The file name of the new data
         :type file_name: str
-        :param save_original: If it's true, will the original array, instead of the processed
+        :param save_original: If it's true, will save the original array, instead of the processed
         one; defaults to False to save the processed array.
         :type save_original: bool
         """
@@ -124,6 +124,20 @@ class DiffractionData:
             utils.saveSimpleH5(array_to_save, file_name)
         else:
             raise TypeError("Unsupported format: ".format(data_format))
+
+    def addGaussianNoise(self, mu, sigs_popt):
+        """Add Gaussian noise to one diffraction pattern
+
+        :param mu: The averange ADU for one photon
+        :type mu: float
+
+        :param sigs_popt: [slop, intercept]
+        :type sigs_popt: list-like
+        """
+        processed = self.processed
+        print("Adding Gaussian Noise...")
+        for i, diffr_data in enumerate(tqdm(processed)):
+            processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
 
     @property
     def array(self):
@@ -211,3 +225,58 @@ def getPatternStatistic(img):
     print('Min: {}'.format(min_val))
 
     return (mean_val, max_val, min_val)
+
+
+def addGaussianNoise(diffr_data, mu, sigs_popt):
+    """Add Gaussian noise to one diffraction pattern
+
+    :param diffr_data: A diffraction pattern
+    :type diffr_data: `numpy.array`
+    :param mu: The averange ADU for one photon
+    :type mu: float
+    :param sigs_popt: [slop, intercept]
+    :type sigs_popt: list-like
+    """
+    sig_arr = utils.linear(diffr_data, *sigs_popt)
+    diffr_noise = np.random.normal(diffr_data * mu, sig_arr)
+    return diffr_noise
+
+
+class histogramParams:
+    """Fitting results of a detector histogram
+
+    :param xcs: Gaussian peak centers
+    :type xcs: `numpy.array`
+    :param fwhms: FWHMs for the peaks
+    :type fwhms: `numpy.array`
+    :param sigs: Sigmas for the peaks
+    :type sigs: `numpy.array`, optional
+    """
+    def __init__(self, xcs, fwhms=None, sigs=None):
+        if fwhms is not None and sigs is None:
+            self.fwhm = fwhms
+            self.sigs = fwhms / 2.355
+        elif fwhms is None and sigs is not None:
+            self.sigs = sigs
+            self.fwhm = sigs * 2.355
+        else:
+            raise ValueError("Don't input fwhms and sigs at the same time.")
+
+        fitting = getSigsFitting(self.sigs)
+
+        # ADU/photon
+        self.mu = np.mean(np.diff(xcs))
+        self.sigs_popt = fitting.popt
+        self.fitting = fitting
+
+    def plotFitting(self, fn_png="fitting.png"):
+        """Plot the fitting results to a .png file, default: fitting.png"""
+        self.fitting.plotResults(xlabel='photons', ylabel='sigma', fn=fn_png)
+
+
+def getSigsFitting(sigs):
+    """Get the fitting parametters for predicting sigmas"""
+    xdata = np.arange(len(sigs))
+    ydata = sigs
+    my_fitting = utils.curve_fitting(utils.linear, xdata, ydata)
+    return my_fitting
