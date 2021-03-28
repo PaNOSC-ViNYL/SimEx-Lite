@@ -75,7 +75,25 @@ def test_addBeamStop():
     dd.addBeamStop(3)
 
 
+def test_plotPattern():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.getArray()
+    if __name__ == "__main__":
+        dd.plotPattern(idx=0, logscale=True)
+
+
+def test_savePattern(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.getArray()
+    out_path = tmp_path / "test.png"
+    dd.plotPattern(idx=0, logscale=True, fn_png=str(out_path))
+    assert out_path.is_file() is True
+
+
 if __name__ == "__main__":
     test_getDataType()
     test_incomplete_construction()
     test_addBeamStop()
+    test_plotPattern()

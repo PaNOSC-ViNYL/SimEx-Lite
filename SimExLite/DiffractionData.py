@@ -139,6 +139,43 @@ class DiffractionData:
         for i, diffr_data in enumerate(tqdm(processed)):
             processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
 
+    def plotPattern(self,
+                    idx: int,
+                    logscale=False,
+                    offset=None,
+                    symlog=False,
+                    original=False,
+                    fn_png=None,
+                    *argv,
+                    **kwargs):
+        """ Plot a pattern.
+
+        :param idx: The array index of the pattern to plot (starting from 0)
+        :type idx: idx
+        :param logscale: Whether to show the data on logarithmic scale (z axis) (default False).
+        :type logscale: bool
+        :param offset: Offset to apply to the pattern.
+        :type offset: float
+        :param symlog: To show the data on symlogarithmic scale (z axis) (default False).
+        :type symlog: bool
+        :param original: Whether to plot the original or processed pattern, defauts to `False` for processed
+        pattern.
+        :type original: bool
+        :param fn_png: The name of the output png file, defaults to `None`.
+        :type fn_png: str
+        """
+        if original:
+            array_to_plot = self.array[idx]
+        else:
+            array_to_plot = self.processed[idx]
+        plotImage(array_to_plot,
+                  logscale=logscale,
+                  offset=offset,
+                  symlog=symlog,
+                  fn_png=fn_png,
+                  *argv,
+                  **kwargs)
+
     @property
     def array(self):
         """The original pattern array"""
@@ -215,7 +252,6 @@ def getPatternStatistic(img):
     :return: (mean, max, min)
     :rtype: tuple
     """
-
     img_flat = img.ravel()
     mean_val = img_flat.mean()
     max_val = img_flat.max()
@@ -280,3 +316,61 @@ def getSigsFitting(sigs):
     ydata = sigs
     my_fitting = utils.curve_fitting(utils.linear, xdata, ydata)
     return my_fitting
+
+
+def plotImage(pattern,
+              logscale=False,
+              offset=None,
+              symlog=False,
+              fn_png=None,
+              *argv,
+              **kwargs):
+    """ Workhorse function to plot an image
+
+    :param logscale: Whether to show the data on logarithmic scale (z axis) (default False).
+    :type logscale: bool
+    :param offset: Offset to apply to the pattern.
+    :type offset: float
+    :param symlog: To show the data on symlogarithmic scale (z axis) (default False).
+    :type symlog: bool
+    :param fn_png: The name of the output png file, defaults to `None`.
+    :type fn_png: str
+    """
+    fig, ax = plt.subplots()
+    # Get limits.
+    mn, mx = pattern.min(), pattern.max()
+
+    x_range, y_range = pattern.shape
+
+    if offset:
+        mn = pattern.min() + offset
+        mx = pattern.max() + offset
+        pattern = pattern.astype(float) + offset
+
+    if (logscale and symlog):
+        print('logscale and symlog are both true.\noverrided by logscale')
+
+    # default plot setup
+    if (logscale or symlog):
+        kwargs['cmap'] = kwargs.pop('cmap', "viridis")
+        if logscale:
+            kwargs['norm'] = kwargs.pop('norm', colors.LogNorm())
+        elif symlog:
+            kwargs['norm'] = kwargs.pop('norm', colors.SymLogNorm(0.015))
+        axes = kwargs.pop('axes', None)
+        plt.imshow(pattern, *argv, **kwargs)
+    else:
+        kwargs['norm'] = kwargs.pop('norm', colors.Normalize(vmin=mn, vmax=mx))
+        kwargs['cmap'] = kwargs.pop('cmap', "viridis")
+        plt.imshow(pattern, *argv, **kwargs)
+
+    plt.xlabel(r'$x$ (pixel)')
+    plt.ylabel(r'$y$ (pixel)')
+    plt.xlim([0, x_range - 1])
+    plt.ylim([0, y_range - 1])
+    plt.tight_layout()
+    plt.colorbar()
+    if fn_png:
+        plt.savefig(fn_png, dpi=300)
+    else:
+        plt.show()
