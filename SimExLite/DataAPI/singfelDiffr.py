@@ -5,6 +5,7 @@
 """singfelDiffr module to read and write a singfel diffr output data"""
 import numpy as np
 import h5py
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 
@@ -68,6 +69,87 @@ class singfelDiffr:
         with h5py.File(self.input_path, 'r') as h5:
             npattern = len(h5['data'])
         return npattern
+
+    def __set_solid_angles(self):
+        """ Solid angle of each pixel """
+        """ Note: the pixel is assumed to be square """
+
+        # pixel number (py, px)
+        pn = self.parameters['geom']['mask'].shape
+        # initialize array
+        solidAngles = np.zeros_like(pn)
+        y, x = np.indices(pn)
+        # pixel size (meter)
+        ph = self.parameters['geom']['pixelHeight']
+        pw = self.parameters['geom']['pixelWidth']
+        # sample to detector distance (meter)
+        s2d = self.parameters['geom']['detectorDist']
+
+        center_x = 0.5 * (pn[1] - 1)
+        center_y = 0.5 * (pn[0] - 1)
+        rx = (x - center_x) * pw
+        ry = (y - center_y) * ph
+        r = np.sqrt(rx**2 + ry**2)
+        pixDist = np.sqrt(r**2 + s2d**2)
+        alpha = np.arctan2(pw, 2 * pixDist)
+        solidAngles = 4 * np.arcsin(np.sin(alpha)**2)
+        self.__solid_angles = solidAngles
+
+    @property
+    def solid_angles(self):
+        try:
+            return self.__solid_angles
+        except AttributeError:
+            self.__set_solid_angles()
+            return self.__solid_angles
+
+    def plotSolidAngles(self):
+        plt.figure()
+        plt.imshow(self.solid_angles)
+        plt.colorbar()
+        plt.show()
+
+    def __set_q_map(self):
+        """ q of each pixel (unit: 1/A)"""
+        """ q = 4*pi*sin(twotheta/2)/lmd """
+
+        # pixel number (py, px)
+        pn = self.parameters['geom']['mask'].shape
+        # initialize array
+        qMap = np.zeros_like(pn)
+        y, x = np.indices(pn)
+        # pixel size (meter)
+        ph = self.parameters['geom']['pixelHeight']
+        pw = self.parameters['geom']['pixelWidth']
+        # sample to detector distance (meter)
+        s2d = self.parameters['geom']['detectorDist']
+
+        E0 = self.parameters['beam']['photonEnergy']
+        lmd = 12398 / E0  # Angstrom
+
+        center_x = 0.5 * (pn[1] - 1)
+        center_y = 0.5 * (pn[0] - 1)
+        rx = (x - center_x) * pw
+        ry = (y - center_y) * ph
+        r = np.sqrt(rx**2 + ry**2)
+        twotheta = np.arctan2(r, s2d)
+        qMap = 4 * np.pi * np.sin(twotheta / 2) / lmd
+
+        self.__q_map = qMap
+
+    @property
+    def q_map(self):
+        try:
+            return self.__q_map
+        except AttributeError:
+            self.__set_q_map()
+            return self.__q_map
+
+    def plotQMap(self):
+        plt.figure()
+        plt.imshow(self.q_map)
+        plt.colorbar()
+        plt.show()
 
 
 def getParameters(input_path):

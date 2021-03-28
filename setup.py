@@ -14,7 +14,8 @@ with open('HISTORY.rst') as history_file:
 #     requirements = require.split()
 
 requirements = [
-    'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings','libpyvinyl'
+    'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings',
+    'libpyvinyl', 'h5py'
 ]
 
 setup_requirements = ['pytest-runner']

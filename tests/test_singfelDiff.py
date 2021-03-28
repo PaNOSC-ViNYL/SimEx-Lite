@@ -65,9 +65,25 @@ def test_Poission():
     assert np.sum(diffr_patterns.array) == 0
 
 
+def test_SolidAngles():
+    diffr_patterns = singfelDiffr(h5_file)
+    diffr_patterns.solid_angles
+    if __name__ == "__main__":
+        diffr_patterns.plotSolidAngles()
+
+
+def test_QMap():
+    diffr_patterns = singfelDiffr(h5_file)
+    diffr_patterns.q_map
+    if __name__ == "__main__":
+        diffr_patterns.plotQMap()
+
+
 if __name__ == "__main__":
     test_getParameters()
     test_construct()
     test_getArray()
     test_Poission()
     test_getArray_partial()
+    test_SolidAngles()
+    test_QMap()
