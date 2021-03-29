@@ -1,10 +1,10 @@
-"""Test DetectorCalculator"""
+"""Test DetectorCalculators"""
 
 import pytest
 import numpy as np
 import h5py
 from SimExLite.DiffractionData import histogramParams
-from SimExLite.DetectorCalculator import gaussianNoiseCalculator, gaussianNoisePrameters
+from SimExLite.DetectorCalculators import gaussianNoiseCalculator, gaussianNoisePrameters
 
 
 def getGNC():
