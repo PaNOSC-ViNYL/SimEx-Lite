@@ -28,8 +28,8 @@ class DiffractionData:
 
     :param input_file: The data file name to read
     :type input_file: str
-    :param keep_original: If keep the original data array, defaults to `True`. If set to
-    `False`, all the changes will apply to func:`DiffractionData.array`.
+    :param keep_original: If keep the original data array, defaults to `False`. If set to
+    `False`, all the changes will apply to :func:`DiffractionData.array`.
     It's recommended to set it to `False` when the array is large.
     :type keep_original: bool, optional
     :param arr: The input data array when you want to create a new diffraction data
@@ -40,7 +40,7 @@ class DiffractionData:
     """
     def __init__(self,
                  input_file: str = None,
-                 keep_original=True,
+                 keep_original=False,
                  arr: np.array = None,
                  parameters=None) -> None:
         super().__init__()
@@ -62,6 +62,7 @@ class DiffractionData:
         if parameters is not None:
             self.parameters = parameters
 
+    # This is the essential part of this class
     def getArray(self, index_range=None):
         """Get a numpy array of the diffraction data
 
@@ -77,6 +78,11 @@ class DiffractionData:
             data = singfelDiffr(self.input_file)
             data.getArray(index_range)
             self.__array = data.array
+
+        if len(self.__array.shape) == 2:
+            self.__array = np.expand_dims(self.__array, axis=0)
+        elif len(self.__array.shape) < 2:
+            raise ValueError("Array dimension should >= 2")
 
     def addBeamStop(self, stop_rad: int):
         """Add the beamstop in pixel radius to the diffraction patterns
@@ -173,6 +179,59 @@ class DiffractionData:
                   *argv,
                   **kwargs)
 
+    def getStatistics(self, processed=True) -> dict:
+        """Get photon statistics
+
+        :param processed: Is the data source the processed data, defaults to `True`.
+        Setting it to `False` will only make a difference if the `keep_original` in
+        :class:`DiffractionData` is also `True`.
+        :type processed: bool, optional
+
+        :return: A dictionary of statistic values
+        :rtype: dict
+        """
+        if processed:
+            patterns = self.processed
+        else:
+            patterns = self.array
+
+        pattern_total = len(patterns)
+        pattern_dim = patterns[0].shape
+        pixel_num = pattern_dim[0] * pattern_dim[1]
+        # Sum the photons in each pattern
+        photons = np.sum(patterns, axis=(1, 2))
+        # Average photon number over all the patterns
+        avg_photons = np.mean(photons)
+        # Average photons per pixel in each pattern
+        avg_per_pattern = photons / pixel_num
+        # Maximum photons in each pattern
+        max_per_pattern = np.max(patterns, axis=(1, 2))
+        # Average maximum photon number in a pixel over all the patterns
+        avg_max_per_pattern = np.mean(max_per_pattern)
+        # Minimum photons in each pattern
+        min_per_pattern = np.min(patterns, axis=(1, 2))
+        # Average minimum photon number in a pixel over all the patterns
+        avg_min_per_pattern = np.mean(min_per_pattern)
+
+        statistics = {
+            'Total number of patterns': pattern_total,
+            'Average total number of photons of a pattern': avg_photons,
+            'STD of total number of photons of a pattern': np.std(photons),
+            'Average number of photons of a pixel': avg_per_pattern,
+            'Maximum number of photons of a pixel': avg_max_per_pattern,
+            'Minimum number of photons of a pixel': avg_min_per_pattern,
+        }
+        return statistics
+
+    @property
+    def photon_statistics(self):
+        """The photon statistics of the processed patterns"""
+        try:
+            return self.__photon_statistics
+        except AttributeError:
+            self.__photon_statistics = self.getStatistics()
+            return self.__photon_statistics
+
     @property
     def array(self):
         """The original pattern array"""
@@ -195,6 +254,12 @@ class DiffractionData:
             # Initialize the processed array
             self.__processed = np.copy(self.array)
             return self.__processed
+
+    @property
+    def pattern_total(self):
+        """The total number of the processed diffraction patterns"""
+        npattern = len(self.processed)
+        return npattern
 
 
 def getDataType(fn) -> str:
@@ -240,7 +305,7 @@ def addBeamStop(img, stop_rad):
     return masked
 
 
-def getPatternStatistic(img):
+def getPatternStatistics(img):
     """Get photon statistic info of a pattern
 
     :param img: Diffraction pattern
@@ -253,11 +318,10 @@ def getPatternStatistic(img):
     mean_val = img_flat.mean()
     max_val = img_flat.max()
     min_val = img_flat.min()
-    print('Mean: {}'.format(mean_val))
-    print('Max: {}'.format(max_val))
-    print('Min: {}'.format(min_val))
 
-    return (mean_val, max_val, min_val)
+    statistics = {'mean': mean_val, 'min': min_val, 'max': max_val}
+
+    return statistics
 
 
 def addGaussianNoise(diffr_data, mu, sigs_popt):

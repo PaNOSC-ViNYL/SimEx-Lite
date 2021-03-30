@@ -34,7 +34,7 @@ def test_saveAs_unsupported(tmp_path):
 
 
 def test_saveAs_emc(tmp_path):
-    input_arr = [np.random.rand(10, 10)]
+    input_arr = np.array([np.random.rand(10, 10)])
     dd = DiffractionData(arr=input_arr)
     data_fn = str(tmp_path / "photons.emc")
     dd.saveAs('emc', data_fn)
