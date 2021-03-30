@@ -63,8 +63,8 @@ class DiffractionData:
             self.parameters = parameters
 
     # This is the essential part of this class
-    def getArray(self, index_range=None):
-        """Get a numpy array of the diffraction data
+    def setArray(self, index_range=None):
+        """Set the numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
         defaults to `None` meaning to take all the patterns. The array can be accessed by
@@ -76,7 +76,7 @@ class DiffractionData:
             raise TypeError("UNKNOWN data format.")
         elif type_id_read == '1':
             data = singfelDiffr(self.input_file)
-            data.getArray(index_range)
+            data.setArray(index_range)
             self.__array = data.array
 
         if len(self.__array.shape) == 2:
@@ -106,7 +106,8 @@ class DiffractionData:
         :type data_format: str
         :param file_name: The file name of the new data
         :type file_name: str
-        :param save_original: If it's true, will save the original array, instead of the processed
+        :param save_original: If it's true, will save the original array,
+        instead of the processed
         one; defaults to False to save the processed array.
         :type save_original: bool
         """
@@ -155,13 +156,16 @@ class DiffractionData:
 
         :param idx: The array index of the pattern to plot (starting from 0)
         :type idx: idx
-        :param logscale: Whether to show the data on logarithmic scale (z axis) (default False).
+        :param logscale: Whether to show the data on logarithmic scale (z axis)
+        (default False).
         :type logscale: bool
         :param offset: Offset to apply to the pattern.
         :type offset: float
-        :param symlog: To show the data on symlogarithmic scale (z axis) (default False).
+        :param symlog: To show the data on symlogarithmic scale (z axis)
+        (default False).
         :type symlog: bool
-        :param original: Whether to plot the original or processed pattern, defauts to `False` for processed
+        :param original: Whether to plot the original or processed pattern,
+        defauts to `False` for processed
         pattern.
         :type original: bool
         :param fn_png: The name of the output png file, defaults to `None`.
@@ -179,12 +183,12 @@ class DiffractionData:
                   *argv,
                   **kwargs)
 
-    def getStatistics(self, processed=True) -> dict:
+    def setStatistics(self, processed=True):
         """Get photon statistics
 
-        :param processed: Is the data source the processed data, defaults to `True`.
-        Setting it to `False` will only make a difference if the `keep_original` in
-        :class:`DiffractionData` is also `True`.
+        :param processed: Is the data source the processed data,
+        defaults to `True`. Setting it to `False` will only make a difference
+        if the `keep_original` in :class:`DiffractionData` is also `True`.
         :type processed: bool, optional
 
         :return: A dictionary of statistic values
@@ -202,8 +206,14 @@ class DiffractionData:
         photons = np.sum(patterns, axis=(1, 2))
         # Average photon number over all the patterns
         avg_photons = np.mean(photons)
+        # Maximum photon number over all the patterns
+        max_photons = np.max(photons)
+        # Min photon number over all the patterns
+        min_photons = np.min(photons)
         # Average photons per pixel in each pattern
         avg_per_pattern = photons / pixel_num
+        # Average number of photons of a pixel
+        avg_avg_per_pattern = np.mean(avg_per_pattern)
         # Maximum photons in each pattern
         max_per_pattern = np.max(patterns, axis=(1, 2))
         # Average maximum photon number in a pixel over all the patterns
@@ -214,14 +224,46 @@ class DiffractionData:
         avg_min_per_pattern = np.mean(min_per_pattern)
 
         statistics = {
-            'Total number of patterns': pattern_total,
-            'Average total number of photons of a pattern': avg_photons,
-            'STD of total number of photons of a pattern': np.std(photons),
-            'Average number of photons of a pixel': avg_per_pattern,
-            'Maximum number of photons of a pixel': avg_max_per_pattern,
-            'Minimum number of photons of a pixel': avg_min_per_pattern,
+            'Number of patterns':
+            pattern_total,
+            'Average number of photons of a pattern':
+            avg_photons,
+            'Maximum number of photons of a pattern':
+            max_photons,
+            'Minumum number of photons of a pattern':
+            min_photons,
+            'STD of total number of photons of a pattern':
+            np.std(photons),
+            'Average number of photons of a pixel':
+            avg_avg_per_pattern,
+            'Maximum number of photons of a pixel averaging over the patterns':
+            avg_max_per_pattern,
+            'Minimum number of photons of a pixel averaging over the patterns':
+            avg_min_per_pattern,
         }
-        return statistics
+
+        self.photon_totals = photons
+        self.__photon_statistics = statistics
+
+    def plotHistogram(self, fn_png=None):
+        pattern_total = self.photon_statistics['Number of patterns']
+        max_photons = self.photon_statistics[
+            'Maximum number of photons of a pattern']
+        min_photons = self.photon_statistics[
+            'Minumum number of photons of a pattern']
+        number_of_bins = min(20, pattern_total)
+        binwidth = (max_photons - min_photons) / number_of_bins
+        plt.hist(self.photon_totals,
+                 bins=np.arange(min_photons, max_photons, binwidth),
+                 facecolor='red',
+                 alpha=0.75)
+        plt.xlabel("Photons")
+        plt.ylabel("Histogram")
+        plt.title("Photon number histogram")
+        if fn_png is None:
+            plt.show()
+        else:
+            plt.savefig(fn_png, dpi=300)
 
     @property
     def photon_statistics(self):
@@ -229,7 +271,7 @@ class DiffractionData:
         try:
             return self.__photon_statistics
         except AttributeError:
-            self.__photon_statistics = self.getStatistics()
+            self.setStatistics()
             return self.__photon_statistics
 
     @property
@@ -239,7 +281,7 @@ class DiffractionData:
             return self.__array
         except AttributeError:
             raise AttributeError(
-                "Please use DiffractionData.getArray() to get the array ready first."
+                "Please use DiffractionData.setArray() to get the array ready first."
             )
 
     @property

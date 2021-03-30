@@ -19,7 +19,7 @@ class singfelDiffr:
         self.input_path = input_path
         self.parameters = getParameters(self.input_path)
 
-    def getArray(self, index_range=None, poissonize=False):
+    def setArray(self, index_range=None, poissonize=False):
         """Get a numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,

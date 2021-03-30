@@ -21,9 +21,9 @@ def test_construct():
     assert diffr_patterns.pattern_total == 13
 
 
-def test_getArray():
+def test_setArray():
     diffr_patterns = singfelDiffr(h5_file)
-    diffr_patterns.getArray()
+    diffr_patterns.setArray()
     assert len(diffr_patterns.array) == 13
     assert np.sum(diffr_patterns.array) != 0
     if __name__ == "__main__":
@@ -33,15 +33,15 @@ def test_getArray():
         plt.show()
 
 
-def test_getArray_one():
+def test_setArray_one():
     diffr_patterns = singfelDiffr(h5_file, )
-    diffr_patterns.getArray(index_range=146)
+    diffr_patterns.setArray(index_range=146)
     assert len(diffr_patterns.array) == 1
 
 
-def test_getArray_partial():
+def test_setArray_partial():
     diffr_patterns = singfelDiffr(h5_file, )
-    diffr_patterns.getArray(index_range=[146, 294])
+    diffr_patterns.setArray(index_range=[146, 294])
     assert len(diffr_patterns.array) == 2
     if __name__ == "__main__":
         fig, ax = plt.subplots(1, 2)
@@ -61,7 +61,7 @@ def test_getArray_partial():
 
 def test_Poission():
     diffr_patterns = singfelDiffr(h5_file)
-    diffr_patterns.getArray(poissonize=True)
+    diffr_patterns.setArray(poissonize=True)
     assert np.sum(diffr_patterns.array) == 0
 
 
@@ -82,8 +82,8 @@ def test_QMap():
 if __name__ == "__main__":
     test_getParameters()
     test_construct()
-    test_getArray()
+    test_setArray()
     test_Poission()
-    test_getArray_partial()
+    test_setArray_partial()
     test_SolidAngles()
     test_QMap()

@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import h5py
 from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams
+from pprint import pprint
 
 
 def test_getDataType():
@@ -20,7 +21,7 @@ def test_file_not_exists():
 def test_readSingFEL():
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
-    dd.getArray()
+    dd.setArray()
     assert len(dd.array) == 13
 
 
@@ -57,7 +58,7 @@ def test_incomplete_construction():
 def test_addGaussianNoise(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
-    dd.getArray()
+    dd.setArray()
     xcs = np.array([-1.845, 56.825, 114.623])
     fwhms = np.array([20.687, 26.771, 29.232])
     hist_params = histogramParams(xcs, fwhms)
@@ -71,14 +72,14 @@ def test_addGaussianNoise(tmp_path):
 def test_addBeamStop():
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
-    dd.getArray()
+    dd.setArray()
     dd.addBeamStop(3)
 
 
 def test_plotPattern():
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
-    dd.getArray()
+    dd.setArray()
     if __name__ == "__main__":
         dd.plotPattern(idx=0, logscale=True)
 
@@ -86,9 +87,34 @@ def test_plotPattern():
 def test_savePattern(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
-    dd.getArray()
+    dd.setArray()
     out_path = tmp_path / "test.png"
     dd.plotPattern(idx=0, logscale=True, fn_png=str(out_path))
+    assert out_path.is_file() is True
+
+
+def test_photon_statistics():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    if __name__ == "__main__":
+        pprint(dd.photon_statistics)
+
+
+def test_plotStatistics():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    if __name__ == "__main__":
+        dd.plotHistogram()
+
+
+def test_saveHistogram(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    out_path = tmp_path / "test.png"
+    dd.plotHistogram(fn_png=str(out_path))
     assert out_path.is_file() is True
 
 
@@ -96,4 +122,6 @@ if __name__ == "__main__":
     test_getDataType()
     test_incomplete_construction()
     test_addBeamStop()
+    test_photon_statistics()
     test_plotPattern()
+    test_plotStatistics()
