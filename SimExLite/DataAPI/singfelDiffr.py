@@ -44,24 +44,35 @@ class singfelDiffr:
             else:
                 pattern_type = 'diffr'
 
+            arr_size = len(indices)
+            pattern_shape = self.pattern_shape
+            arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
+
             try:
-                print('Loading patterns...')
-                for ix in tqdm(indices):
+                print('Creating the array...')
+                for i, ix in enumerate(tqdm(indices)):
                     root_path = '/data/%s/' % (ix)
                     path_to_data = root_path + pattern_type
-                    pattern_list.append(h5[path_to_data][...])
+                    arr[i] = h5[path_to_data][...]
             except KeyError:
                 indices_tmp = [key for key in h5['data'].keys()]
                 print('The first few existed indices: {}'.format(
                     indices_tmp[:3]))
                 raise KeyError('Cannot find pattern index: {}'.format(ix))
 
-        self.__array = np.array(pattern_list)
+        self.__array = arr
 
     @property
     def array(self):
         """Diffraction pattern numpy array"""
         return self.__array
+
+    @property
+    def pattern_shape(self):
+        """The array shape of a pattern in the hdf5 file"""
+        with h5py.File(self.input_path, 'r') as h5:
+            group_name = list(h5['data'].keys())[0]
+            return h5['data'][group_name]['diffr'].shape
 
     @property
     def pattern_total(self):

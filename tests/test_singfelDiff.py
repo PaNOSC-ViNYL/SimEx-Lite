@@ -79,6 +79,13 @@ def test_QMap():
         diffr_patterns.plotQMap()
 
 
+def test_pattern_shape():
+    diffr_patterns = singfelDiffr(h5_file)
+    shape = diffr_patterns.pattern_shape
+    if __name__ == "__main__":
+        print(shape)
+
+
 if __name__ == "__main__":
     test_getParameters()
     test_construct()
@@ -87,3 +94,4 @@ if __name__ == "__main__":
     test_setArray_partial()
     test_SolidAngles()
     test_QMap()
+    test_pattern_shape()
