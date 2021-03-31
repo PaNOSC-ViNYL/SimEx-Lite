@@ -95,6 +95,28 @@ class DiffractionData:
         for i, img in enumerate(tqdm(processed)):
             processed[i] = addBeamStop(img, stop_rad)
 
+    def addGaussianNoise(self, mu, sigs_popt):
+        """Add Gaussian noise to one diffraction pattern
+
+        :param mu: The averange ADU for one photon
+        :type mu: float
+
+        :param sigs_popt: [slop, intercept]
+        :type sigs_popt: list-like
+        """
+        processed = self.processed
+        print("Adding Gaussian Noise...", flush=True)
+        for i, diffr_data in enumerate(tqdm(processed)):
+            processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
+
+    def multiply(self, val):
+        """Multiply a number to the diffraction patterns
+
+        :param val: The value to be muliplied.
+        :type val: float
+        """
+        self.__processed = self.processed * val
+
     def saveAs(self, data_format: str, file_name: str, save_original=False):
         """Save the diffraction data as a specific data_format
 
@@ -129,20 +151,6 @@ class DiffractionData:
             utils.saveSimpleH5(array_to_save, file_name)
         else:
             raise TypeError("Unsupported format: ".format(data_format))
-
-    def addGaussianNoise(self, mu, sigs_popt):
-        """Add Gaussian noise to one diffraction pattern
-
-        :param mu: The averange ADU for one photon
-        :type mu: float
-
-        :param sigs_popt: [slop, intercept]
-        :type sigs_popt: list-like
-        """
-        processed = self.processed
-        print("Adding Gaussian Noise...", flush=True)
-        for i, diffr_data in enumerate(tqdm(processed)):
-            processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
 
     def plotPattern(self,
                     idx: int,
@@ -289,14 +297,15 @@ class DiffractionData:
     def processed(self):
         """The processed pattern array"""
         try:
-            if self.keep_original:
-                return self.__processed
-            else:
-                return self.array
+            return self.__processed
         except AttributeError:
             # Initialize the processed array
-            self.__processed = np.copy(self.array)
-            return self.__processed
+            if self.keep_original:
+                self.__processed = np.copy(self.array)
+                return self.__processed
+            else:
+                self.__processed = self.__array
+                return self.__processed
 
     @property
     def pattern_total(self):

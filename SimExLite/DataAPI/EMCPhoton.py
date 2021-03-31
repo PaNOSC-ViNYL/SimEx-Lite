@@ -191,6 +191,7 @@ def plotEMCPhoton(fn, idx=0, shape=None):
         shape = (-1, int(np.sqrt(sPattern.num_pix)))
     plt.imshow(data[idx].reshape(shape), norm=colors.LogNorm())
     plt.colorbar()
+    plt.show()
 
 
 def main(input_file, output_file):
