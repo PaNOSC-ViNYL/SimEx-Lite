@@ -45,7 +45,7 @@ class singfelDiffr:
                 pattern_type = 'diffr'
 
             try:
-                print('Loading patterns...')
+                print('Create the list...')
                 for ix in tqdm(indices):
                     root_path = '/data/%s/' % (ix)
                     path_to_data = root_path + pattern_type
