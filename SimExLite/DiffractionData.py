@@ -230,7 +230,7 @@ class DiffractionData:
             avg_photons,
             'Maximum number of photons of a pattern':
             max_photons,
-            'Minumum number of photons of a pattern':
+            'Minimum number of photons of a pattern':
             min_photons,
             'STD of total number of photons of a pattern':
             np.std(photons),
@@ -250,7 +250,7 @@ class DiffractionData:
         max_photons = self.photon_statistics[
             'Maximum number of photons of a pattern']
         min_photons = self.photon_statistics[
-            'Minumum number of photons of a pattern']
+            'Minimum number of photons of a pattern']
         number_of_bins = min(20, pattern_total)
         binwidth = (max_photons - min_photons) / number_of_bins
         plt.hist(self.photon_totals,
