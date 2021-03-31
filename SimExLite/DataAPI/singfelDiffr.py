@@ -29,10 +29,11 @@ class singfelDiffr:
         :param poissionize: Whether to read the patterns with poission noise
         :type poissionize: bool, optional
         """
-        pattern_list = []
         with h5py.File(self.input_path, 'r') as h5:
             if index_range is None:
                 indices = [key for key in h5['data'].keys()]
+                # Sort to get the correct order of the frames
+                indices.sort()
             else:
                 try:
                     indices = ["%0.7d" % ix for ix in index_range]
@@ -49,7 +50,8 @@ class singfelDiffr:
             arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
 
             try:
-                print('Creating the array...')
+                # Flush to print it before tqdm
+                print('Creating the array...', flush=True)
                 for i, ix in enumerate(tqdm(indices)):
                     root_path = '/data/%s/' % (ix)
                     path_to_data = root_path + pattern_type

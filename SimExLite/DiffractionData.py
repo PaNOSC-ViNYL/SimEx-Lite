@@ -91,7 +91,7 @@ class DiffractionData:
         :type stop_rad: int
         """
         processed = self.processed
-        print("Adding beam stop...")
+        print("Adding beam stop...", flush=True)
         for i, img in enumerate(tqdm(processed)):
             processed[i] = addBeamStop(img, stop_rad)
 
@@ -117,7 +117,8 @@ class DiffractionData:
             array_to_save = self.processed
 
         if data_format == "emc":
-            print('writing {} to {}'.format(array_to_save.shape, file_name))
+            print('writing {} to {}'.format(array_to_save.shape, file_name),
+                  flush=True)
             data = []
             for img in tqdm(array_to_save):
                 data.append(img.flatten())
@@ -139,7 +140,7 @@ class DiffractionData:
         :type sigs_popt: list-like
         """
         processed = self.processed
-        print("Adding Gaussian Noise...")
+        print("Adding Gaussian Noise...", flush=True)
         for i, diffr_data in enumerate(tqdm(processed)):
             processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
 
