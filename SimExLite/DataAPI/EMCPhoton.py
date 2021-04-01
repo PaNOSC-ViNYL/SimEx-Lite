@@ -176,7 +176,7 @@ def parse_bin_PatternsSOne(fn: str):
     )
 
 
-def plotEMCPhoton(fn, idx=0, shape=None):
+def plotEMCPhoton(fn, idx=0, shape=None, log_scale=True):
     """Plot a pattern from a EMC file
 
     :param idx: The index of the pattern to plot
@@ -185,11 +185,14 @@ def plotEMCPhoton(fn, idx=0, shape=None):
     :type shape: int, optional
     """
     sPattern = parse_bin_PatternsSOne(fn)
-    print(sPattern.num_pix)
+    print('num_pix:', sPattern.num_pix)
     data = sPattern.todense()
     if not shape:
         shape = (-1, int(np.sqrt(sPattern.num_pix)))
-    plt.imshow(data[idx].reshape(shape), norm=colors.LogNorm())
+    if log_scale is True:
+        plt.imshow(data[idx].reshape(shape), norm=colors.LogNorm())
+    else:
+        plt.imshow(data[idx].reshape(shape))
     plt.colorbar()
     plt.show()
 

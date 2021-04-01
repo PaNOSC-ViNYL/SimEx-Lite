@@ -1,6 +1,5 @@
 """Test DiffractionData"""
 
-from tests.test_EMCPhoton import test_MultiData
 import numpy as np
 import pytest
 import h5py
@@ -123,15 +122,13 @@ def test_multiply():
     h5_file = './testFiles/singfel-multi.h5'
     dd = DiffractionData(h5_file)
     dd.setArray()
-    orig = dd.processed
-    print(np.max(orig[0]))
-    dd.multiply(100)
-    multi = dd.processed
-    print(np.max(orig[0]))
-    print(np.max(multi[0]))
-    orig2 = dd.array
-    print(np.max(orig2[0]))
-    # assert out_path.is_file() is True
+    orig = dd.array
+    val_orig = np.max(orig[0])
+    dd.multiply(0)
+    multi = dd.array
+    assert np.max(orig[0]) == val_orig
+    assert np.max(multi[0]) == 0
+    assert np.max(multi[2]) == 0
 
 
 if __name__ == "__main__":

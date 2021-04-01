@@ -52,6 +52,7 @@ class DiffractionData:
         if arr is not None:
             # Writting mode
             self.__array = arr
+            self.__statistic_to_update = True
         else:
             # Reading mode
             self.input_file = input_file
@@ -78,6 +79,7 @@ class DiffractionData:
             data = singfelDiffr(self.input_file)
             data.setArray(index_range)
             self.__array = data.array
+            self.__statistic_to_update = True
 
         if len(self.__array.shape) == 2:
             self.__array = np.expand_dims(self.__array, axis=0)
@@ -90,10 +92,11 @@ class DiffractionData:
         :param stop_rad: The radius of the beamstop in pixel unit
         :type stop_rad: int
         """
-        processed = self.processed
+        array = self.array
         print("Adding beam stop...", flush=True)
-        for i, img in enumerate(tqdm(processed)):
-            processed[i] = addBeamStop(img, stop_rad)
+        for i, img in enumerate(tqdm(array)):
+            array[i] = addBeamStop(img, stop_rad)
+        self.__statistic_to_update = True
 
     def addGaussianNoise(self, mu, sigs_popt):
         """Add Gaussian noise to one diffraction pattern
@@ -104,10 +107,11 @@ class DiffractionData:
         :param sigs_popt: [slop, intercept]
         :type sigs_popt: list-like
         """
-        processed = self.processed
+        array = self.array
         print("Adding Gaussian Noise...", flush=True)
-        for i, diffr_data in enumerate(tqdm(processed)):
-            processed[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
+        for i, diffr_data in enumerate(tqdm(array)):
+            array[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
+        self.__statistic_to_update = True
 
     def multiply(self, val):
         """Multiply a number to the diffraction patterns
@@ -115,9 +119,10 @@ class DiffractionData:
         :param val: The value to be muliplied.
         :type val: float
         """
-        self.__processed = self.processed * val
+        self.__array = self.array * val
+        self.__statistic_to_update = True
 
-    def saveAs(self, data_format: str, file_name: str, save_original=False):
+    def saveAs(self, data_format: str, file_name: str):
         """Save the diffraction data as a specific data_format
 
         :param data_format: The data format to save in.
@@ -128,15 +133,8 @@ class DiffractionData:
         :type data_format: str
         :param file_name: The file name of the new data
         :type file_name: str
-        :param save_original: If it's true, will save the original array,
-        instead of the processed
-        one; defaults to False to save the processed array.
-        :type save_original: bool
         """
-        if save_original:
-            array_to_save = self.array
-        else:
-            array_to_save = self.processed
+        array_to_save = self.array
 
         if data_format == "emc":
             print('writing {} to {}'.format(array_to_save.shape, file_name),
@@ -154,10 +152,9 @@ class DiffractionData:
 
     def plotPattern(self,
                     idx: int,
-                    logscale=False,
+                    logscale=True,
                     offset=None,
                     symlog=False,
-                    original=False,
                     fn_png=None,
                     *argv,
                     **kwargs):
@@ -165,25 +162,18 @@ class DiffractionData:
 
         :param idx: The array index of the pattern to plot (starting from 0)
         :type idx: idx
-        :param logscale: Whether to show the data on logarithmic scale (z axis)
-        (default False).
-        :type logscale: bool
+        :param logscale: Whether to show the data on logarithmic scale (z axis),
+        defaults to `True`.
+        :type logscale: bool, optional
         :param offset: Offset to apply to the pattern.
-        :type offset: float
-        :param symlog: To show the data on symlogarithmic scale (z axis)
-        (default False).
-        :type symlog: bool
-        :param original: Whether to plot the original or processed pattern,
-        defauts to `False` for processed
-        pattern.
-        :type original: bool
+        :type offset: float, optional
+        :param symlog: To show the data on symlogarithmic scale (z axis), defaults
+        to `False`.
+        :type symlog: bool, optional
         :param fn_png: The name of the output png file, defaults to `None`.
-        :type fn_png: str
+        :type fn_png: str, optional
         """
-        if original:
-            array_to_plot = self.array[idx]
-        else:
-            array_to_plot = self.processed[idx]
+        array_to_plot = self.array[idx]
         plotImage(array_to_plot,
                   logscale=logscale,
                   offset=offset,
@@ -192,21 +182,10 @@ class DiffractionData:
                   *argv,
                   **kwargs)
 
-    def setStatistics(self, processed=True):
-        """Get photon statistics
+    def __setStatistics(self):
+        """Get photon statistics"""
 
-        :param processed: Is the data source the processed data,
-        defaults to `True`. Setting it to `False` will only make a difference
-        if the `keep_original` in :class:`DiffractionData` is also `True`.
-        :type processed: bool, optional
-
-        :return: A dictionary of statistic values
-        :rtype: dict
-        """
-        if processed:
-            patterns = self.processed
-        else:
-            patterns = self.array
+        patterns = self.array
 
         pattern_total = len(patterns)
         pattern_dim = patterns[0].shape
@@ -251,8 +230,9 @@ class DiffractionData:
             avg_min_per_pattern,
         }
 
-        self.photon_totals = photons
+        self.__photon_totals = photons
         self.__photon_statistics = statistics
+        self.__statistic_to_update = False
 
     def plotHistogram(self, fn_png=None):
         pattern_total = self.photon_statistics['Number of patterns']
@@ -275,13 +255,22 @@ class DiffractionData:
             plt.savefig(fn_png, dpi=300)
 
     @property
-    def photon_statistics(self):
-        """The photon statistics of the processed patterns"""
-        try:
+    def photon_statistics(self) -> dict:
+        """The photon statistics of the patterns"""
+        if self.__statistic_to_update is True:
+            self.__setStatistics()
             return self.__photon_statistics
-        except AttributeError:
-            self.setStatistics()
+        else:
             return self.__photon_statistics
+
+    @property
+    def photon_totals(self) -> np.array:
+        """The total photons of the patterns"""
+        if self.__statistic_to_update is True:
+            self.__setStatistics()
+            return self.__photon_totals
+        else:
+            return self.__photon_totals
 
     @property
     def array(self):
@@ -294,23 +283,9 @@ class DiffractionData:
             )
 
     @property
-    def processed(self):
-        """The processed pattern array"""
-        try:
-            return self.__processed
-        except AttributeError:
-            # Initialize the processed array
-            if self.keep_original:
-                self.__processed = np.copy(self.array)
-                return self.__processed
-            else:
-                self.__processed = self.__array
-                return self.__processed
-
-    @property
-    def pattern_total(self):
-        """The total number of the processed diffraction patterns"""
-        npattern = len(self.processed)
+    def pattern_total(self) -> int:
+        """The total number of the diffraction patterns"""
+        npattern = len(self.array)
         return npattern
 
 
@@ -432,7 +407,7 @@ def getSigsFitting(sigs):
 
 
 def plotImage(pattern,
-              logscale=False,
+              logscale=True,
               offset=None,
               symlog=False,
               fn_png=None,
@@ -440,11 +415,11 @@ def plotImage(pattern,
               **kwargs):
     """ Workhorse function to plot an image
 
-    :param logscale: Whether to show the data on logarithmic scale (z axis) (default False).
+    :param logscale: Whether to show the data on logarithmic scale (z axis), defaults to `True`.
     :type logscale: bool
     :param offset: Offset to apply to the pattern.
     :type offset: float
-    :param symlog: To show the data on symlogarithmic scale (z axis) (default False).
+    :param symlog: To show the data on symlogarithmic scale (z axis), defaults to `False`.
     :type symlog: bool
     :param fn_png: The name of the output png file, defaults to `None`.
     :type fn_png: str
@@ -463,9 +438,9 @@ def plotImage(pattern,
     if (logscale and symlog):
         print('logscale and symlog are both true.\noverrided by logscale')
 
-    # default plot setup
     if (logscale or symlog):
         kwargs['cmap'] = kwargs.pop('cmap', "viridis")
+        # default plot setup
         if logscale:
             kwargs['norm'] = kwargs.pop('norm', colors.LogNorm())
         elif symlog:
