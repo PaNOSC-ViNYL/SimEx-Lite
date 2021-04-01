@@ -5,14 +5,17 @@
 """Diffraction Data APIs"""
 
 from tqdm import tqdm
+from pathlib import Path
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from SimExLite.utils import isLegacySimExH5
-from SimExLite.DataAPI.singfelDiffr import singfelDiffr
+from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
+from SimExLite.PhotonBeamData import SimpleBeam
 import SimExLite.DataAPI.EMCPhoton as EMC
 import SimExLite.utils as utils
+from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 
 data_type_dict = {
     '0': 'UNKOWN',
@@ -28,23 +31,19 @@ class DiffractionData:
 
     :param input_file: The data file name to read
     :type input_file: str
-    :param keep_original: If keep the original data array, defaults to `False`. If set to
-    `False`, all the changes will apply to :func:`DiffractionData.array`.
-    It's recommended to set it to `False` when the array is large.
-    :type keep_original: bool, optional
     :param arr: The input data array when you want to create a new diffraction data
     :type arr: `np.numpy`, optional
-    :param parameters: The input diffraction parameter dictionary when you want to
-    create a new diffraction data
-    :type parameters: dict
+    :param geometry: The diffraction geometry
+    :type geometry: dict or extra_geom geometry, optional
+    :param beam: The beam used for diffraction
+    :type beam: :class:`SimpleBeam`, optional
     """
     def __init__(self,
                  input_file: str = None,
-                 keep_original=False,
                  arr: np.array = None,
-                 parameters=None) -> None:
+                 geometry=None,
+                 beam=None) -> None:
         super().__init__()
-        self.keep_original = keep_original
 
         if arr is None and input_file is None:
             raise ValueError("Need least one `arr` or `input_file`")
@@ -60,8 +59,10 @@ class DiffractionData:
             with open(self.input_file, 'r') as f:
                 f.close()
             self.type_id_read = getDataType(self.input_file)
-        if parameters is not None:
-            self.parameters = parameters
+        if geometry is not None:
+            self.__geometry = geometry
+        if beam is not None:
+            self.__beam = beam
 
     # This is the essential part of this class
     def setArray(self, index_range=None):
@@ -122,7 +123,7 @@ class DiffractionData:
         self.__array = self.array * val
         self.__statistic_to_update = True
 
-    def saveAs(self, data_format: str, file_name: str):
+    def saveAs(self, data_format: str, file_name: str, with_geom=None):
         """Save the diffraction data as a specific data_format
 
         :param data_format: The data format to save in.
@@ -133,6 +134,9 @@ class DiffractionData:
         :type data_format: str
         :param file_name: The file name of the new data
         :type file_name: str
+        :param with_geom: whether to save geometry information, defaults to `None` to
+        let the program decide itself.
+        :type with_geom: bool, optional
         """
         array_to_save = self.array
 
@@ -144,7 +148,24 @@ class DiffractionData:
                 data.append(img.flatten())
             data = np.array(data)
             patterns = EMC.dense_to_PatternsSOne(data)
-            patterns.write(file_name)
+            file_path = Path(file_name)
+            file_path.with_suffix('.emc')
+            fn_data = str(file_path)
+            patterns.write(fn_data)
+
+            if with_geom:
+                geom_path = file_path.with_suffix('.geom')
+                fn_geom = str(geom_path)
+                print('writing .geom to {}'.format(fn_geom))
+                self.geometry.write_crystfel_geom(
+                    fn_geom,
+                    dims=('frame', 'ss', 'fs'),
+                    adu_per_ev=1.0,
+                    clen=self.geometry.clen,
+                    photon_energy=self.beam.photon_energy.to('eV').magnitude,
+                    nquads=1,
+                    data_path='/data/data',
+                )
         elif data_format == "simple":
             utils.saveSimpleH5(array_to_save, file_name)
         else:
@@ -274,7 +295,7 @@ class DiffractionData:
 
     @property
     def array(self):
-        """The original pattern array"""
+        """The pattern array"""
         try:
             return self.__array
         except AttributeError:
@@ -287,6 +308,28 @@ class DiffractionData:
         """The total number of the diffraction patterns"""
         npattern = len(self.array)
         return npattern
+
+    @property
+    def geometry(self):
+        try:
+            return self.__geometry
+        except AttributeError:
+            type_id_read = self.type_id_read
+            if type_id_read == '1':
+                return getSingfelDiffrGeom(self.input_file)
+            else:
+                raise TypeError("UNKNOWN file type")
+
+    @property
+    def beam(self):
+        try:
+            return self.__beam
+        except AttributeError:
+            type_id_read = self.type_id_read
+            if type_id_read == '1':
+                return getSingfelDiffrBeam(self.input_file)
+            else:
+                raise TypeError("UNKNOWN file type")
 
 
 def getDataType(fn) -> str:
@@ -366,6 +409,78 @@ def addGaussianNoise(diffr_data, mu, sigs_popt):
     return diffr_noise
 
 
+def getSingfelDiffrGeom(fn: str) -> DetectorGeometryBase:
+    params = getParameters(fn)
+    pn = params['geom']['mask'].shape
+    x_pixel_size = params['geom']['pixelWidth']
+    y_pixel_size = params['geom']['pixelHeight']
+    if x_pixel_size != y_pixel_size:
+        raise ValueError("Pixel width and height should be the same.")
+    pixel_size = x_pixel_size
+    # Horizontal (x) direction
+    fs_vec = np.array([1, 0, 0]) * pixel_size
+    fs_pixels = pn[1]
+    cnx = -fs_pixels * 0.5
+    # Vertical (y) direction
+    ss_vec = np.array([0, 1, 0]) * pixel_size
+    ss_pixels = pn[0]
+    cny = -ss_pixels * 0.5
+    # Sample to detector distance
+    clen = params['geom']['detectorDist']
+    coffset = 0
+    corner_pos = np.array([cnx * pixel_size, cny * pixel_size, coffset])
+    frag = GeometryFragment(corner_pos, ss_vec, fs_vec, ss_pixels, fs_pixels)
+    modules = [[frag]]
+    detector = simpleGeometry(modules,
+                              pixel_size=pixel_size,
+                              ss_pixels=ss_pixels,
+                              fs_pixels=fs_pixels)
+    detector.clen = clen  # meter
+    return detector
+
+
+def getSingfelDiffrBeam(fn: str) -> SimpleBeam:
+    params = getParameters(fn)
+    photon_energy = params['beam']['photonEnergy']  # eV
+    beam = SimpleBeam(photon_energy=photon_energy)
+    return beam
+
+
+class simpleGeometry(DetectorGeometryBase):
+    """A simple geometry based on extra_geom DetectorGeometryBase
+
+    :param pixel_size: Pixel size in meter
+    :type pixel_size: float
+    :param ss_pixel: Number of slow scan pixels, it's usually y-direction
+    pixels in simple geometry
+    :type ss_pixel: int
+    :param fs_pixel: Number of fast scan pixels, it's usually x-direction
+    pixels in simple geometry
+    :type fs_pixel: int
+    """
+    def __init__(self,
+                 modules=None,
+                 filename='Simple Geom',
+                 pixel_size=None,
+                 ss_pixels=None,
+                 fs_pixels=None):
+        super().__init__(modules, filename=filename)
+        self.detector_type_name = 'Simple'
+        self.pixel_size = pixel_size  # in metre
+        self.frag_ss_pixels = ss_pixels
+        self.frag_fs_pixels = fs_pixels
+        self.expected_data_shape = (1, ss_pixels, fs_pixels)
+        self.n_quads = 1
+        self.n_tiles_per_module = 1
+        self.n_modules = 1
+
+    def _tile_slice(self, tileno):
+        # Which part of the array is this tile?
+        ss_slice = slice(0, self.frag_ss_pixels)
+        fs_slice = slice(0, self.frag_fs_pixels)
+        return ss_slice, fs_slice
+
+
 class histogramParams:
     """Fitting results of a detector histogram
 
@@ -399,7 +514,7 @@ class histogramParams:
 
 
 def getSigsFitting(sigs):
-    """Get the fitting parametters for predicting sigmas"""
+    """Get the fitting parameters for predicting sigmas"""
     xdata = np.arange(len(sigs))
     ydata = sigs
     my_fitting = utils.curve_fitting(utils.linear, xdata, ydata)

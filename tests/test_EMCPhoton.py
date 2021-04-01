@@ -13,11 +13,24 @@ def test_RandomData(tmp_path):
         EMC.plotEMCPhoton(data_fn, 3)
 
 
-def test_plotEMC(tmp_path):
+def test_EMC_geometry(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
     diffr = DiffractionData(diffr_path)
     diffr.setArray()
     out_path = tmp_path / "t.bin"
+    diffr.multiply(1e5)
+    data_fn = str(out_path)
+    geom_path = out_path.with_suffix('.geom')
+    diffr.saveAs('emc', data_fn, with_geom=True)
+    assert out_path.is_file() is True
+    assert geom_path.is_file() is True
+
+
+def test_plotEMC(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    diffr = DiffractionData(diffr_path)
+    diffr.setArray()
+    out_path = tmp_path / "t.emc"
     diffr.multiply(1e5)
     data_fn = str(out_path)
     diffr.saveAs('emc', data_fn)
@@ -26,11 +39,24 @@ def test_plotEMC(tmp_path):
     assert out_path.is_file() is True
 
 
+# def test_reademc(tmp_path):
+#     diffr_path = './testFiles/singfel-multi.h5'
+#     diffr = DiffractionData(diffr_path)
+#     diffr.setArray()
+#     out_path = tmp_path / "t.bin"
+#     diffr.multiply(1e5)
+#     data_fn = str(out_path)
+#     diffr.saveAs('emc', data_fn)
+
+#     if __name__ == "__main__":
+#         EMC.plotEMCPhoton(data_fn, 0, log_scale=True)
+#     assert out_path.is_file() is True
+
 if __name__ == "__main__":
     path_name = "tmp"
     tmp = Path(path_name)
     tmp.mkdir(parents=True, exist_ok=True)
-    # test_RandomData(tmp)
+    test_RandomData(tmp)
     test_plotEMC(tmp)
-    # tmp.rmdir()
+    test_EMC_geometry(tmp)
     shutil.rmtree(path_name)
