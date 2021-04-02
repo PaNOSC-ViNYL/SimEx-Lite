@@ -10,10 +10,10 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
+from SimExLite.DataAPI.Dragonfly.utils.py_src import writeemc
 from SimExLite.utils import isLegacySimExH5
 from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
 from SimExLite.PhotonBeamData import SimpleBeam
-import SimExLite.DataAPI.EMCPhoton as EMC
 import SimExLite.utils as utils
 from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 
@@ -143,15 +143,14 @@ class DiffractionData:
         if data_format == "emc":
             print('writing {} to {}'.format(array_to_save.shape, file_name),
                   flush=True)
-            data = []
-            for img in tqdm(array_to_save):
-                data.append(img.flatten())
-            data = np.array(data)
-            patterns = EMC.dense_to_PatternsSOne(data)
             file_path = Path(file_name)
+            # Add '.emc' suffix if no suffix specified
             file_path.with_suffix('.emc')
             fn_data = str(file_path)
-            patterns.write(fn_data)
+            emcwriter = writeemc.EMCWriter(
+                fn_data, array_to_save[0].shape[0] * array_to_save[0].shape[1])
+            for photons in tqdm(array_to_save):
+                emcwriter.write_frame(photons.astype(np.int32).ravel())
 
             if with_geom:
                 geom_path = file_path.with_suffix('.geom')
