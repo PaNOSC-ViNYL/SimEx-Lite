@@ -15,7 +15,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings',
-    'libpyvinyl', 'h5py'
+    'libpyvinyl', 'h5py', 'extra-geom'
 ]
 
 setup_requirements = ['pytest-runner']

@@ -6,3 +6,4 @@ ase
 pint
 future-fstrings
 libpyvinyl
+extra-geom

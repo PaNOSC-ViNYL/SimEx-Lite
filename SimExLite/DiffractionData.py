@@ -141,16 +141,11 @@ class DiffractionData:
         array_to_save = self.array
 
         if data_format == "emc":
-            print('writing {} to {}'.format(array_to_save.shape, file_name),
-                  flush=True)
             file_path = Path(file_name)
             # Add '.emc' suffix if no suffix specified
             file_path.with_suffix('.emc')
             fn_data = str(file_path)
-            emcwriter = writeemc.EMCWriter(
-                fn_data, array_to_save[0].shape[0] * array_to_save[0].shape[1])
-            for photons in tqdm(array_to_save):
-                emcwriter.write_frame(photons.astype(np.int32).ravel())
+            arr2emc(array_to_save, fn_data)
 
             if with_geom:
                 geom_path = file_path.with_suffix('.geom')
@@ -510,6 +505,14 @@ class histogramParams:
     def plotFitting(self, fn_png="fitting.png"):
         """Plot the fitting results to a .png file, default: fitting.png"""
         self.fitting.plotResults(xlabel='photons', ylabel='sigma', fn=fn_png)
+
+
+def arr2emc(array_to_save: np.array, fn_data: str):
+    print('writing {} to {}'.format(array_to_save.shape, fn_data), flush=True)
+    emcwriter = writeemc.EMCWriter(
+        fn_data, array_to_save[0].shape[0] * array_to_save[0].shape[1])
+    for photons in tqdm(array_to_save):
+        emcwriter.write_frame(photons.astype(np.int32).ravel())
 
 
 def getSigsFitting(sigs):
