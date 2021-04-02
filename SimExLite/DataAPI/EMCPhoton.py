@@ -176,41 +176,101 @@ def parse_bin_PatternsSOne(fn: str):
     )
 
 
-def getNum_pix(fname):
-    with h5py.File(fname, 'r') as fptr:
-        num_pix = fptr['num_pix'][()][0]
-    return num_pix
-
-
 def readH5frame(fname, frame_num):
     with h5py.File(fname, 'r') as fptr:
+        num_pix = fptr['num_pix'][()][0]
         place_ones = fptr['place_ones'][frame_num]
         place_multi = fptr['place_multi'][frame_num]
         count_multi = fptr['count_multi'][frame_num]
         ones = np.array([len(place_ones)])
-        multi = np.array([len(place_ones)])
-    return ones, multi, place_ones, place_multi, count_multi
+        multi = np.array([len(place_multi)])
+    return num_pix, ones, multi, place_ones, place_multi, count_multi
+
+
+def readBinaryframe(fname, frame_num):
+    pdict = parse_binaryheader(fname)
+    num_pix = pdict['num_pix']
+    with open(fname, 'rb') as fptr:
+        num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
+
+        accum = [pdict['ones_accum'], pdict['multi_accum']]
+        offset = [0, 0]
+        size = [0, 0]
+
+        if frame_num == 0:
+            size = [accum[0][frame_num], accum[1][frame_num]]
+        else:
+            offset = [accum[0][frame_num - 1], accum[1][frame_num - 1]]
+            size[0] = accum[0][frame_num] - accum[0][frame_num - 1]
+            size[1] = accum[1][frame_num] - accum[1][frame_num - 1]
+
+        fptr.seek(1024 + num_data * 8 + offset[0] * 4, 0)
+        place_ones = np.fromfile(fptr, dtype='i4', count=size[0])
+        fptr.seek(1024 + num_data * 8 + accum[0][-1] * 4 + offset[1] * 4, 0)
+        place_multi = np.fromfile(fptr, dtype='i4', count=size[1])
+        fptr.seek(
+            1024 + num_data * 8 + accum[0][-1] * 4 + accum[1][-1] * 4
+            + offset[1] * 4, 0)
+        count_multi = np.fromfile(fptr, dtype='i4', count=size[1])
+        ones = np.array([len(place_ones)])
+        multi = np.array([len(place_multi)])
+    return num_pix, ones, multi, place_ones, place_multi, count_multi
 
 
 def plotEMCPhoton(fn, idx=0, shape=None, log_scale=True):
-    """Plot a pattern from a EMC file
+    """Plot a pattern from a EMC H5 file
 
     :param idx: The index of the pattern to plot
     :type idx: int
     :param shape: The array shape of the diffraction pattern
     :type shape: int, optional
     """
-    num_pix = getNum_pix(fn)
-    sPattern = PatternsSOne(num_pix, *readH5frame(fn, idx))
+    sPattern = PatternsSOne(*readH5frame(fn, idx))
 
     print('num_pix:', sPattern.num_pix)
     data = sPattern.todense()
     if not shape:
         shape = (-1, int(np.sqrt(sPattern.num_pix)))
     if log_scale is True:
-        plt.imshow(data[idx].reshape(shape), norm=colors.LogNorm())
+        plt.imshow(data.reshape(shape), norm=colors.LogNorm())
     else:
-        plt.imshow(data[idx].reshape(shape))
+        plt.imshow(data.reshape(shape))
+    plt.colorbar()
+    plt.show()
+
+
+def parse_binaryheader(fname):
+    pdict = {}
+    with open(fname, 'rb') as fptr:
+        num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
+        pdict['num_pix'] = np.fromfile(fptr, dtype='i4', count=1)[0]
+        fptr.seek(1024, 0)
+        ones = np.fromfile(fptr, dtype='i4', count=num_data)
+        multi = np.fromfile(fptr, dtype='i4', count=num_data)
+    pdict['num_data'] = num_data
+    pdict['ones_accum'] = np.cumsum(ones)
+    pdict['multi_accum'] = np.cumsum(multi)
+    return pdict
+
+
+def plotEMCbin(fn, idx=0, shape=None, log_scale=True):
+    """Plot a pattern from a EMC binary file
+
+    :param idx: The index of the pattern to plot
+    :type idx: int
+    :param shape: The array shape of the diffraction pattern
+    :type shape: int, optional
+    """
+
+    sPattern = PatternsSOne(*readBinaryframe(fn, idx))
+    print('num_pix:', sPattern.num_pix)
+    data = sPattern.todense()
+    if not shape:
+        shape = (-1, int(np.sqrt(sPattern.num_pix)))
+    if log_scale is True:
+        plt.imshow(data.reshape(shape), norm=colors.LogNorm())
+    else:
+        plt.imshow(data.reshape(shape))
     plt.colorbar()
     plt.show()
 

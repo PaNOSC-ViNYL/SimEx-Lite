@@ -132,10 +132,10 @@ def test_multiply():
 
 
 if __name__ == "__main__":
-    # test_getDataType()
-    # test_incomplete_construction()
-    # test_addBeamStop()
-    # test_photon_statistics()
+    test_getDataType()
+    test_incomplete_construction()
+    test_addBeamStop()
+    test_photon_statistics()
     test_plotPattern()
-    # test_plotStatistics()
-    # test_multiply()
+    test_plotStatistics()
+    test_multiply()
