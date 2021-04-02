@@ -176,6 +176,22 @@ def parse_bin_PatternsSOne(fn: str):
     )
 
 
+def getNum_pix(fname):
+    with h5py.File(fname, 'r') as fptr:
+        num_pix = fptr['num_pix'][()][0]
+    return num_pix
+
+
+def readH5frame(fname, frame_num):
+    with h5py.File(fname, 'r') as fptr:
+        place_ones = fptr['place_ones'][frame_num]
+        place_multi = fptr['place_multi'][frame_num]
+        count_multi = fptr['count_multi'][frame_num]
+        ones = np.array([len(place_ones)])
+        multi = np.array([len(place_ones)])
+    return ones, multi, place_ones, place_multi, count_multi
+
+
 def plotEMCPhoton(fn, idx=0, shape=None, log_scale=True):
     """Plot a pattern from a EMC file
 
@@ -184,7 +200,9 @@ def plotEMCPhoton(fn, idx=0, shape=None, log_scale=True):
     :param shape: The array shape of the diffraction pattern
     :type shape: int, optional
     """
-    sPattern = parse_bin_PatternsSOne(fn)
+    num_pix = getNum_pix(fn)
+    sPattern = PatternsSOne(num_pix, *readH5frame(fn, idx))
+
     print('num_pix:', sPattern.num_pix)
     data = sPattern.todense()
     if not shape:

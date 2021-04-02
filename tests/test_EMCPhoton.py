@@ -35,6 +35,7 @@ def test_plotEMC(tmp_path):
     data_fn = str(out_path)
     diffr.saveAs('emc', data_fn)
     if __name__ == "__main__":
+        EMC.plotEMCPhoton(data_fn, 0, log_scale=False)
         EMC.plotEMCPhoton(data_fn, 0, log_scale=True)
     assert out_path.is_file() is True
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     path_name = "tmp"
     tmp = Path(path_name)
     tmp.mkdir(parents=True, exist_ok=True)
-    test_RandomData(tmp)
+    # test_RandomData(tmp)
     test_plotEMC(tmp)
-    test_EMC_geometry(tmp)
-    shutil.rmtree(path_name)
+    # test_EMC_geometry(tmp)
+    # shutil.rmtree(path_name)
