@@ -4,22 +4,12 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Photon Beam data APIs"""
 
-from pint import UnitRegistry
-ureg = UnitRegistry()
-Q_ = ureg.Quantity
+from . import setValue
 
 
 def hcDivide(val):
     """h is the Plank constant and c is the speed of light. keV <-> Angstrom."""
     return 12.398 / val
-
-
-def setValue(val, unit):
-    """Set the value with the pint unit"""
-    if isinstance(val, ureg.Quantity):
-        return val.to(unit)
-    else:
-        return Q_(val, unit)
 
 
 class SimpleBeam:

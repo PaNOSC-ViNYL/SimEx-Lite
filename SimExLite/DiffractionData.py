@@ -505,7 +505,7 @@ class simpleGeometry(DetectorGeometryBase):
         self.n_modules = 1
 
     def _tile_slice(self, tileno):
-        # Which part of the array is this tile?
+        # Which part of the array this tile is.
         ss_slice = slice(0, self.frag_ss_pixels)
         fs_slice = slice(0, self.frag_fs_pixels)
         return ss_slice, fs_slice

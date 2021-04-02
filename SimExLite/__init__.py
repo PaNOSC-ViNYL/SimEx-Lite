@@ -7,3 +7,18 @@
 __author__ = """Juncheng E"""
 __email__ = 'juncheng.e@xfel.eu'
 __version__ = '0.1.0'
+
+# Using pint in the whole project
+# https://pint.readthedocs.io/en/0.10.1/tutorial.html#using-pint-in-your-projects
+from pint import UnitRegistry
+ureg = UnitRegistry()
+Q_ = ureg.Quantity
+
+
+# Set pint value
+def setValue(val, unit):
+    """Set the value with the pint unit"""
+    if isinstance(val, ureg.Quantity):
+        return val.to(unit)
+    else:
+        return Q_(val, unit)
