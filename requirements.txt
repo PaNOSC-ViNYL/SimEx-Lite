@@ -6,4 +6,4 @@ ase
 pint
 future-fstrings
 libpyvinyl
-extra-geom
+extra-geom>=1.1
