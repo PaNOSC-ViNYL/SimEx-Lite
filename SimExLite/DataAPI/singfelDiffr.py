@@ -26,7 +26,8 @@ class singfelDiffr:
         defaults to `None` meaning to take all the patterns. The array can be accessed by
         func:`singfelDiffr.array`.
         :type index_range: list-like or `int`, optional
-        :param poissionize: Whether to read the patterns with poission noise
+        :param poissionize: Whether to read the patterns with poission noise,
+        defaults to false.
         :type poissionize: bool, optional
         """
         with h5py.File(self.input_path, 'r') as h5:

@@ -75,7 +75,7 @@ class DiffractionData:
         func:`DiffractionData.array`.
         :type index_range: list-like or `int`, optional
         :param poissionize: Whether to read the patterns with poission noise for pysingfel
-        data
+        data, defaults to false.
         :type poissionize: bool, optional
         """
         type_id_read = self.type_id_read

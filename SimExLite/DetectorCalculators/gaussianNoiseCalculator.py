@@ -18,12 +18,16 @@ class gaussianNoisePrameters(Parameters):
     defaults to `None` meaning to take all the patterns. The array can be accessed by
     func:`DiffractionData.array`.
     :type index_range: list-like or `int`, optional
+    :param poissionize: Whether to read the patterns with poission noise,
+    defaults to false.
+    :type poissionize: bool, optional
     """
-    def __init__(self, mu, sigs_popt, index_range=None):
+    def __init__(self, mu, sigs_popt, index_range=None, poissonize=False):
         super().__init__()
         self.mu = mu
         self.sigs_popt = sigs_popt
         self.index_range = index_range
+        self.poissonize = poissonize
 
 
 class gaussianNoiseCalculator(BaseCalculator):
