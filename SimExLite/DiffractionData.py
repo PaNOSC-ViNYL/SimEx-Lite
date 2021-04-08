@@ -67,20 +67,23 @@ class DiffractionData:
         self.__stop_rad = 0
 
     # This is the essential part of this class
-    def setArray(self, index_range=None):
+    def setArray(self, index_range=None, poissonize=False):
         """Set the numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
         defaults to `None` meaning to take all the patterns. The array can be accessed by
         func:`DiffractionData.array`.
         :type index_range: list-like or `int`, optional
+        :param poissionize: Whether to read the patterns with poission noise for pysingfel
+        data
+        :type poissionize: bool, optional
         """
         type_id_read = self.type_id_read
         if type_id_read == '0':
             raise TypeError("UNKNOWN data format.")
         elif type_id_read == '1':
             data = singfelDiffr(self.input_file)
-            data.setArray(index_range)
+            data.setArray(index_range, poissonize=poissonize)
             self.__array = data.array
             self.__statistic_to_update = True
 
