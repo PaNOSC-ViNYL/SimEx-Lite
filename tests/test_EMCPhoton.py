@@ -68,6 +68,23 @@ def test_pattern_total_binary(tmp_path):
     assert emc.pattern_total == 13
 
 
+def test_EMC_format(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    out_path = tmp_path / "test.emc"
+    dd.saveAs("emc", str(out_path))
+    assert EMC.isEMCH5(str(out_path)) is True
+
+
+def test_EMC_format_false(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    assert EMC.isEMCH5(str(h5_file)) is False
+    touch_file = tmp_path / 'test.txt'
+    touch_file.touch()
+    assert EMC.isEMCH5(str(touch_file)) is False
+
+
 def test_setArray(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
     diffr = DiffractionData(diffr_path)

@@ -21,8 +21,8 @@ from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 data_type_dict = {
     '0': 'UNKOWN',
     '1': 'SIMEX SingFEL',
-    '2': 'EMC Sparse Photon Binary',
-    '3': 'EMC Sparse Photon HDF5',
+    '2': 'EMC Sparse Photon',
+    '3': 'NeXus',
     '4': 'UNKOWN HDF5'
 }
 
@@ -68,16 +68,19 @@ class DiffractionData:
         self.__stop_rad = 0
 
     # This is the essential part of this class
-    def setArray(self, index_range=None, poissonize=False):
+    def setArray(self, index_range=None, poissonize=False, pattern_shape=None):
         """Set the numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
         defaults to `None` meaning to take all the patterns. The array can be accessed by
         func:`DiffractionData.array`.
         :type index_range: list-like or `int`, optional
-        :param poissionize: Whether to read the patterns with poission noise for pysingfel
+        :param poissionize: [singfel data] Whether to read the patterns with poission noise for pysingfel
         data, defaults to false.
         :type poissionize: bool, optional
+        :param pattern_shape: [EMC data] The array shape of the diffraction pattern, (H W). If not povided,
+        H and W will be set as the square root of the number of elements in the array.
+        :type pattern_shape: array-shape-like, optional
         """
         type_id_read = self.type_id_read
         if type_id_read == '0':
@@ -87,9 +90,9 @@ class DiffractionData:
             data.setArray(index_range, poissonize=poissonize)
             self.__array = data.array
             self.__statistic_to_update = True
-        elif type_id_read == '3':
-            data = singfelDiffr(self.input_file)
-            data.setArray(index_range, poissonize=poissonize)
+        elif type_id_read == '2':
+            data = EMCPhoton(self.input_file, pattern_shape=pattern_shape)
+            data.setArray(index_range)
             self.__array = data.array
             self.__statistic_to_update = True
 
@@ -389,7 +392,7 @@ def getDataType(fn) -> str:
                           format(fn))
                     return "0"
         elif (isEMCH5(fn)):
-            return "3"
+            return "2"
         else:
             # UNKOWN HDF5
             return "4"

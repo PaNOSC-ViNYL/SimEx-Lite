@@ -20,6 +20,9 @@ class EMCPhoton:
 
     :input_path: The path of the input file name
     :input_path: str
+    :param pattern_shape: The array shape of the diffraction pattern, (H W). If not povided,
+    H and W will be set as the square root of the number of elements in the array.
+    :type pattern_shape: array-shape-like, optional
     """
     def __init__(self, input_path: str, pattern_shape=None) -> None:
         self.input_path = input_path
@@ -46,16 +49,13 @@ class EMCPhoton:
                 num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
             return num_data
 
-    def setArray(self, index_range=None, shape=None):
+    def setArray(self, index_range=None):
         """Get a numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
         defaults to `None` meaning to take all the patterns. The array can be accessed by
         func:`EMCPhoton.array`.
         :type index_range: list-like or `int`, optional
-        :param shape: The array shape of the diffraction pattern, (H W). If not povided,
-        H and W will be set as the square root of the number of elements in the array.
-        :type shape: array-shape-like, optional
         """
 
         if index_range is None:
