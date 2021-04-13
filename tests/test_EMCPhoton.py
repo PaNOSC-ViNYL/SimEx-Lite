@@ -39,6 +39,47 @@ def test_plotEMC(tmp_path):
     assert out_path.is_file() is True
 
 
+def test_pattern_total_h5(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    diffr = DiffractionData(diffr_path)
+    diffr.setArray()
+    out_path = tmp_path / "t.emc"
+    diffr.multiply(1e5)
+    data_fn = str(out_path)
+    diffr.saveAs('emc', data_fn)
+    emc = EMC.EMCPhoton(data_fn)
+    assert emc.pattern_total == 13
+
+
+def test_pattern_total_binary(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    out_path = tmp_path / "t.emc"
+    data_fn = str(out_path)
+
+    diffr = DiffractionData(diffr_path)
+    diffr.setArray()
+    arr = diffr.array * 1e5
+    data = []
+    for pattern in arr:
+        data.append(pattern.flatten())
+    patterns = EMC.dense_to_PatternsSOne(np.array(data))
+    patterns.write(data_fn)
+    emc = EMC.EMCPhoton(data_fn)
+    assert emc.pattern_total == 13
+
+
+def test_setArray(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    diffr = DiffractionData(diffr_path)
+    diffr.setArray()
+    out_path = tmp_path / "t.emc"
+    diffr.multiply(1e5)
+    data_fn = str(out_path)
+    diffr.saveAs('emc', data_fn)
+    emc = EMC.EMCPhoton(data_fn)
+    emc.setArray()
+
+
 if __name__ == "__main__":
     path_name = "tmp"
     tmp = Path(path_name)

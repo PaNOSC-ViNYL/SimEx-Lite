@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 import h5py
-from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams
+from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams, isEMCH5
 from pprint import pprint
 
 
@@ -129,6 +129,33 @@ def test_multiply():
     assert np.max(orig[0]) == val_orig
     assert np.max(multi[0]) == 0
     assert np.max(multi[2]) == 0
+
+
+def test_EMC_format(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    out_path = tmp_path / "test.emc"
+    dd.saveAs("emc", str(out_path))
+    assert isEMCH5(str(out_path)) is True
+
+
+def test_EMC_format_false(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    assert isEMCH5(str(h5_file)) is False
+    touch_file = tmp_path / 'test.txt'
+    touch_file.touch()
+    assert isEMCH5(str(touch_file)) is False
+
+
+def test_readEMC_format(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData(h5_file)
+    dd.setArray()
+    out_path = tmp_path / "test.emc"
+    dd.saveAs("emc", str(out_path))
+    emcdd = DiffractionData(str(out_path))
+    assert emcdd.input_file_type == "EMC Sparse Photon HDF5"
 
 
 if __name__ == "__main__":

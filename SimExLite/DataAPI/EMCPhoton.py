@@ -6,12 +6,85 @@
 """EMCPhoton module to read and write a EMC photon sparse binary file"""
 
 import os
+from tqdm import tqdm
 from pathlib import Path
 import numpy as np
 import h5py
 import matplotlib.pylab as plt
 import matplotlib.colors as colors
 from scipy.sparse import csr_matrix
+
+
+class EMCPhoton:
+    """A EMC sparce photon data class
+
+    :input_path: The path of the input file name
+    :input_path: str
+    """
+    def __init__(self, input_path: str, pattern_shape=None) -> None:
+        self.input_path = input_path
+        self.is_EMCH5 = isEMCH5(self.input_path)
+        if self.is_EMCH5:
+            num_pix = readH5frame(self.input_path, 0)[0]
+        else:
+            num_pix = readBinaryframe(self.input_path, 0)[0]
+
+        if not pattern_shape:
+            self.pattern_shape = (int(np.sqrt(num_pix)), int(np.sqrt(num_pix)))
+        else:
+            self.pattern_shape = pattern_shape
+
+    @property
+    def pattern_total(self):
+        """The total number of diffraction patterns in the EMC photon file"""
+        if self.is_EMCH5:
+            with h5py.File(self.input_path, 'r') as h5:
+                npattern = len(h5['count_multi'])
+            return npattern
+        else:
+            with open(self.input_path, 'rb') as fptr:
+                num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
+            return num_data
+
+    def setArray(self, index_range=None, shape=None):
+        """Get a numpy array of the diffraction data
+
+        :param index_range: The indices of the diffraction patterns to dump to the numpy array,
+        defaults to `None` meaning to take all the patterns. The array can be accessed by
+        func:`EMCPhoton.array`.
+        :type index_range: list-like or `int`, optional
+        :param shape: The array shape of the diffraction pattern, (H W). If not povided,
+        H and W will be set as the square root of the number of elements in the array.
+        :type shape: array-shape-like, optional
+        """
+
+        if index_range is None:
+            indices = range(self.pattern_total)
+        else:
+            try:
+                len(index_range)
+                indices = index_range
+            except TypeError:
+                indices = [index_range]
+        if self.is_EMCH5:
+            getArray = getFrameArray
+        else:
+            getArray = getFrameArrayBinary
+
+        arr_size = len(indices)
+        pattern_shape = self.pattern_shape
+        arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
+
+        # Flush to print it before tqdm
+        print('Creating the array...', flush=True)
+        for i, ix in enumerate(tqdm(indices)):
+            arr[i] = getArray(self.input_path, ix).reshape(pattern_shape)
+        self.__array = arr
+
+    @property
+    def array(self):
+        """Diffraction pattern numpy array"""
+        return self.__array
 
 
 class PatternsSOne:
@@ -34,13 +107,13 @@ class PatternsSOne:
     ATTRS = ["ones", "multi", "place_ones", "place_multi", "count_multi"]
 
     def __init__(
-            self,
-            num_pix: int,
-            ones: np.ndarray,
-            multi: np.ndarray,
-            place_ones: np.ndarray,
-            place_multi: np.ndarray,
-            count_multi: np.ndarray,
+        self,
+        num_pix: int,
+        ones: np.ndarray,
+        multi: np.ndarray,
+        place_ones: np.ndarray,
+        place_multi: np.ndarray,
+        count_multi: np.ndarray,
     ) -> None:
         self.num_pix = num_pix
         self._ones = ones
@@ -217,6 +290,21 @@ def readBinaryframe(fname, frame_num):
     return num_pix, ones, multi, place_ones, place_multi, count_multi
 
 
+def getFrameArray(fn, idx=0):
+    """Get a flatten diffraction array from a EMC HDF file"""
+    sPattern = PatternsSOne(*readH5frame(fn, idx))
+    data = sPattern.todense()
+    return data
+
+
+def getFrameArrayBinary(fn, idx=0):
+    """Get a flatten diffraction array from a EMC binary file"""
+    sPattern = PatternsSOne(*readBinaryframe(fn, idx))
+    print('num_pix:', sPattern.num_pix)
+    data = sPattern.todense()
+    return data
+
+
 def plotEMCPhoton(fn, idx=0, shape=None, log_scale=True):
     """Plot a pattern from a EMC H5 file
 
@@ -287,3 +375,18 @@ def main(input_file, output_file):
     print(patterns.shape)
     print('writing')
     patterns.write(output_file)
+
+
+def isEMCH5(fn):
+    """If the data is a EMC HDF5 file"""
+    try:
+        with h5py.File(fn, 'r') as h5:
+            # If the h5 file has these keys
+            if h5.keys() >= {
+                    'count_multi', 'num_pix', 'place_multi', 'place_ones'
+            }:
+                return True
+            else:
+                return False
+    except OSError:
+        return False

@@ -13,6 +13,7 @@ import matplotlib.colors as colors
 from SimExLite.DataAPI.Dragonfly.utils.py_src import writeemc
 from SimExLite.utils import isLegacySimExH5
 from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
+from SimExLite.DataAPI.EMCPhoton import isEMCH5, EMCPhoton
 from SimExLite.PhotonBeamData import SimpleBeam
 import SimExLite.utils as utils
 from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
@@ -20,8 +21,8 @@ from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 data_type_dict = {
     '0': 'UNKOWN',
     '1': 'SIMEX SingFEL',
-    '2': 'EMC Sparse Photon',
-    '3': 'NeXus',
+    '2': 'EMC Sparse Photon Binary',
+    '3': 'EMC Sparse Photon HDF5',
     '4': 'UNKOWN HDF5'
 }
 
@@ -82,6 +83,11 @@ class DiffractionData:
         if type_id_read == '0':
             raise TypeError("UNKNOWN data format.")
         elif type_id_read == '1':
+            data = singfelDiffr(self.input_file)
+            data.setArray(index_range, poissonize=poissonize)
+            self.__array = data.array
+            self.__statistic_to_update = True
+        elif type_id_read == '3':
             data = singfelDiffr(self.input_file)
             data.setArray(index_range, poissonize=poissonize)
             self.__array = data.array
@@ -302,6 +308,11 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             plt.savefig(fn_png, dpi=300)
 
     @property
+    def input_file_type(self) -> str:
+        """Return a string describing the input file type"""
+        return data_type_dict[self.type_id_read]
+
+    @property
     def photon_statistics(self) -> dict:
         """The photon statistics of the patterns"""
         if self.__statistic_to_update is True:
@@ -377,12 +388,17 @@ def getDataType(fn) -> str:
                     print("This input file: {} contains no diffraction data".
                           format(fn))
                     return "0"
+        elif (isEMCH5(fn)):
+            return "3"
         else:
             # UNKOWN HDF5
             return "4"
     else:
         # UNKOWN DATA
         return "0"
+
+
+
 
 
 def addBeamStop(img, stop_rad):
