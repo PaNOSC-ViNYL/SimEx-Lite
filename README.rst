@@ -27,7 +27,16 @@ The core package of the SIMEX platform providing the calculator interfaces.
 Features
 --------
 
-* TODO
+* Provide the python interface of calculators for the SIMEX platform.
+    * PhotonSourceCalculator
+    * PhotonPropagationCalculator
+    * PhotonMattterInteractor
+    * DiffractionCalculator
+    * DetectorClaculator
+* Provide data APIs for different data formats.
+    * Photon beam data
+    * Photon matter interaction Data
+    * Diffraction data
 
 Acknowledgement
 ---------------
