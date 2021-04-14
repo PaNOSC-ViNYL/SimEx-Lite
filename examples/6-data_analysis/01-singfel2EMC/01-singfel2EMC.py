@@ -6,7 +6,7 @@ import subprocess
 singfel_data_path = '../../../tests/testFiles/singfel-multi.h5'
 diffr = DiffractionData(singfel_data_path)
 emc_file = 't.emc'
-diffr.setArray()
+diffr.createArray()
 
 # Multiply this value to the array
 diffr.multiply(1e8)

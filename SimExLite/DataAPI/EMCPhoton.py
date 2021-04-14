@@ -24,7 +24,10 @@ class EMCPhoton:
     H and W will be set as the square root of the number of elements in the array.
     :type pattern_shape: array-shape-like, optional
     """
-    def __init__(self, input_path: str, pattern_shape=None) -> None:
+    def __init__(self,
+                 input_path: str,
+                 pattern_shape=None,
+                 index_range=None) -> None:
         self.input_path = input_path
         self.is_EMCH5 = isEMCH5(self.input_path)
         if self.is_EMCH5:
@@ -36,6 +39,34 @@ class EMCPhoton:
             self.pattern_shape = (int(np.sqrt(num_pix)), int(np.sqrt(num_pix)))
         else:
             self.pattern_shape = pattern_shape
+        self.index_range = index_range
+        self.__setIndices()
+        if self.is_EMCH5:
+            getArray = getFrameArray
+        else:
+            getArray = getFrameArrayBinary
+        self.__getArray = getArray
+
+    def __setIndices(self):
+        index_range = self.index_range
+        if index_range is None:
+            indices = range(self.pattern_total)
+        else:
+            try:
+                len(index_range)
+                indices = index_range
+            except TypeError:
+                indices = [index_range]
+        self.indices = indices
+
+    @property
+    def iterator(self):
+        indices = self.indices
+        pattern_shape = self.pattern_shape
+        getArray = self.__getArray
+        for ix in indices:
+            pattern = getArray(self.input_path, ix).reshape(pattern_shape)
+            yield pattern
 
     @property
     def pattern_total(self):
@@ -49,7 +80,7 @@ class EMCPhoton:
                 num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
             return num_data
 
-    def setArray(self, index_range=None):
+    def createArray(self, index_range=None):
         """Get a numpy array of the diffraction data
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
@@ -57,19 +88,13 @@ class EMCPhoton:
         func:`EMCPhoton.array`.
         :type index_range: list-like or `int`, optional
         """
+        if index_range != self.index_range:
+            # Reset the class indices
+            self.index_range = index_range
+            self.__setIndices()
 
-        if index_range is None:
-            indices = range(self.pattern_total)
-        else:
-            try:
-                len(index_range)
-                indices = index_range
-            except TypeError:
-                indices = [index_range]
-        if self.is_EMCH5:
-            getArray = getFrameArray
-        else:
-            getArray = getFrameArrayBinary
+        indices = self.indices
+        getArray = self.__getArray
 
         arr_size = len(indices)
         pattern_shape = self.pattern_shape
@@ -107,13 +132,13 @@ class PatternsSOne:
     ATTRS = ["ones", "multi", "place_ones", "place_multi", "count_multi"]
 
     def __init__(
-        self,
-        num_pix: int,
-        ones: np.ndarray,
-        multi: np.ndarray,
-        place_ones: np.ndarray,
-        place_multi: np.ndarray,
-        count_multi: np.ndarray,
+            self,
+            num_pix: int,
+            ones: np.ndarray,
+            multi: np.ndarray,
+            place_ones: np.ndarray,
+            place_multi: np.ndarray,
+            count_multi: np.ndarray,
     ) -> None:
         self.num_pix = num_pix
         self._ones = ones

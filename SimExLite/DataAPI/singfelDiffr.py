@@ -15,37 +15,46 @@ class singfelDiffr:
     :input_path: The path of the input file name
     :input_path: str
     """
-    def __init__(self, input_path: str) -> None:
+    def __init__(self,
+                 input_path: str,
+                 index_range=None,
+                 poissonize=False) -> None:
         self.input_path = input_path
         self.parameters = getParameters(self.input_path)
+        self.index_range = index_range
+        self.poissonize = poissonize
+        self.indices = getIndices(self.input_path, self.index_range)
+        self.pattern_type = getPatternType(self.poissonize)
 
-    def setArray(self, index_range=None, poissonize=False):
-        """Get a numpy array of the diffraction data
+    def createArray(self, index_range=None, poissonize=False):
+        """Get a numpy array of the diffraction data, the array can be accessed by
+        func:`singfelDiffr.array`. `index_range` and `poissonize` of the class can
+        be reset here.
 
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-        defaults to `None` meaning to take all the patterns. The array can be accessed by
-        func:`singfelDiffr.array`.
+        defaults to `None` meaning to take all the patterns.
         :type index_range: list-like or `int`, optional
         :param poissionize: Whether to read the patterns with poission noise,
         defaults to false.
         :type poissionize: bool, optional
         """
-        with h5py.File(self.input_path, 'r') as h5:
-            if index_range is None:
-                indices = [key for key in h5['data'].keys()]
-                # Sort to get the correct order of the frames
-                indices.sort()
-            else:
-                try:
-                    indices = ["%0.7d" % ix for ix in index_range]
-                # If index_range is a int
-                except TypeError:
-                    indices = ["{:07}".format(index_range)]
-            if poissonize:
-                pattern_type = 'data'
-            else:
-                pattern_type = 'diffr'
+        path = self.input_path
 
+        if index_range == self.index_range:
+            indices = self.indices
+        else:
+            indices = getIndices(path, index_range)
+            # Reset the class indices
+            self.indices = indices
+
+        if poissonize == self.poissonize:
+            pattern_type = self.pattern_type
+        else:
+            pattern_type = getPatternType(poissonize)
+            # Reset the class pattern_type
+            self.pattern_type = pattern_type
+
+        with h5py.File(path, 'r') as h5:
             arr_size = len(indices)
             pattern_shape = self.pattern_shape
             arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
@@ -64,6 +73,21 @@ class singfelDiffr:
                 raise KeyError('Cannot find pattern index: {}'.format(ix))
 
         self.__array = arr
+
+    @property
+    def iterator(self):
+        """Return the iterator of diffraction data"""
+        path = self.input_path
+        indices = self.indices
+        pattern_type = self.pattern_type
+
+        with h5py.File(path, 'r') as h5:
+            for ix in indices:
+                root_path = '/data/%s/' % (ix)
+                path_to_data = root_path + pattern_type
+                diffr = h5[path_to_data][...]
+
+                yield diffr
 
     @property
     def array(self):
@@ -166,15 +190,45 @@ class singfelDiffr:
         plt.show()
 
 
-def getParameters(input_path):
-    """Get a dictionary of the beam parameters and geometry parameters in a Singfel Diffr
-    hdf5 file.
+def getPatternType(poissonize):
+    if poissonize:
+        pattern_type = 'data'
+    else:
+        pattern_type = 'diffr'
+    return pattern_type
 
-    :param paramName: ParamDescription
-    :type paramName: paramType
+
+def getIndices(input_path, index_range=None):
+    """Get a list of indices of diffraction patterns in a Singfel HDF5 file.
+
+    :param input_path: The input path of the HDF5 file
+    :type input_path: str
+    :param index_range: The indices of the diffraction patterns to dump to the numpy array,
+    defaults to `None` meaning to take all the patterns.
+    :type index_range: list-like or `int`, optional
 
     :return: ReturnDescription
     :rtype: ReturnType
+    """
+    index_range = index_range
+    with h5py.File(input_path, 'r') as h5:
+        if index_range is None:
+            indices = list(h5['data'].keys())
+            # Sort to get the correct order of the frames
+            indices.sort()
+        else:
+            try:
+                indices = ["%0.7d" % ix for ix in index_range]
+            # If index_range is a int
+            except TypeError:
+                indices = ["{:07}".format(index_range)]
+
+    return indices
+
+
+def getParameters(input_path):
+    """Get a dictionary of the beam parameters and geometry parameters in a Singfel Diffr
+    HDF5 file.
     """
 
     # Setup return dictionary.

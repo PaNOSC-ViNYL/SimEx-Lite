@@ -12,7 +12,7 @@ def hcDivide(val):
     return 12.398 / val
 
 
-class SimpleBeam:
+class BeamBase:
     """The simplest description of a pulse of the beam
 
     :param pulse_energy: The energy of the X-ray pulse in Joule. It will override

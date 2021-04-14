@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 import h5py
-from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams, isEMCH5
+from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams
 from pprint import pprint
 
 
@@ -15,19 +15,21 @@ def test_getDataType():
 def test_file_not_exists():
     h5_file = './testFiles/xx.h5'
     with pytest.raises(FileNotFoundError):
-        DiffractionData(h5_file)
+        DD = DiffractionData()
+        DD.read(h5_file)
 
 
 def test_readSingFEL():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     assert len(dd.array) == 13
 
 
-def test_saveAs_unsupported(tmp_path):
+def test_saveAs_unsupported():
     input_arr = np.random.rand(10, 10)
-    dd = DiffractionData('test.h5', arr=input_arr)
+    dd = DiffractionData(arr=input_arr)
     with pytest.raises(TypeError) as excinfo:
         dd.saveAs(data_format="blahblah", file_name="blabla")
         print(excinfo.value)
@@ -49,16 +51,11 @@ def test_simple(tmp_path):
     assert h5py.is_hdf5(data_fn) is True
 
 
-def test_incomplete_construction():
-    with pytest.raises(ValueError) as excinfo:
-        DiffractionData()
-    assert "Need least one `arr` or `input_file`" in str(excinfo.value)
-
-
 def test_addGaussianNoise(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     xcs = np.array([-1.845, 56.825, 114.623])
     fwhms = np.array([20.687, 26.771, 29.232])
     hist_params = histogramParams(xcs, fwhms)
@@ -71,23 +68,26 @@ def test_addGaussianNoise(tmp_path):
 
 def test_addBeamStop():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     dd.addBeamStop(3)
 
 
 def test_plotPattern():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     if __name__ == "__main__":
         dd.plotPattern(idx=0, logscale=True)
 
 
 def test_savePattern(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     out_path = tmp_path / "test.png"
     dd.plotPattern(idx=0, logscale=True, fn_png=str(out_path))
     assert out_path.is_file() is True
@@ -95,24 +95,27 @@ def test_savePattern(tmp_path):
 
 def test_photon_statistics():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     if __name__ == "__main__":
         pprint(dd.photon_statistics)
 
 
 def test_plotStatistics():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     if __name__ == "__main__":
         dd.plotHistogram()
 
 
 def test_saveHistogram(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     out_path = tmp_path / "test.png"
     dd.plotHistogram(fn_png=str(out_path))
     assert out_path.is_file() is True
@@ -120,8 +123,9 @@ def test_saveHistogram(tmp_path):
 
 def test_multiply():
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     orig = dd.array
     val_orig = np.max(orig[0])
     dd.multiply(0)
@@ -133,19 +137,30 @@ def test_multiply():
 
 def test_readEMC_format(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     out_path = tmp_path / "test.emc"
     dd.saveAs("emc", str(out_path))
-    emcdd = DiffractionData(str(out_path))
+    emcdd = DiffractionData()
+    emcdd.read(str(out_path))
     assert emcdd.input_file_type == "EMC Sparse Photon"
-    emcdd.setArray()
+    emcdd.createArray()
     assert len(emcdd.array) == 13
+
+
+def test_iterator():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData()
+    dd.read(h5_file)
+    n = 0
+    for ix in dd.iterator:
+        n += 1
+    assert n == 13
 
 
 if __name__ == "__main__":
     test_getDataType()
-    test_incomplete_construction()
     test_addBeamStop()
     test_photon_statistics()
     test_plotPattern()

@@ -1,9 +1,9 @@
 """Test PhotonBeamData"""
 
 import pytest
-from SimExLite.PhotonBeamData import SimpleBeam
+from SimExLite.PhotonBeamData import BeamBase
 
-SB = SimpleBeam(photon_energy=8.05e3,
+SB = BeamBase(photon_energy=8.05e3,
                 pulse_energy=1.04e-3,
                 focus=15,
                 focus_unit='um',

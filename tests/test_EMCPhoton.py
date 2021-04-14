@@ -15,8 +15,9 @@ def test_RandomData(tmp_path):
 
 def test_EMC_geometry(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData(diffr_path)
-    diffr.setArray()
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
     out_path = tmp_path / "t.bin"
     diffr.multiply(1e5)
     data_fn = str(out_path)
@@ -28,8 +29,9 @@ def test_EMC_geometry(tmp_path):
 
 def test_plotEMC(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData(diffr_path)
-    diffr.setArray()
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
     out_path = tmp_path / "t.emc"
     diffr.multiply(1e5)
     data_fn = str(out_path)
@@ -41,8 +43,9 @@ def test_plotEMC(tmp_path):
 
 def test_pattern_total_h5(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData(diffr_path)
-    diffr.setArray()
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
     out_path = tmp_path / "t.emc"
     diffr.multiply(1e5)
     data_fn = str(out_path)
@@ -56,8 +59,9 @@ def test_pattern_total_binary(tmp_path):
     out_path = tmp_path / "t.emc"
     data_fn = str(out_path)
 
-    diffr = DiffractionData(diffr_path)
-    diffr.setArray()
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
     arr = diffr.array * 1e5
     data = []
     for pattern in arr:
@@ -70,8 +74,9 @@ def test_pattern_total_binary(tmp_path):
 
 def test_EMC_format(tmp_path):
     h5_file = './testFiles/singfel-multi.h5'
-    dd = DiffractionData(h5_file)
-    dd.setArray()
+    dd = DiffractionData()
+    dd.read(h5_file)
+    dd.createArray()
     out_path = tmp_path / "test.emc"
     dd.saveAs("emc", str(out_path))
     assert EMC.isEMCH5(str(out_path)) is True
@@ -85,16 +90,35 @@ def test_EMC_format_false(tmp_path):
     assert EMC.isEMCH5(str(touch_file)) is False
 
 
-def test_setArray(tmp_path):
+def test_createArray(tmp_path):
     diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData(diffr_path)
-    diffr.setArray()
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
     out_path = tmp_path / "t.emc"
     diffr.multiply(1e5)
     data_fn = str(out_path)
     diffr.saveAs('emc', data_fn)
     emc = EMC.EMCPhoton(data_fn)
-    emc.setArray()
+    emc.createArray()
+
+
+def test_iterator(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    diffr = DiffractionData()
+    diffr.read(diffr_path)
+    diffr.createArray()
+    out_path = tmp_path / "t.emc"
+    diffr.multiply(1e5)
+    data_fn = str(out_path)
+    diffr.saveAs('emc', data_fn)
+    emc = EMC.EMCPhoton(data_fn)
+    n = 0
+    for ix in emc.iterator:
+        n += 1
+        pattern = ix
+    assert n == 13
+    assert pattern.shape == (81, 81)
 
 
 if __name__ == "__main__":

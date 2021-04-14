@@ -14,11 +14,11 @@ from SimExLite.DataAPI.Dragonfly.utils.py_src import writeemc
 from SimExLite.utils import isLegacySimExH5
 from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
 from SimExLite.DataAPI.EMCPhoton import isEMCH5, EMCPhoton
-from SimExLite.PhotonBeamData import SimpleBeam
+from SimExLite.PhotonBeamData import BeamBase
 import SimExLite.utils as utils
 from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 
-data_type_dict = {
+format_id_dict = {
     '0': 'UNKOWN',
     '1': 'SIMEX SingFEL',
     '2': 'EMC Sparse Photon',
@@ -27,39 +27,46 @@ data_type_dict = {
 }
 
 
+def createDiffractionData(arr: np.array = None,
+                          geometry: DetectorGeometryBase = None,
+                          beam: BeamBase = None):
+    """Create a DiffractionData class from existed array.
+
+    :param arr: The input data array when you want to create a new diffraction data
+    :type arr: `np.numpy`
+    :param geometry: The diffraction geometry
+    :type geometry: dict or extra_geom geometry
+    :param beam: The beam used for diffraction
+    :type beam: :class:`BeamBase`
+
+    :return: Diffraction data class instance
+    :rtype: :class:`DiffractionData`
+    """
+    DD = DiffractionData(arr=arr, geometry=geometry, beam=beam)
+    return DD
+
+
 class DiffractionData:
     """The diffraction data class
 
-    :param input_file: The data file name to read
-    :type input_file: str
     :param arr: The input data array when you want to create a new diffraction data
     :type arr: `np.numpy`, optional
     :param geometry: The diffraction geometry
     :type geometry: dict or extra_geom geometry, optional
     :param beam: The beam used for diffraction
-    :type beam: :class:`SimpleBeam`, optional
+    :type beam: :class:`BeamBase`, optional
     """
     def __init__(self,
-                 input_file: str = None,
                  arr: np.array = None,
-                 geometry=None,
-                 beam=None) -> None:
+                 geometry: DetectorGeometryBase = None,
+                 beam: BeamBase = None) -> None:
         super().__init__()
-
-        if arr is None and input_file is None:
-            raise ValueError("Need least one `arr` or `input_file`")
 
         if arr is not None:
             # Writting mode
             self.__array = arr
             self.__statistic_to_update = True
-        else:
-            # Reading mode
-            self.input_file = input_file
-            # Check if the file exists
-            with open(self.input_file, 'r') as f:
-                f.close()
-            self.type_id_read = getDataType(self.input_file)
+        # Writting mode
         if geometry is not None:
             self.__geometry = geometry
         if beam is not None:
@@ -67,13 +74,18 @@ class DiffractionData:
         # Beam stop radius in pixel
         self.__stop_rad = 0
 
-    # This is the essential part of this class
-    def setArray(self, index_range=None, poissonize=False, pattern_shape=None):
-        """Set the numpy array of the diffraction data
-
+    def read(
+        self,
+        input_file: str = None,
+        index_range=None,
+        poissonize=False,
+        pattern_shape=None,
+    ):
+        """
+        :param input_file: The data file name to read
+        :type input_file: str
         :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-        defaults to `None` meaning to take all the patterns. The array can be accessed by
-        func:`DiffractionData.array`.
+        defaults to `None` meaning to take all the patterns.
         :type index_range: list-like or `int`, optional
         :param poissionize: [singfel data] Whether to read the patterns with poission noise for pysingfel
         data, defaults to false.
@@ -82,17 +94,46 @@ class DiffractionData:
         H and W will be set as the square root of the number of elements in the array.
         :type pattern_shape: array-shape-like, optional
         """
-        type_id_read = self.type_id_read
-        if type_id_read == '0':
+        # Reading mode
+        self.input_file = input_file
+        self.index_range = index_range
+        self.poissonize = poissonize
+        self.pattern_shape = pattern_shape
+        # Check if the file exists
+        with open(self.input_file, 'r') as f:
+            f.close()
+        format_id = getDataType(self.input_file)
+        self.format_id = format_id
+
+        # Set backengine class and iterator
+        if format_id == '0':
             raise TypeError("UNKNOWN data format.")
-        elif type_id_read == '1':
-            data = singfelDiffr(self.input_file)
-            data.setArray(index_range, poissonize=poissonize)
+        elif format_id == '1':
+            backengine = singfelDiffr(self.input_file,
+                                      index_range=index_range,
+                                      poissonize=poissonize)
+            self.iterator = backengine.iterator
+            self.__backengine = backengine
+        elif format_id == '2':
+            self.__backengine = EMCPhoton(self.input_file,
+                                          pattern_shape=pattern_shape)
+
+    # This is the essential part of this class
+    def createArray(self):
+        """Create a numpy array from the diffraction data. The array can be accessed by
+        func:`DiffractionData.array`.
+        """
+        format_id = self.format_id
+        if format_id == '0':
+            raise TypeError("UNKNOWN data format.")
+        elif format_id == '1':
+            data = self.__backengine
+            data.createArray()
             self.__array = data.array
             self.__statistic_to_update = True
-        elif type_id_read == '2':
-            data = EMCPhoton(self.input_file, pattern_shape=pattern_shape)
-            data.setArray(index_range)
+        elif format_id == '2':
+            data = self.__backengine
+            data.createArray(self.index_range)
             self.__array = data.array
             self.__statistic_to_update = True
 
@@ -102,7 +143,7 @@ class DiffractionData:
             raise ValueError("Array dimension should >= 2")
 
     def addBeamStop(self, stop_rad: int):
-        """Add the beamstop in pixel radius to the diffraction patterns
+        """Add a beamstop in pixel radius to the diffraction patterns
 
         :param stop_rad: The radius of the beamstop in pixel unit
         :type stop_rad: int
@@ -247,7 +288,8 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
         pattern_dim = patterns[0].shape
         pixel_num = pattern_dim[0] * pattern_dim[1]
         # Number of pixels with zero photons
-        avg_zero_pixel_num = (patterns.size - np.count_nonzero(patterns))/pattern_total
+        avg_zero_pixel_num = (
+            patterns.size - np.count_nonzero(patterns)) / pattern_total
         # Sum the photons in each pattern
         photons = np.sum(patterns, axis=(1, 2))
         # Average photon number over all the patterns
@@ -283,7 +325,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             'Average number of zero-photon pixels':
             avg_zero_pixel_num,
             'Average percentage of zero-photon pixels':
-            avg_zero_pixel_num/patterns[0].size,
+            avg_zero_pixel_num / patterns[0].size,
             'Average number of photons of a pixel':
             avg_avg_per_pattern,
             'Maximum number of photons of a pixel averaging over the patterns':
@@ -319,7 +361,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
     @property
     def input_file_type(self) -> str:
         """Return a string describing the input file type"""
-        return data_type_dict[self.type_id_read]
+        return format_id_dict[self.format_id]
 
     @property
     def photon_statistics(self) -> dict:
@@ -346,7 +388,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             return self.__array
         except AttributeError:
             raise AttributeError(
-                "Please use DiffractionData.setArray() to get the array ready first."
+                "Please use DiffractionData.createArray() to get the array ready first."
             )
 
     @property
@@ -365,8 +407,8 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
         try:
             return self.__geometry
         except AttributeError:
-            type_id_read = self.type_id_read
-            if type_id_read == '1':
+            format_id = self.format_id
+            if format_id == '1':
                 return getSingfelDiffrGeom(self.input_file)
             else:
                 raise TypeError("UNKNOWN file type")
@@ -376,8 +418,8 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
         try:
             return self.__beam
         except AttributeError:
-            type_id_read = self.type_id_read
-            if type_id_read == '1':
+            format_id = self.format_id
+            if format_id == '1':
                 return getSingfelDiffrBeam(self.input_file)
             else:
                 raise TypeError("UNKNOWN file type")
@@ -405,9 +447,6 @@ def getDataType(fn) -> str:
     else:
         # UNKOWN DATA
         return "0"
-
-
-
 
 
 def addBeamStop(img, stop_rad):
@@ -495,10 +534,10 @@ def getSingfelDiffrGeom(fn: str) -> DetectorGeometryBase:
     return detector
 
 
-def getSingfelDiffrBeam(fn: str) -> SimpleBeam:
+def getSingfelDiffrBeam(fn: str) -> BeamBase:
     params = getParameters(fn)
     photon_energy = params['beam']['photonEnergy']  # eV
-    beam = SimpleBeam(photon_energy=photon_energy)
+    beam = BeamBase(photon_energy=photon_energy)
     return beam
 
 
