@@ -246,6 +246,8 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
         pattern_total = len(patterns)
         pattern_dim = patterns[0].shape
         pixel_num = pattern_dim[0] * pattern_dim[1]
+        # Number of pixels with zero photons
+        avg_zero_pixel_num = (patterns.size - np.count_nonzero(patterns))/pattern_total
         # Sum the photons in each pattern
         photons = np.sum(patterns, axis=(1, 2))
         # Average photon number over all the patterns
@@ -278,6 +280,10 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             min_photons,
             'STD of total number of photons of a pattern':
             np.std(photons),
+            'Average number of zero-photon pixels':
+            avg_zero_pixel_num,
+            'Average percentage of zero-photon pixels':
+            avg_zero_pixel_num/patterns[0].size,
             'Average number of photons of a pixel':
             avg_avg_per_pattern,
             'Maximum number of photons of a pixel averaging over the patterns':
