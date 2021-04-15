@@ -9,14 +9,14 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-# with open('requirements.txt') as requirements_file:
-#     require = requirements_file.read()
-#     requirements = require.split()
+with open('requirements.txt') as requirements_file:
+    require = requirements_file.read()
+    requirements = require.split()
 
-requirements = [
-    'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings',
-    'libpyvinyl', 'h5py', 'extra-geom>=1.1'
-]
+# requirements = [
+#     'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings',
+#     'libpyvinyl', 'h5py', 'extra-geom>=1.1'
+# ]
 
 setup_requirements = ['pytest-runner']
 
@@ -27,14 +27,13 @@ test_requirements = [
 setup(
     author="Juncheng E",
     author_email='juncheng.e@xfel.eu',
-    python_requires='>=3.5',
+    python_requires='>=3.6',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -49,6 +48,7 @@ setup(
     install_requires=requirements,
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     include_package_data=True,
     keywords='SimEx-Lite',
     name='SimEx-Lite',
@@ -57,6 +57,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/JunCEEE/SimEx-Lite',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
 )
