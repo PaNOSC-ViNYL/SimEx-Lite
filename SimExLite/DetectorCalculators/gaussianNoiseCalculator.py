@@ -45,8 +45,9 @@ class gaussianNoiseCalculator(BaseCalculator):
 
     def backengine(self):
         """ Method to do the actual calculation."""
-        diffr_data = DiffractionData(self.input_path)
-        diffr_data.createArray(self.parameters.index_range)
+        diffr_data = DiffractionData()
+        diffr_data.read(self.input_path, self.parameters.index_range)
+        diffr_data.createArray()
         diffr_data.addGaussianNoise(self.parameters.mu,
                                     self.parameters.sigs_popt)
         self._set_data(diffr_data)
