@@ -4,7 +4,8 @@ from pathlib import Path
 import subprocess
 
 singfel_data_path = '../../../tests/testFiles/singfel-multi.h5'
-diffr = DiffractionData(singfel_data_path)
+diffr = DiffractionData()
+diffr.read(singfel_data_path)
 emc_file = 't.emc'
 diffr.createArray()
 
