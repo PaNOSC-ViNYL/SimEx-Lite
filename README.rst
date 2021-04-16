@@ -27,6 +27,7 @@ The core package of the SIMEX platform providing the calculator interfaces.
 Installing
 ----------
 SimEx-Lite can be installed with Python 3.6 or later:
+
 .. code-block:: console
 
     pip install extra_geom
