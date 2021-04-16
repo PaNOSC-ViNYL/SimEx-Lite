@@ -13,11 +13,6 @@ with open('requirements.txt') as requirements_file:
     require = requirements_file.read()
     requirements = require.split()
 
-# requirements = [
-#     'numpy', 'matplotlib', 'scipy', 'ase', 'pint', 'future-fstrings',
-#     'libpyvinyl', 'h5py', 'extra-geom>=1.1'
-# ]
-
 setup_requirements = ['pytest-runner']
 
 test_requirements = [
