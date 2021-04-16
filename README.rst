@@ -28,7 +28,7 @@ Installing
 ----------
 SimEx-Lite can be installed with Python 3.6 or later:
 
-.. code-block:: console
+.. code-block:: bash
 
     pip install extra_geom
 
