@@ -29,6 +29,7 @@ Installing
 SimEx-Lite can be installed with Python 3.6 or later:
 
 .. code-block:: bash
+
     $ pip install SimEx-Lite
 
 Developing
@@ -36,14 +37,30 @@ Developing
 1. Clone this Github repository:
 
 .. code-block:: bash
+
    $ git clone --recursive git@github.com:PaNOSC-ViNYL/SimEx-Lite.git
 
 2. Install the package locally:
 
 .. code-block:: bash
+
     $ cd SimEx-Lite
     $ pip install -e .
 
+Tests
+-----
+1. Download the testing files.
+
+.. code-block:: bash
+
+    $ cd tests
+    $ git clone https://github.com/PaNOSC-ViNYL/SimEx-Lite-testFiles testFiles
+
+2. Run the test
+
+.. code-block:: bash
+
+    $ pytest .
 
 
 Features
