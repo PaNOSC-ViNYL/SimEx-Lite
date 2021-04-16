@@ -26,11 +26,20 @@ The core package of the SIMEX platform providing the calculator interfaces.
 
 Installing
 ----------
-SimEx-Lite can be installed with Python 3.6 or later:
+SimEx-Lite can be installed with Python 3.6 or later::
 
-.. code-block:: bash
+    $ pip install SimEx-Lite
 
-    pip install extra_geom
+Developing
+----------
+1. Clone this Github repository::
+
+   $ git clone --recursive git@github.com:PaNOSC-ViNYL/SimEx-Lite.git
+
+2. Install the package locally::
+
+    $ cd SimEx-Lite
+    $ pip install -e .
 
 
 
