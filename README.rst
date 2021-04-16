@@ -34,6 +34,9 @@ SimEx-Lite can be installed with Python 3.6 or later:
 
 Developing
 ----------
+We encourage everyone to contribute to SimEx. For a detailed guide, please visit
+https://simex-lite.readthedocs.io/en/latest/contributing.html
+
 1. Clone this Github repository:
 
 .. code-block:: bash
