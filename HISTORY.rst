@@ -9,8 +9,8 @@ History
     * Added: PhotonBeamData.py
     * Added: SampleData.py
     * Added: DiffractionData.py
-        * Added Singfel Diffraction data API
-        * Added EMC photon data API
+    * Added Singfel Diffraction data API
+    * Added EMC photon data API
 
 * Calculator:
     * Detector calculators:
