@@ -665,7 +665,7 @@ def plotImage(pattern,
             kwargs['norm'] = kwargs.pop('norm', colors.LogNorm())
         elif symlog:
             kwargs['norm'] = kwargs.pop('norm', colors.SymLogNorm(0.015))
-        axes = kwargs.pop('axes', None)
+        kwargs.pop('axes', None)
         plt.imshow(pattern, *argv, **kwargs)
     else:
         kwargs['norm'] = kwargs.pop('norm', colors.Normalize(vmin=mn, vmax=mx))
