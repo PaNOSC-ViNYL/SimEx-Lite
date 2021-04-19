@@ -80,9 +80,9 @@ Ready to contribute? Here's how to set up `SimEx-Lite` for local development.
 5. When you're done making changes, check that your changes pass the
    tests, including testing other Python versions with tox::
 
+    $ git clone https://github.com/PaNOSC-ViNYL/SimEx-Lite-testFiles testFiles
+    $ python setup.py test or pytest
     $ tox
-    $ cd tests
-    $ pytest .
 
    To get tox, just pip install them into your virtualenv.
 
@@ -123,7 +123,7 @@ Make sure all your changes are committed (including an entry in HISTORY.rst).
 
 Firstly do a dryrun to check if the files are ready for a release::
 
-$ bump2version --dry-run patch # possible: major / minor / patch
+$ bump2version --dry-run --verbose patch # possible: major / minor / patch
 
 Then run::
 
