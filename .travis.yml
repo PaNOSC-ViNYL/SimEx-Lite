@@ -9,8 +9,7 @@ deploy:
   provider: pypi
   distributions: sdist bdist_wheel
   user: __token__
-  password:
-    secure: ZYHRDrJHTAp45GskHDjoGqLrjiDZnc2YcQNRxRMCyIa6EwSc5VP///Tg54bta9/ratyJ5db0WxdcN4FpUUN94wT025cuNlcfb9Pl8ojlgOY8uKqlujo/OfBylgBXXa65W0Ztzi/ASeDkWMiBL7bxCMMXVdc91nPrYbTOlDiFlHRa99sdhvOi3jrPxq3f3dOg5sk5Tyfp2leVtO9N9zKoJ3q1unKVUNEO6GHEzAua7C4/S0RRZ2IRA7pukRr2FdbSkcSVQ5luC32Oe7x6dOb+W+Wrw+QYRlcI5ErAf+Blm2Y9/vZzf5rw8Of8PVVqNRECGaf5m/znZAm3NK0sayE9zVS6qUPSLQdb39NZgQoQMWd1EI6edPJ8g+Fm4gfNHDkNqg1UGlKcBN3uqlqr8P2CZEe98NKX9XRM1oDcSXe2+mr7W6qQZz1LRVtF/h6lV8IRRNFPGZ2L/ADSJygVD9JT/0HT003OKSZ4sHoxWabyE/IMV+deHFk6P4R9w+19WX9/uEUbenZD4t/OAnp/4lXSs2BsFF6Tff3V9YT/pZGxtzVSm89bTOaQfnHjaunMVUmZjpjFJC8/9bGCj7WYKKEmPeV5noaEzfbvCun9d6tdTiP1TATdvNdeWGQ+nilduZreq4EIf0FEm72hHkEb6Rz2iNfkYs2x+/AptHJISZZHd+0=
+  password: pypi-AgEIcHlwaS5vcmcCJDU4YTg1ZGJlLTY3MTYtNGQwMy04YjYwLWQxZDQ1MDIyZTM2ZgACO3sicGVybWlzc2lvbnMiOiB7InByb2plY3RzIjogWyJzaW1leC1saXRlIl19LCAidmVyc2lvbiI6IDF9AAAGIE-edvL8h2iwW646cyyQW9a-WE5U7v1z2addhDGLPn7x
   on:
     tags: true
     repo: PaNOSC-ViNYL/SimEx-Lite
