@@ -51,7 +51,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/JunCEEE/SimEx-Lite',
+    url='https://github.com/PaNOSC-ViNYL/SimEx-Lite',
     version='0.2.1',
     zip_safe=False,
 )
