@@ -12,6 +12,6 @@ deploy:
   password:
     secure: cNKu1vFh4XI0AtjZ8WpXx/OxTv5MCkq/sZMa1ZbxfUS6gPPOhaUE3/AdLpNt7YGFOoO61rKTpZSbOBlaJNmg/liJtwySfc4ZwMqLLK85rgC9AHJMGY4wnbLmhCNiYHgc2LwCLq8KLEP4Ho8ooU8yLjHVGyfpD6Ni7b1LmKtoENAZpZLy1G/rDO26+elPd03FrTDevNICeHqR7KZvzfxABsiFU4wF76HUsQY2p9sgkdrsKmssIh3/yMUfUe0BhObyCx1zqvsMmTEBk1lKlw/TP0ZlmF9dMLxr/yuaURGZg6pVg2eZ3FcAET4QZHv2t3G86Y5wh1D+Slrag6KwiGe6iI8rZMnlud52nJ17repLwqdd/uwH6yoqxN6NCkPYLfQZBXKINFGVBCXVm3Rv4DbaknsuSCVirsbCOLI3Yb22BpkU/BvVNSGNaYavKT4rAMofP3XNOejWH7sKhg+Vbw1n1MYuZBBiYGL6gQF0ocyf1M2rRI4fHJMqUhN0DuQcb+8gayQcgxEHcibYyqX9dNbx+hwWgVbISwJp2qBAesCPZMMffggojosis7BFtaQBBzNqa7pnvaGU8HB0eC5zjtqV4oWqtuBTQRavUAQOIONtriyiiajWMOeVpDehN6ENoHLUShWx7Gj2rNOVwu07i9enK2Ru7ZczrrYN087gxe5Yynk=
   on:
-    branch: main
+    tags: true
     repo: PaNOSC-ViNYL/SimEx-Lite
     python: 3.8
