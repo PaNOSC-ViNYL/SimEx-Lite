@@ -8,9 +8,10 @@ script: tox
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
-  user: __token__
-  password: pypi-AgEIcHlwaS5vcmcCJDU4YTg1ZGJlLTY3MTYtNGQwMy04YjYwLWQxZDQ1MDIyZTM2ZgACO3sicGVybWlzc2lvbnMiOiB7InByb2plY3RzIjogWyJzaW1leC1saXRlIl19LCAidmVyc2lvbiI6IDF9AAAGIE-edvL8h2iwW646cyyQW9a-WE5U7v1z2addhDGLPn7x
+  user: JunCEEE
+  password:
+    secure: IqF0UpDHB2iwPJkmIJ4pakJFfKkd4zG1hx3YNxHNPeMscZi1/AM/li5kSV4CKURNSQuBnVflFLVxGPW+m04lnEHqChkQctwrLJBdt46Vk4PkKrZSccOa9BD6yVaTBhwKLOD72oMJ/F3IMFNs/OEHYrrzZ6NLWJ5Ke/6M5UG47RVgdazMn5GJoNwW5ZDmGkXI0fij3G6x1ecF+AL/PLYFCxWoFVzpHcf6dMksObEc+P0y08fMy7l6GfLGD0BMSMX5HKh/VVjE86nv62mxS/M7EkmgHXEiXAvspr1UiIOhWRdestVgLRf77qEZHY00p5jLeUnpib0F9D9OyYPpOckIOSuuieT+vX1ZUlSuyI/Vu7PlmJCU80m0rs+7KHB/AfAzG/AYkXi1B7S9k0IBK6/8YW+/5mAkH5vvDLjGmIX/rZF4qLg7qFMi8sFwi7vIM191WqLiJQNIjr1xxWDAEofVtYSVHI97z+tj9jGbgvI/N/M0gt5AHw+5on1pz2kT3aR+vLWymJRjr+ylPrz/z20L8sBS2Bk9QoAuMc+ms1rawC5/eogaNznsJLzZqGGIXHUQAP2lvL4HJ5KJh8t2S5epo3HyEOcuUIjghUWe9YPk1Zi4Et7vy1vhDCJclleSli9AXj1plq7Lv0z8M9qYKu1vTH+hMUSPMMedVD0/zwvFAEs=
   on:
-    tags: true
+    tags: false
     repo: PaNOSC-ViNYL/SimEx-Lite
     python: 3.8
