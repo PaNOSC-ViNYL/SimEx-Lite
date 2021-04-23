@@ -159,6 +159,19 @@ def test_iterator():
     assert n == 13
 
 
+def test_pattern_total():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DiffractionData()
+    dd.read(h5_file)
+    assert dd.pattern_total == 13
+
+
+def test_pattern_total_no_read():
+    dd = DiffractionData()
+    with pytest.raises(AttributeError):
+        dd.pattern_total
+
+
 if __name__ == "__main__":
     test_getDataType()
     test_addBeamStop()
@@ -166,3 +179,4 @@ if __name__ == "__main__":
     test_plotPattern()
     test_plotStatistics()
     test_multiply()
+    test_iterator()

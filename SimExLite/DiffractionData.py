@@ -81,17 +81,15 @@ class DiffractionData:
         poissonize=False,
         pattern_shape=None,
     ):
-        """
+        """Read the input file and generate an iterator of the diffraction patterns.
+
         :param input_file: The data file name to read
         :type input_file: str
-        :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-        defaults to `None` meaning to take all the patterns.
+        :param index_range: The indices of the diffraction patterns to dump to the numpy array, defaults to `None` meaning to take all the patterns.
         :type index_range: list-like or `int`, optional
-        :param poissionize: [singfel data] Whether to read the patterns with poission noise for pysingfel
-        data, defaults to false.
-        :type poissionize: bool, optional
-        :param pattern_shape: [EMC data] The array shape of the diffraction pattern, (H W). If not povided,
-        H and W will be set as the square root of the number of elements in the array.
+        :param poissonize: [singfel data] Whether to read the patterns with Poisson noise for pysingfel data, defaults to false.
+        :type poissonize: bool, optional
+        :param pattern_shape: [EMC data] The array shape of the diffraction pattern, (H W). If not provided, H and W will be set as the square root of the number of elements in the array.
         :type pattern_shape: array-shape-like, optional
         """
         # Reading mode
@@ -120,18 +118,20 @@ class DiffractionData:
 
     # This is the essential part of this class
     def createArray(self):
-        """Create a numpy array from the diffraction data. The array can be accessed by
-        func:`DiffractionData.array`.
+        """Create a numpy array from the input diffraction data defined by :func:`read`.
+            The array can be accessed by :attr:`DiffractionData.array`.
         """
         format_id = self.format_id
         if format_id == '0':
             raise TypeError("UNKNOWN data format.")
         elif format_id == '1':
+            # pysingfel
             data = self.__backengine
             data.createArray()
             self.__array = data.array
             self.__statistic_to_update = True
         elif format_id == '2':
+            # EMC
             data = self.__backengine
             data.createArray(self.index_range)
             self.__array = data.array
@@ -158,10 +158,10 @@ class DiffractionData:
     def addGaussianNoise(self, mu, sigs_popt):
         """Add Gaussian noise to one diffraction pattern
 
-        :param mu: The averange ADU for one photon
+        :param mu: The average ADU for one photon
         :type mu: float
 
-        :param sigs_popt: [slop, intercept]
+        :param sigs_popt: A list of [slop, intercept]
         :type sigs_popt: list-like
         """
         array = self.array
@@ -173,7 +173,7 @@ class DiffractionData:
     def multiply(self, val):
         """Multiply a number to the diffraction patterns
 
-        :param val: The value to be muliplied.
+        :param val: The value to be multiplied.
         :type val: float
         """
         self.__array = self.array * val
@@ -218,16 +218,20 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
     def saveAs(self, data_format: str, file_name: str, with_geom=None):
         """Save the diffraction data as a specific data_format
 
-        :param data_format: The data format to save in.
-        Supported formats:
-            simple: A simple data array in hdf5
-            singfel: SIMEX SingFEL
-            emc: EMC Sparse Photon
+        :param data_format: The data format key representing the saving data format:
+
+                ==========  ===========
+                Format key  Description
+                ==========  ===========
+                simple      A simple data array in HDF5
+                singfel     SIMEX SingFEL
+                emc         EMC Sparse Photon
+                ==========  ===========
+
         :type data_format: str
         :param file_name: The file name of the new data
         :type file_name: str
-        :param with_geom: whether to save geometry information, defaults to `None` to
-        let the program decide itself.
+        :param with_geom: whether to save geometry information, defaults to `None` to let the program decide itself.
         :type with_geom: bool, optional
         """
         array_to_save = self.array
@@ -259,13 +263,11 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
 
         :param idx: The array index of the pattern to plot (starting from 0)
         :type idx: idx
-        :param logscale: Whether to show the data on logarithmic scale (z axis),
-        defaults to `True`.
+        :param logscale: Whether to show the data on logarithmic scale (z axis), defaults to `True`.
         :type logscale: bool, optional
         :param offset: Offset to apply to the pattern.
         :type offset: float, optional
-        :param symlog: To show the data on symlogarithmic scale (z axis), defaults
-        to `False`.
+        :param symlog: To show the data on symlogarithmic scale (z axis), default to `False`.
         :type symlog: bool, optional
         :param fn_png: The name of the output png file, defaults to `None`.
         :type fn_png: str, optional
@@ -383,7 +385,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
 
     @property
     def array(self):
-        """The pattern array"""
+        """The numpy array of the diffraction patterns"""
         try:
             return self.__array
         except AttributeError:
@@ -398,12 +400,18 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
 
     @property
     def pattern_total(self) -> int:
-        """The total number of the diffraction patterns"""
-        npattern = len(self.array)
-        return npattern
+        """The total number of the diffraction patterns read into this class"""
+        try:
+            return len(self.array)
+        except AttributeError:
+            n = 0
+            for ix in self.iterator:
+                n += 1
+            return n
 
     @property
     def geometry(self):
+        """Return the geometry parameters"""
         try:
             return self.__geometry
         except AttributeError:
@@ -415,6 +423,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
 
     @property
     def beam(self):
+        """Return the beam parameters"""
         try:
             return self.__beam
         except AttributeError:
@@ -476,7 +485,7 @@ def getPatternStatistics(img):
     :param img: Diffraction pattern
     :type img: np.2darray
 
-    :return: (mean, max, min)
+    :return: A tuple of (mean, max, min)
     :rtype: tuple
     """
     img_flat = img.ravel()
@@ -496,7 +505,7 @@ def addGaussianNoise(diffr_data, mu, sigs_popt):
     :type diffr_data: `numpy.array`
     :param mu: The averange ADU for one photon
     :type mu: float
-    :param sigs_popt: [slop, intercept]
+    :param sigs_popt: A list of [slop, intercept]
     :type sigs_popt: list-like
     """
     sig_arr = utils.linear(diffr_data, *sigs_popt)
@@ -547,10 +556,10 @@ class simpleGeometry(DetectorGeometryBase):
     :param pixel_size: Pixel size in meter
     :type pixel_size: float
     :param ss_pixel: Number of slow scan pixels, it's usually y-direction
-    pixels in simple geometry
+     pixels in simple geometry
     :type ss_pixel: int
     :param fs_pixel: Number of fast scan pixels, it's usually x-direction
-    pixels in simple geometry
+     pixels in simple geometry
     :type fs_pixel: int
     """
     def __init__(self,

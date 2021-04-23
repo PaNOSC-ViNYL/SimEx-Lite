@@ -42,6 +42,13 @@ SimEx-Lite could always use more documentation, whether as part of the
 official SimEx-Lite docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
+To build to the official SimEx-Lite docs locally::
+
+    $ cd SimEx-Lite/docs
+    $ make html
+
+Open ``_build/html/index.html`` to see the docs.
+
 Submit Feedback
 ~~~~~~~~~~~~~~~
 

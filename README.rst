@@ -1,5 +1,5 @@
 ==========
-SimEx-Lite
+Quickstart
 ==========
 
 
@@ -16,7 +16,7 @@ SimEx-Lite
 
 
 
-The core package of the SIMEX platform providing the calculator interfaces.
+SimEx-Lite is the core package of the SIMEX platform providing the calculator interfaces and data APIs.
 
 
 * Free software: GNU General Public License v3

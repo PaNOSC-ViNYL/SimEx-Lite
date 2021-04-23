@@ -6,13 +6,22 @@ Welcome to SimEx-Lite's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    readme
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Users
+
    installation
    backengines
    usage
    modules
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Developers
+
    contributing
    authors
    history
