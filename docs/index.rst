@@ -10,6 +10,7 @@ Welcome to SimEx-Lite's documentation!
 
    readme
    installation
+   backengines
    usage
    modules
    contributing
