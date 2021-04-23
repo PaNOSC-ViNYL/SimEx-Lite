@@ -4,4 +4,4 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """DetectorCalculators package for SimEx-Lite."""
 
-from .gaussianNoiseCalculator import *
+from .GaussianNoiseCalculator import *

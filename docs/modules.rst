@@ -2,15 +2,11 @@
 Package API
 ===========
 
-:mod:`SimExLite.DiffractionData`
---------------------------------
 
-.. automodule:: SimExLite.DiffractionData
-    :members:
+.. toctree::
+    :maxdepth: -1
 
-:mod:`SimExLite.utils`
-----------------------
-
-.. automodule:: SimExLite.utils
-    :members:
+    dataAPI
+    calculators
+    utils
 

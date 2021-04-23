@@ -1,10 +1,10 @@
-# Copyright (C) 2021 Juncheng E 
+# Copyright (C) 2021 Juncheng E
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
-# %%
+"""Sample Structure Data APIs"""
 import h5py
-import ase
+# import ase
 
 
 class MolecularDynamicsData:
@@ -102,7 +102,7 @@ class xmdynData:
         :param ref_snp: The reference snapshot, defaults to 1.
         :type ref_snp: int
         :param snp_range: The snapshot range to replace, defaults to ``None``, which takes
-        the snapshot range in the reference .h5 file.
+            the snapshot range in the reference .h5 file.
         :type snp_range: list-like
         """
 
@@ -168,15 +168,15 @@ def createLinkedData(input_path,
                      ref_dsets=None,
                      ref_snp=1):
     """Create a hdf5 data with all items linked to an input data. A
-    certain dataset can be replaced with that in a reference snapshot,
-    if ``ref_snp`` and ``ref_dsets`` are provided.
+        certain dataset can be replaced with that in a reference snapshot,
+        if ``ref_snp`` and ``ref_dsets`` are provided.
 
     :param input_path: The input hdf5 file name
     :type input_path: str
     :param link_path: The hdf5 file name holding the links
     :type link_path: str
     :param snp_range: The snapshot range to replace, defaults to ``None``, which takes
-    the snapshot range in the reference .h5 file.
+        the snapshot range in the reference .h5 file.
     :type snp_range: list-like
     :param ref_dsets: The reference dataset name.
     :type ref_dsets: str

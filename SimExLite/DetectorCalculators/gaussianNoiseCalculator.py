@@ -2,12 +2,13 @@
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
+"""Gaussian Noise Detector Calculator Module"""
 
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
 from SimExLite.DiffractionData import DiffractionData
 
 
-class gaussianNoisePrameters(Parameters):
+class GaussianNoisePrameters(Parameters):
     """Gaussian noise parameters
 
     :param mu: The averange ADU for one photon
@@ -15,11 +16,10 @@ class gaussianNoisePrameters(Parameters):
     :param sigs_popt: [slop, intercept]
     :type sigs_popt: list-like
     :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-    defaults to `None` meaning to take all the patterns. The array can be accessed by
-    func:`DiffractionData.array`.
+        defaults to ``None`` meaning to take all the patterns.
     :type index_range: list-like or `int`, optional
     :param poissionize: Whether to read the patterns with poission noise,
-    defaults to false.
+        defaults to ``false``.
     :type poissionize: bool, optional
     """
     def __init__(self, mu, sigs_popt, index_range=None, poissonize=False):
@@ -30,7 +30,7 @@ class gaussianNoisePrameters(Parameters):
         self.poissonize = poissonize
 
 
-class gaussianNoiseCalculator(BaseCalculator):
+class GaussianNoiseCalculator(BaseCalculator):
     """Implement Gaussian noise to input diffraction data"""
     def __init__(self,
                  input_path,

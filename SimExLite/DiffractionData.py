@@ -143,7 +143,7 @@ class DiffractionData:
             raise ValueError("Array dimension should >= 2")
 
     def addBeamStop(self, stop_rad: int):
-        """Add a beamstop in pixel radius to the diffraction patterns
+        """Add a beamstop in pixel radius to the diffraction patterns.
 
         :param stop_rad: The radius of the beamstop in pixel unit
         :type stop_rad: int
@@ -156,7 +156,7 @@ class DiffractionData:
         self.__statistic_to_update = True
 
     def addGaussianNoise(self, mu, sigs_popt):
-        """Add Gaussian noise to one diffraction pattern
+        """Add Gaussian noise to one diffraction pattern.
 
         :param mu: The average ADU for one photon
         :type mu: float
@@ -171,7 +171,7 @@ class DiffractionData:
         self.__statistic_to_update = True
 
     def multiply(self, val):
-        """Multiply a number to the diffraction patterns
+        """Multiply a number to the diffraction patterns.
 
         :param val: The value to be multiplied.
         :type val: float
@@ -216,7 +216,7 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
                 f.write(config_ini)
 
     def saveAs(self, data_format: str, file_name: str, with_geom=None):
-        """Save the diffraction data as a specific data_format
+        """Save the diffraction data as a specific data_format.
 
         :param data_format: The data format key representing the saving data format:
 
@@ -459,7 +459,7 @@ def getDataType(fn) -> str:
 
 
 def addBeamStop(img, stop_rad):
-    """Add the beamstop in pixel radius to diffraction pattern
+    """Add the beamstop in pixel radius to diffraction pattern.
 
     :param img: Diffraction pattern
     :type img: np.2darray
@@ -480,7 +480,7 @@ def addBeamStop(img, stop_rad):
 
 
 def getPatternStatistics(img):
-    """Get photon statistic info of a pattern
+    """Get photon statistic info of a pattern.
 
     :param img: Diffraction pattern
     :type img: np.2darray
@@ -499,7 +499,7 @@ def getPatternStatistics(img):
 
 
 def addGaussianNoise(diffr_data, mu, sigs_popt):
-    """Add Gaussian noise to one diffraction pattern
+    """Add Gaussian noise to one diffraction pattern.
 
     :param diffr_data: A diffraction pattern
     :type diffr_data: `numpy.array`
@@ -551,7 +551,7 @@ def getSingfelDiffrBeam(fn: str) -> BeamBase:
 
 
 class simpleGeometry(DetectorGeometryBase):
-    """A simple geometry based on extra_geom DetectorGeometryBase
+    """A simple geometry based on extra_geom DetectorGeometryBase.
 
     :param pixel_size: Pixel size in meter
     :type pixel_size: float
@@ -588,7 +588,7 @@ class simpleGeometry(DetectorGeometryBase):
 
 
 class histogramParams:
-    """Fitting results of a detector histogram
+    """Fitting results of a detector histogram.
 
     :param xcs: Gaussian peak centers
     :type xcs: `numpy.array`
@@ -642,7 +642,7 @@ def plotImage(pattern,
               fn_png=None,
               *argv,
               **kwargs):
-    """ Workhorse function to plot an image
+    """ Workhorse function to plot an image.
 
     :param logscale: Whether to show the data on logarithmic scale (z axis), defaults to `True`.
     :type logscale: bool

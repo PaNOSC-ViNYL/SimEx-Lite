@@ -13,28 +13,28 @@ def hcDivide(val):
 
 
 class BeamBase:
-    """The simplest description of a pulse of the beam
+    """The simplest description of a pulse of the beam.
 
     :param pulse_energy: The energy of the X-ray pulse in Joule. It will override
-    `photons_per_pulse`, if both are provided.
+        `photons_per_pulse`, if both are provided.
     :type pulse_energy: float
     :param photons_per_pulse: The number of photons of this pulse. It will be
-    overrided by `pulse_energy`, if both are porvided.
+        overrided by `pulse_energy`, if both are porvided.
     :type photons_per_pulse: int
     :param wavelength: The wavelength of this pulse in Angstrom. It will be
-    overrided by `photon_energy`, if both are porvided.
+        overrided by `photon_energy`, if both are porvided.
     :type wavelength: float
     :param photon_energy: The photon energy of this pulse, in eV. It will
-    override `wavelength`, if both are porvided.
+        override `wavelength`, if both are porvided.
     :type photon_energy: float
     :param focus: The focus spot of this pulse, in `focus_unit`. It can be either
-    float of a list: [fwhm_x, fwhm_y]
+        a float of a list: [fwhm_x, fwhm_y]
     :type focus: float or list
     :param focus_unit: defaults to 'm'.
     :type focus_unit: str
-    :param fluence_unit: defaults to 'joule/cm**2'.
+    :param fluence_unit: defaults to 'joule/cm^2'.
     :type fluence_unit: str
-    :param flux_unit: The flux in this pulse, defaults to '1/um**2'.
+    :param flux_unit: The flux in this pulse, defaults to '1/um^2'.
     :type flux_unit: str
     """
     def __init__(self,
