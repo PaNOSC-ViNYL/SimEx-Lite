@@ -127,7 +127,7 @@ class DiffractionData:
         elif format_id == '1':
             # pysingfel
             data = self.__backengine
-            data.createArray()
+            data.createArray(self.index_range, self.poissonize)
             self.__array = data.array
             self.__statistic_to_update = True
         elif format_id == '2':
