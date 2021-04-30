@@ -180,8 +180,17 @@ class DiffractionData:
         self.__statistic_to_update = True
 
     def writeGeometry(self, data_format: str, file_name: str):
+        """Write the detector geometry in requested format.
+
+        :param data_format: The data format of the geometry file
+        :type data_format: str
+        :param file_name: The file name of the output file. Extension suffix will be added
+            automatically if not provided.
+        :type file_name: str
+        """
         file_path = Path(file_name)
         if data_format == "emc":
+            EMC_output_folder = 'data'
             geom_path = file_path.with_suffix('.geom')
             fn_geom = str(geom_path)
             print('writing .geom to {}'.format(fn_geom))
@@ -206,12 +215,18 @@ stoprad = {}
 polarization = x
 
 [emc]
-output_folder = ./
+in_photons_file = {}
+in_detector_file = {}
+num_div = 6
+output_folder = {}
 log_file = EMC.log""".format(self.geometry.clen * 1e3,
                              self.beam.wavelength.to('angstrom').magnitude,
                              self.geometry.frag_ss_pixels,
                              self.geometry.frag_fs_pixels,
-                             self.geometry.pixel_size * 1e3, self.stop_rad)
+                             self.geometry.pixel_size * 1e3, self.stop_rad,
+                             file_path.with_suffix('.emc'),
+                             file_path.with_suffix('.h5'),
+                             EMC_output_folder)
             with open(str(conf_path), 'w') as f:
                 f.write(config_ini)
 
