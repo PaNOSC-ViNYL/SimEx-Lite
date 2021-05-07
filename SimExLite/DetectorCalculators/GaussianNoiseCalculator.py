@@ -6,6 +6,7 @@
 
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
 from SimExLite.DiffractionData import DiffractionData
+import numpy as np
 
 
 class GaussianNoisePrameters(Parameters):
@@ -46,10 +47,14 @@ class GaussianNoiseCalculator(BaseCalculator):
     def backengine(self):
         """ Method to do the actual calculation."""
         diffr_data = DiffractionData()
-        diffr_data.read(self.input_path, self.parameters.index_range)
+        diffr_data.read(self.input_path, self.parameters.index_range,
+                        self.parameters.poissonize)
         diffr_data.createArray()
         diffr_data.addGaussianNoise(self.parameters.mu,
                                     self.parameters.sigs_popt)
+        diffr_data.multiply(1 / self.parameters.mu)
+        diffr_data.array = np.round(diffr_data.array)
+        diffr_data.setArrayDataType('uint32')
         self._set_data(diffr_data)
         return 0
 

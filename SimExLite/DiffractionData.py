@@ -179,6 +179,15 @@ class DiffractionData:
         self.__array = self.array * val
         self.__statistic_to_update = True
 
+    def setArrayDataType(self, data_type):
+        """The the data numpy array dtype
+
+        :param data_type: The numpy dtype to be set. E.g. 'uint32'
+        :type data_type: `numpy.dtype`
+        """
+        self.__array = self.array.astype(data_type)
+        self.__statistic_to_update = True
+
     def writeGeometry(self, data_format: str, file_name: str):
         file_path = Path(file_name)
         if data_format == "emc":
@@ -392,6 +401,12 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             raise AttributeError(
                 "Please use DiffractionData.createArray() to get the array ready first."
             )
+
+    @array.setter
+    def array(self, val):
+        """Set the value of array"""
+        self.__array = val
+        self.__statistic_to_update = True
 
     @property
     def stop_rad(self):
