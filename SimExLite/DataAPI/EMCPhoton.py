@@ -325,7 +325,6 @@ def getFrameArray(fn, idx=0):
 def getFrameArrayBinary(fn, idx=0):
     """Get a flatten diffraction array from a EMC binary file"""
     sPattern = PatternsSOne(*readBinaryframe(fn, idx))
-    print('num_pix:', sPattern.num_pix)
     data = sPattern.todense()
     return data
 
@@ -413,5 +412,13 @@ def isEMCH5(fn):
                 return True
             else:
                 return False
+    except OSError:
+        return False
+
+def isEMCBinary(fn):
+    """If the data is a EMC HDF5 file"""
+    try:
+        parse_binaryheader(fn)
+        return True
     except OSError:
         return False

@@ -13,7 +13,7 @@ import matplotlib.colors as colors
 from SimExLite.DataAPI.Dragonfly.utils.py_src import writeemc
 from SimExLite.utils import isLegacySimExH5
 from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
-from SimExLite.DataAPI.EMCPhoton import isEMCH5, EMCPhoton
+from SimExLite.DataAPI.EMCPhoton import isEMCH5, EMCPhoton, isEMCBinary
 from SimExLite.PhotonBeamData import BeamBase
 import SimExLite.utils as utils
 from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
@@ -182,7 +182,7 @@ class DiffractionData:
     def setArrayDataType(self, data_type):
         """The the data numpy array dtype
 
-        :param data_type: The numpy dtype to be set. E.g. 'uint32'
+        :param data_type: The numpy dtype to be set. E.g. 'int32'
         :type data_type: `numpy.dtype`
         """
         self.__array = self.array.astype(data_type)
@@ -357,10 +357,17 @@ log_file = EMC.log""".format(self.geometry.clen * 1e3,
             'Minimum number of photons of a pattern']
         number_of_bins = min(20, pattern_total)
         binwidth = (max_photons - min_photons) / number_of_bins
-        plt.hist(self.photon_totals,
-                 bins=np.arange(min_photons, max_photons, binwidth),
-                 facecolor='red',
-                 alpha=0.75)
+        try:
+            plt.hist(self.photon_totals,
+                     bins=np.arange(min_photons, max_photons, binwidth),
+                     facecolor='red',
+                     alpha=0.75)
+        except ValueError as e:
+            if 'cannot compute length' in str(e):
+                raise ValueError(
+                    'Please load more than one diffraction pattern.')
+            else:
+                raise e
         plt.xlabel("Photons")
         plt.ylabel("Histogram")
         plt.title("Photon number histogram")
@@ -469,6 +476,8 @@ def getDataType(fn) -> str:
             # UNKOWN HDF5
             return "4"
     else:
+        if isEMCBinary(fn):
+            return "2"
         # UNKOWN DATA
         return "0"
 
