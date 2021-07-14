@@ -3,8 +3,20 @@
 import numpy as np
 import pytest
 import h5py
-from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams
+from SimExLite.DiffractionData import getDataType, DiffractionData, histogramParams, read
 from pprint import pprint
+
+
+def testGetArray():
+    h5_file = './testFiles/singfel.h5'
+    DD = read(h5_file)
+    DD.array
+
+
+def testGetIterator():
+    h5_file = './testFiles/singfel.h5'
+    DD = read(h5_file)
+    DD.iter
 
 
 def test_getDataType():
