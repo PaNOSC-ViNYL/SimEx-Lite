@@ -21,7 +21,7 @@ def iread(filename, index=None, poissonize=True):
         indices = data_list[index]
 
         for i in indices:
-            yield data_grp[i][pattern_type][...]
+            yield data_grp[i][pattern_type][...],data_grp[i]['angle'][...]
 
 
 def read(filename, index=None, poissonize=True) -> np.array:
@@ -31,32 +31,77 @@ def read(filename, index=None, poissonize=True) -> np.array:
     arr_size = len(range(getPatternTotal(filename))[index])
     pattern_shape = getPatternShape(filename)
     arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
+    quaternions = np.zeros((arr_size, 4))
     if isinstance(index, (slice, str)):
         with tqdm(total=arr_size) as progress_bar:
-            for i, pattern in enumerate(iread(filename, index, poissonize)):
+            for i, (pattern, quaternion) in enumerate(iread(filename, index, poissonize)):
                 arr[i] = pattern
+                quaternions[i] = quaternion
                 progress_bar.update(1)  # update progress
-        return arr
+        return arr, quaternions
     else:
         # If only reading one pattern
         return next(iread(filename, index, poissonize))
 
 
 def write(filename,
-          arr,
-          detector_counts,
-          detector_intensity,
-          quaternion,
-          det,
+          arr_counts,
+          arr_intensity,
+          quaternions,
+          geom,
           beam,
-          method_desciption=''):
+          method_desciption='',
+          pmi_file_list=None):
+    """
+    Save pattern arrays as pysingfel diffraction data.
+
+    :param filename: Output filename.
+    :type filename: string
+    :param arr_counts: The array of photon counting patterns after adding Poisson noise.
+    :type arr_counts: `np.array`
+    :param arr_intensity: The array of original diffraction patterns.
+    :type arr_intensity: `np.array`
+    :param quaternions: The list of the quaternion with which each diffraction pattern was generated.
+    :type quaternions: list-like
+    :param det: The dictionary of detector parameters.
+    :type det: dict
+    :param beam: The dictionary of beam parameters.
+    :type beam: dict
+    :param pmi_file_list: The list of the corresponding pmi output file of each diffraction pattern.
+    :type pmi_file_list: list
+    """
     prepH5(filename)
     # Method Description
     with h5py.File(filename, 'a') as f:
-        for i, pattern in enumerate(arr):
-            group_name = '/data/' + '{0:07}'.format(i + 1) + '/'
         f.create_dataset('info/method_description',
                          data=np.string_(method_desciption))
+        for i, pattern_counts in enumerate(tqdm(arr_counts)):
+            group_name = '/data/' + '{0:07}'.format(i + 1) + '/'
+            f.create_dataset(group_name + 'data', data=pattern_counts)
+            f.create_dataset(group_name + 'diffr', data=arr_intensity[i])
+            f.create_dataset(group_name + 'angle', data=quaternions[i])
+
+            if (pmi_file_list is not None):
+                # Link history from input pmi file into output diffr file
+                group_name_history = group_name + 'history/parent/detail/'
+                group_name_history = 'history/parent/detail/'
+                f[group_name + '/history/parent/parent'] = h5py.ExternalLink(pmi_file_list[i], 'history/parent')
+                f[group_name_history + 'data'] = h5py.ExternalLink(pmi_file_list[i], 'data')
+                f[group_name_history + 'info'] = h5py.ExternalLink(pmi_file_list[i], 'info')
+                f[group_name_history + 'misc'] = h5py.ExternalLink(pmi_file_list[i], 'misc')
+                f[group_name_history + 'params'] = h5py.ExternalLink(pmi_file_list[i], 'params')
+                f[group_name_history + 'version'] = h5py.ExternalLink(pmi_file_list[i], 'version')
+
+        # Geometry
+        f.create_dataset('params/geom/detectorDist', data=geom['detectorDist'])
+        f.create_dataset('params/geom/pixelWidth', data=geom['pixelWidth'])
+        f.create_dataset('params/geom/pixelHeight', data=geom['pixelHeight'])
+        f.create_dataset('params/geom/mask', data=geom['mask'])
+
+        # Beam
+        f.create_dataset('params/beam/focusArea', data=beam['focusArea'])
+        f.create_dataset('params/beam/photonEnergy', data=beam['photonEnergy'])
+
 
 
 def prepH5(filename):
@@ -128,7 +173,6 @@ def getParameters(filename):
                 parameters_dict[top_key][key] = val[()]
     # Return.
     return parameters_dict
-
 
 #     def __set_solid_angles(self):
 #         """ Solid angle of each pixel """
