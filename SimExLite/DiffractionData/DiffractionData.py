@@ -10,25 +10,92 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-from SimExLite.DataAPI.Dragonfly.utils.py_src import writeemc
-from SimExLite.utils import isLegacySimExH5
-from SimExLite.DataAPI.singfelDiffr import singfelDiffr, getParameters
-from SimExLite.DataAPI.EMCPhoton import isEMCH5, EMCPhoton, isEMCBinary
+import SimExLite.DiffractionData.singfelDiffr as singfelDiffr
+import SimExLite.DiffractionData.EMCPhoton as EMCPhoton
 from SimExLite.PhotonBeamData import BeamBase
-import SimExLite.utils as utils
+from SimExLite.utils.io import UnknownFileTypeError
 from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
 
-ioformats = {'UNKNOWN', 'UNKNOWN dataformats'}
-# ioformats['FORMAT_NAME'] = ['FORMAT_DISCRIPTION', 'FORAMT_EXTENSION', ['EXTRA_KEYWORD1', 'EXTRA_KEYWORD2',...]]
-# Each IO format can have an extra keyword,
+
+###################### IO FORMATS LIST #######################################
+
+# Initialize ioformats with UNKNOWN.
+ioformats = {
+    'UNKNOWN': {
+        'desc': 'UNKNOWN data format',  # FORMAT_DISCRIPTION
+        'ext': 'unknown',  # FORMAT_EXTENSION
+        'module': '',  # MODULE_NAME
+        'kwargs': ['']  # KEYWORDS_LIST
+    }
+}
+
+# Each IO format can have extra keywords,
 # such as ['poissonize'], which defines if some of the formats will read the poissonized patterns.
-# singfel format, poissionize: bool
-ioformats['singfel'] = ['SIMEX SingFEL', 'h5', ['poissonize']]
-# emc format, pattern_shape is needed for reading
-ioformats['emc'] = ['EMC Sparse Photon', 'emc', ['pattern_shape']]
+ioformats['singfel'] = {
+    'desc': 'SIMEX SingFEL',
+    'ext': 'h5',
+    'module': 'singfelDiffr',
+    'kwargs': ['poissonize']
+}
+
+ioformats['emc'] = {
+    'desc': 'EMC Sparse Photon',
+    'ext': 'emc',
+    'module': 'EMCPhoton',
+    'kwargs': ['pattern_shape']
+}
+
+###################### IO FORMATS LIST END ###################################
 
 
-def read(filename: str, index: Any = None, format: str = None, **kwargs):
+def filetype(filename, kwargs=None) -> str:
+    """Guess the type of the file"""
+    fp = Path(filename)
+    format = 'UNKNOWN'
+
+    ext = 'unknown'
+    # Firstly check if it is h5 file
+    if fp.suffix.lower() == '.h5':
+        ext = 'h5'
+        format = filetype_h5(filename)
+        if format != 'UNKNOWN':
+            return format
+
+    # Secondly check it with other extension
+    if ext == 'unknown':
+        for i in ioformats.keys():
+            ext = ioformats[i]['ext']
+            if fp.suffix.lower() == '.' + ext:
+                format = i
+                return format
+
+    # Thirdly check the extra keywords
+    if ext == 'unkown' and kwargs is not None:
+        format = filetype_keywords(kwargs)
+
+    if format == 'UNKOWN':
+        raise UnknownFileTypeError('Could not guess file type')
+
+    return format
+
+def filetype_h5(filename) -> str:
+    """Guess the type of a HDF5 file"""
+    if singfelDiffr.isFormat(filename):
+        return 'singfel'
+    else:
+        return 'UNKOWN'
+
+def filetype_keywords(kwargs) -> str:
+    """Guess the type from the input keywords"""
+    for kw in kwargs.keys():
+        for i in ioformats.keys():
+            kws = ioformats[i]['kwargs']
+            if kw in kws:
+                return i
+    # When there is no match, return UNKNOWN.
+    return 'UNKOWN'
+
+def read(filename: str, index = None, format: str = None, **kwargs):
     """Read a DiffractionData object from file.
 
     :param filename: Name of the file to read.
@@ -49,29 +116,7 @@ def read(filename: str, index: Any = None, format: str = None, **kwargs):
     :return: Diffraction data class instance
     :rtype: :class:`DiffractionData`
     """
-    # # Reading mode
-    # self.input_file = input_file
-    # self.index_range = index_range
-    # self.poissonize = poissonize
-    # self.pattern_shape = pattern_shape
-    # # Check if the file exists
-    # with open(self.input_file, 'r') as f:
-    #     f.close()
-    # format_id = getDataType(self.input_file)
-    # self.format_id = format_id
-
-    # # Set backengine class and iterator
-    # if format_id == '0':
-    #     raise TypeError("UNKNOWN data format.")
-    # elif format_id == '1':
-    #     backengine = singfelDiffr(self.input_file,
-    #                                 index_range=index_range,
-    #                                 poissonize=poissonize)
-    #     self.iterator = backengine.iterator
-    #     self.__backengine = backengine
-    # elif format_id == '2':
-    #     self.__backengine = EMCPhoton(self.input_file,
-    #                                     pattern_shape=pattern_shape)
+    pass
 
 
 def createDiffractionData(arr: np.array = None,

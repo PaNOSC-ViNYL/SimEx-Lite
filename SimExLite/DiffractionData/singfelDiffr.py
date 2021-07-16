@@ -21,7 +21,7 @@ def iread(filename, index=None, poissonize=True):
         indices = data_list[index]
 
         for i in indices:
-            yield data_grp[i][pattern_type][...],data_grp[i]['angle'][...]
+            yield data_grp[i][pattern_type][...], data_grp[i]['angle'][...]
 
 
 def read(filename, index=None, poissonize=True) -> np.array:
@@ -34,7 +34,9 @@ def read(filename, index=None, poissonize=True) -> np.array:
     quaternions = np.zeros((arr_size, 4))
     if isinstance(index, (slice, str)):
         with tqdm(total=arr_size) as progress_bar:
-            for i, (pattern, quaternion) in enumerate(iread(filename, index, poissonize)):
+            for i, (pattern,
+                    quaternion) in enumerate(iread(filename, index,
+                                                   poissonize)):
                 arr[i] = pattern
                 quaternions[i] = quaternion
                 progress_bar.update(1)  # update progress
@@ -85,12 +87,18 @@ def write(filename,
                 # Link history from input pmi file into output diffr file
                 group_name_history = group_name + 'history/parent/detail/'
                 group_name_history = 'history/parent/detail/'
-                f[group_name + '/history/parent/parent'] = h5py.ExternalLink(pmi_file_list[i], 'history/parent')
-                f[group_name_history + 'data'] = h5py.ExternalLink(pmi_file_list[i], 'data')
-                f[group_name_history + 'info'] = h5py.ExternalLink(pmi_file_list[i], 'info')
-                f[group_name_history + 'misc'] = h5py.ExternalLink(pmi_file_list[i], 'misc')
-                f[group_name_history + 'params'] = h5py.ExternalLink(pmi_file_list[i], 'params')
-                f[group_name_history + 'version'] = h5py.ExternalLink(pmi_file_list[i], 'version')
+                f[group_name + '/history/parent/parent'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'history/parent')
+                f[group_name_history + 'data'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'data')
+                f[group_name_history + 'info'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'info')
+                f[group_name_history + 'misc'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'misc')
+                f[group_name_history + 'params'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'params')
+                f[group_name_history + 'version'] = h5py.ExternalLink(
+                    pmi_file_list[i], 'version')
 
         # Geometry
         f.create_dataset('params/geom/detectorDist', data=geom['detectorDist'])
@@ -102,6 +110,22 @@ def write(filename,
         f.create_dataset('params/beam/focusArea', data=beam['focusArea'])
         f.create_dataset('params/beam/photonEnergy', data=beam['photonEnergy'])
 
+
+def isFormat(fn: str):
+    """Check if the data is in SimEx singfel diffraction HDF5 format"""
+    try:
+        with h5py.File(fn, 'r') as h5:
+            if h5.keys() >= {"data", "info", "params"}:
+                data_grp = h5['data']
+                data_list = list(data_grp)
+                if data_grp[data_list[0]].keys() >= {"diffr"}:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+    except OSError:
+        return False
 
 
 def prepH5(filename):
@@ -173,6 +197,7 @@ def getParameters(filename):
                 parameters_dict[top_key][key] = val[()]
     # Return.
     return parameters_dict
+
 
 #     def __set_solid_angles(self):
 #         """ Solid angle of each pixel """

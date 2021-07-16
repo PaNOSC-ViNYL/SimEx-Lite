@@ -111,10 +111,6 @@ class curve_fitting:
         plt.savefig(fn, dpi=300)
 
 
-def isLegacySimExH5(fn: str):
-    """Check if the data is a legacy SimEx HDF5 file"""
-    with h5py.File(fn, 'r') as h5:
-        return h5.keys() >= {"data", "info", "params"}
 
 
 def saveSimpleH5(arr: np.array, fn: str):

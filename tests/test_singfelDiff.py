@@ -1,6 +1,7 @@
 """Test singfelDiff data"""
 
 from SimExLite.DiffractionData.singfelDiffr import getPatternTotal, getPatternShape, write, read, iread, getParameters
+from SimExLite.DiffractionData.singfelDiffr import isSingfelDiffr
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -22,6 +23,9 @@ def test_getPatternTotal():
         print(npattern)
     assert npattern == 13
 
+def test_isSingfelDiffr():
+    assert isSingfelDiffr(h5_file) is True
+    assert isSingfelDiffr('./test_singfelDiff.py') is False
 
 def test_write(tmp_path):
     tmp_h5 = str(tmp_path / 'tmp.h5')
@@ -122,7 +126,7 @@ def test_iterator():
 #         diffr_patterns.plotQMap()
 
 if __name__ == "__main__":
-    # test_iterator()
+    test_iterator()
     # test_getPatternTotal()
     # test_read()
     # test_write(Path('./'))
