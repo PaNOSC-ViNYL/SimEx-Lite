@@ -4,12 +4,17 @@ import numpy as np
 import pytest
 import h5py
 import SimExLite.DiffractionData as DD
+from SimExLite.utils.io import UnknownFileTypeError
 from pprint import pprint
 
-def test_filetype_h5_singfel():
+def test_filetype_content():
     h5_file = './testFiles/singfel.h5'
-    format = DD.filetype_h5(h5_file)
+    format = DD.filetype_content(h5_file)
     assert format == 'singfel'
+
+    md_file = './testFiles/README.md'
+    format = DD.filetype_content(md_file)
+    assert format == 'UNKNOWN'
 
 # TODO: test_filetype_h5_emc
 # def test_filetype_h5_emc():
@@ -23,12 +28,21 @@ def test_filetype_keywords():
     assert format == 'singfel'
     kws = {'woo': True}
     format = DD.filetype_keywords(kws)
-    assert format == 'UNKOWN'
+    assert format == 'UNKNOWN'
 
 def test_filetype():
     h5_file = './testFiles/singfel.h5'
     format = DD.filetype(h5_file)
     assert format == 'singfel'
+    try:
+        md_file = './testFiles/README.md'
+        format = DD.filetype(md_file)
+    except UnknownFileTypeError:
+        assert True
+
+def test_read():
+    h5_file = './testFiles/singfel.h5'
+    DD.read(h5_file)
 
 # def testGetIterator():
 #     h5_file = './testFiles/singfel.h5'

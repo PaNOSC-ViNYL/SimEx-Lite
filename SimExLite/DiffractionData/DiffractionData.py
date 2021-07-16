@@ -6,15 +6,14 @@
 
 from tqdm import tqdm
 from pathlib import Path
+from importlib import import_module
 import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
-import SimExLite.DiffractionData.singfelDiffr as singfelDiffr
-import SimExLite.DiffractionData.EMCPhoton as EMCPhoton
 from SimExLite.PhotonBeamData import BeamBase
 from SimExLite.utils.io import UnknownFileTypeError
-from extra_geom.detectors import DetectorGeometryBase, GeometryFragment
+from extra_geom.detectors import DetectorGeometryBase
 
 
 ###################### IO FORMATS LIST #######################################
@@ -34,16 +33,16 @@ ioformats = {
 ioformats['singfel'] = {
     'desc': 'SIMEX SingFEL',
     'ext': 'h5',
-    'module': 'singfelDiffr',
+    'module': 'SimExLite.DiffractionData.singfelDiffr',
     'kwargs': ['poissonize']
 }
 
-ioformats['emc'] = {
-    'desc': 'EMC Sparse Photon',
-    'ext': 'emc',
-    'module': 'EMCPhoton',
-    'kwargs': ['pattern_shape']
-}
+# ioformats['emc'] = {
+#     'desc': 'EMC Sparse Photon',
+#     'ext': 'emc',
+#     'module': 'SimExLite.DiffractionData.EMCPhoton',
+#     'kwargs': ['pattern_shape']
+# }
 
 ###################### IO FORMATS LIST END ###################################
 
@@ -54,14 +53,14 @@ def filetype(filename, kwargs=None) -> str:
     format = 'UNKNOWN'
 
     ext = 'unknown'
-    # Firstly check if it is h5 file
+    # 1. Check if it is h5 file
     if fp.suffix.lower() == '.h5':
         ext = 'h5'
-        format = filetype_h5(filename)
+        format = filetype_content(filename)
         if format != 'UNKNOWN':
             return format
 
-    # Secondly check it with other extension
+    # 2. If 1 failed, Check it with other extension
     if ext == 'unknown':
         for i in ioformats.keys():
             ext = ioformats[i]['ext']
@@ -69,21 +68,34 @@ def filetype(filename, kwargs=None) -> str:
                 format = i
                 return format
 
-    # Thirdly check the extra keywords
+    # 3. If 2 failed, check it with its content
+    if ext == 'unknown':
+        for i in ioformats.keys():
+            format = filetype_content(filename)
+            if format != 'UNKNOWN':
+                ext = ioformats[i]['ext']
+                return format
+
+    # 4. check the extra keywords
     if ext == 'unkown' and kwargs is not None:
         format = filetype_keywords(kwargs)
 
-    if format == 'UNKOWN':
+    if format == 'UNKNOWN':
         raise UnknownFileTypeError('Could not guess file type')
 
     return format
 
-def filetype_h5(filename) -> str:
-    """Guess the type of a HDF5 file"""
-    if singfelDiffr.isFormat(filename):
-        return 'singfel'
-    else:
-        return 'UNKOWN'
+def filetype_content(filename) -> str:
+    """Guess the type of a file by its content"""
+
+    for i in ioformats.keys():
+        module_name = ioformats[i]['module']
+        if module_name == '':
+            continue
+        data_module = import_module(module_name)
+        if data_module.isFormat(filename):
+            return i
+    return 'UNKNOWN'
 
 def filetype_keywords(kwargs) -> str:
     """Guess the type from the input keywords"""
@@ -93,7 +105,7 @@ def filetype_keywords(kwargs) -> str:
             if kw in kws:
                 return i
     # When there is no match, return UNKNOWN.
-    return 'UNKOWN'
+    return 'UNKNOWN'
 
 def read(filename: str, index = None, format: str = None, **kwargs):
     """Read a DiffractionData object from file.
@@ -116,8 +128,12 @@ def read(filename: str, index = None, format: str = None, **kwargs):
     :return: Diffraction data class instance
     :rtype: :class:`DiffractionData`
     """
-    pass
-
+    if format is None:
+        format = filetype(filename)
+    module_name = ioformats[format]['module']
+    data_module = import_module(module_name)
+    __read = data_module.read
+    arr = __read(filename=filename, index=index, **kwargs)
 
 def createDiffractionData(arr: np.array = None,
                           geometry: DetectorGeometryBase = None,
