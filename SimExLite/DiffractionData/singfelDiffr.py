@@ -6,7 +6,9 @@
 import numpy as np
 import h5py
 from tqdm import tqdm
+from extra_geom import GenericGeometry
 from SimExLite.utils.io import parseIndex
+from SimExLite.DiffractionData import DiffractionData
 import SimExLite
 
 
@@ -24,7 +26,7 @@ def iread(filename, index=None, poissonize=True):
             yield data_grp[i][pattern_type][...], data_grp[i]['angle'][...]
 
 
-def read(filename, index=None, poissonize=True) -> np.array:
+def read(filename, index=None, poissonize=True) -> DiffractionData:
     """Read diffraction patterns into an array from a file."""
     # Flush to print it before tqdm
     index = parseIndex(index)
@@ -40,10 +42,16 @@ def read(filename, index=None, poissonize=True) -> np.array:
                 arr[i] = pattern
                 quaternions[i] = quaternion
                 progress_bar.update(1)  # update progress
-        return arr, quaternions
     else:
         # If only reading one pattern
-        return next(iread(filename, index, poissonize))
+        arr[0], quaternions[0] = next(iread(filename, index, poissonize))
+
+    params = getParameters(filename)
+    geom, distance = params2extra_geom(params)
+    # The beam dict from the file
+    file_beam = params['beam']
+
+    DiffrData = DiffractionData(arr, geom=geom, )
 
 
 def write(filename,
@@ -197,6 +205,27 @@ def getParameters(filename):
                 parameters_dict[top_key][key] = val[()]
     # Return.
     return parameters_dict
+
+
+def params2extra_geom(params):
+    # The geometry dict from the file
+    file_geom = params['geom']
+    pixel_size = file_geom['pixelHeight']
+    mask = file_geom['mask']
+    center_pixel = (np.array(mask.shape))/2
+    corner_coordinates = -center_pixel*pixel_size
+    corner_coordinates = np.append(corner_coordinates,0)
+    simple_config = {
+        'pixel_size': pixel_size,
+        'slow_pixels': mask.shape[0],
+        'fast_pixels': mask.shape[1],
+        'corner_coordinates': [corner_coordinates],
+        'ss_vec': np.array([0, 1, 0]),
+        'fs_vec': np.array([1, 0, 0])
+    }
+    geom = GenericGeometry.from_simple_description(**simple_config)
+    distance = file_geom['detectorDist']
+    return geom, distance
 
 
 #     def __set_solid_angles(self):
