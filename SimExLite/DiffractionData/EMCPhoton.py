@@ -61,6 +61,10 @@ def ireadPattern_binary(filename, index=None, pattern_shape=None):
 # Essential
 def read(filename, index=None, pattern_shape=None) -> DiffractionData:
     """Read diffraction patterns into an array from a file."""
+    if pattern_shape is None:
+        raise TypeError("read() missing 'pattern_shape' argument.")
+
+    index = parseIndex(index)
 
     if isEMCH5(filename):
         ireadPattern = ireadPattern_h5

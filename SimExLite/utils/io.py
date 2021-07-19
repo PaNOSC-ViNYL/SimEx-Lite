@@ -6,8 +6,10 @@
 
 from typing import List, Optional
 
+
 class UnknownFileTypeError(Exception):
     pass
+
 
 def parseIndex(index):
     """Parse the index parameter"""

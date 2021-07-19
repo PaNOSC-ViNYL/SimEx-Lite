@@ -16,6 +16,7 @@ from SimExLite.PhotonBeamData import BeamBase
 from SimExLite.utils.io import UnknownFileTypeError
 import SimExLite.utils.analysis as utils
 from extra_geom.detectors import DetectorGeometryBase
+from pprint import pprint
 
 ###################### IO FORMATS LIST #######################################
 
@@ -46,6 +47,13 @@ ioformats['emc'] = {
 }
 
 ###################### IO FORMATS LIST END ###################################
+
+
+def listFormats():
+    print(
+        'Supported format keys and their desciption, extension, keywords and module:'
+    )
+    pprint(ioformats)
 
 
 def filetype(filename, kwargs=None) -> str:
@@ -112,36 +120,6 @@ def filetype_keywords(kwargs) -> str:
                 return i
     # When there is no match, return UNKNOWN.
     return 'UNKNOWN'
-
-
-def read(filename: str, index=None, format: str = None, **kwargs):
-    """Read a DiffractionData object from file.
-
-    :param filename: Name of the file to read.
-    :type filename: str or file
-    :param index: All the snapshots will be read by default.  Examples:
-        * ``index=None``: read all the snapshots
-        * ``index=0``: first snapshot
-        * ``index=-2``: second to last
-        * ``index=':'`` or ``index=slice(None)``: all
-        * ``index='-3:'`` or ``index=slice(-3, None)``: three last
-        * ``index='::2'`` or ``index=slice(0, None, 2)``: even
-        * ``index='1::2'`` or ``index=slice(1, None, 2)``: odd
-    :type index: int, slice or str
-    :param format: Used to specify the file-format.  If not given, the
-        file-format will be guessed by the *getFileType* function.
-    :type format: str
-
-    :return: Diffraction data class instance
-    :rtype: :class:`SimEx.DiffractionData.DiffractionData`
-    """
-    if format is None:
-        format = filetype(filename)
-    module_name = ioformats[format]['module']
-    data_module = import_module(module_name)
-    __read = data_module.read
-    DiffrData = __read(filename, index, **kwargs)
-    return DiffrData
 
 
 class DiffractionData:
@@ -410,6 +388,64 @@ class DiffractionData:
     def pattern_total(self) -> int:
         """The total number of the diffraction patterns read into this class"""
         return len(self.array)
+
+
+def read(filename: str,
+         index=None,
+         format: str = None,
+         **kwargs) -> DiffractionData:
+    """Read a DiffractionData object from file.
+
+    :param filename: Name of the file to read with.
+    :type filename: str
+    :param index: All the snapshots will be read by default.  Examples:
+        * ``index=None``: read all the snapshots
+        * ``index=0``: first snapshot
+        * ``index=-2``: second to last
+        * ``index=':'`` or ``index=slice(None)``: all
+        * ``index='-3:'`` or ``index=slice(-3, None)``: three last
+        * ``index='::2'`` or ``index=slice(0, None, 2)``: even
+        * ``index='1::2'`` or ``index=slice(1, None, 2)``: odd
+    :type index: int, slice or str
+    :param format: Used to specify the file-format.  If not given, the
+        file-format will be guessed by the *getFileType* function.
+    :type format: str
+
+    :return: Diffraction data class instance
+    :rtype: :class:`SimEx.DiffractionData.DiffractionData`
+    """
+    if format is None:
+        format = filetype(filename)
+    try:
+        module_name = ioformats[format]['module']
+    except KeyError:
+        raise UnknownFileTypeError(f"Unsupported format {format}.")
+
+    data_module = import_module(module_name)
+    __read = data_module.read
+    DiffrData = __read(filename, index, **kwargs)
+    return DiffrData
+
+
+def write(filename: str, object: DiffractionData, format: str,
+          **kwargs) -> None:
+    """Read a DiffractionData object from file.
+
+    :param filename: Name of the file to save with.
+    :type filename: str
+    :param object: The object of DiffractionData class to save.
+    :type object: :class:`SimEx.DiffractionData.DiffractionData`
+    :param format: The format key to specify the file-format. Supported format keys
+    can be checked with `SimExLite.DiffractionData.listFormats()`
+    :type format: str
+    """
+    try:
+        module_name = ioformats[format]['module']
+    except KeyError:
+        raise UnknownFileTypeError(f"Unsupported format: '{format}'.")
+    data_module = import_module(module_name)
+    __write = data_module.write
+    __write(filename, object, **kwargs)
 
 
 def addBeamStop(img, stop_rad):

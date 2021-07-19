@@ -7,7 +7,7 @@ import shutil
 
 def test_RandomData(tmp_path):
     data = (np.random.rand(10, 25)**5 * 5).astype(np.int32)
-    data_fn = str(tmp_path / "t.bin")
+    data_fn = str(tmp_path / "bin.emc")
     EMC.dense_to_PatternsSOne(data).write(data_fn)
     if __name__ == "__main__":
         EMC.plotEMCbin(data_fn, 3)
