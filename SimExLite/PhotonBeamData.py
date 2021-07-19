@@ -4,7 +4,6 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Photon Beam data APIs"""
 
-from sys import exec_prefix
 import numpy as np
 from numpy import ndarray
 from . import setValue
@@ -29,11 +28,7 @@ class BeamBase:
     :param focus_area: The focus area of this pulse, in m**2.
     :type focus_area: float, optional
     """
-    def __init__(self,
-                 pulse_energy=None,
-                 wavelength=None,
-                 focus_area=None):
-
+    def __init__(self, pulse_energy=None, wavelength=None, focus_area=None):
 
         # Default photon energy unit
         self._attrs = {}
@@ -44,7 +39,6 @@ class BeamBase:
             self.set_pulse_energy(pulse_energy)
         if focus_area:
             self.set_focus_area(focus_area)
-
 
     def set_focus_area(self, val, unit='m**2'):
         focus_area = setValue(val, unit)
@@ -68,18 +62,21 @@ class BeamBase:
         return self._attrs['wavelength'].to(unit)
 
     def get_photons_per_pulse(self):
-        return self._attrs['pulse_energy'].to('joule') / self.get_photon_energy().to('joule')
+        return self._attrs['pulse_energy'].to(
+            'joule') / self.get_photon_energy().to('joule')
 
     def get_photon_energy(self, unit='eV'):
-        photon_energy = setValue(hcDivide(self._attrs['wavelength'].to('angstrom').magnitude), 'keV')
+        photon_energy = setValue(
+            hcDivide(self._attrs['wavelength'].to('angstrom').magnitude),
+            'keV')
         return photon_energy.to(unit)
 
     def get_fluence(self, unit='joule/cm**2'):
-        fluence = self.get_pulse_energy()/self.get_focus_area()
+        fluence = self.get_pulse_energy() / self.get_focus_area()
         return fluence.to(unit)
 
     def get_flux(self, unit='1/um**2'):
-        flux = self.get_photons_per_pulse()/self.get_focus_area()
+        flux = self.get_photons_per_pulse() / self.get_focus_area()
         return flux.to(unit)
 
     @property
@@ -93,11 +90,12 @@ class BeamBase:
         return my_attrs
 
     def showAttrs(self):
-        for key,value in self._attrs.items():
+        for key, value in self._attrs.items():
             try:
                 print('{} = {:.3~P}'.format(key, value))
             except ValueError:
                 print('{} = {}'.format(key, value))
+
 
 class SimpleBeam(BeamBase):
     """The simplest description of a pulse of the beam.
@@ -153,13 +151,19 @@ class SimpleBeam(BeamBase):
                  beam_size: ndarray = None,
                  profile: str = 'gaussian',
                  focus_area=None):
-        super().__init__(pulse_energy,wavelength,focus_area)
+        super().__init__(pulse_energy, wavelength, focus_area)
         if wavelength is not None and photon_energy is not None:
-            raise ValueError('wavelength and photon_energy can not be set at the same time.')
+            raise ValueError(
+                'wavelength and photon_energy can not be set at the same time.'
+            )
         if pulse_energy and photons_per_pulse:
-            raise ValueError('pulse_energy and photons_per_pulse can not be set at the same time.')
+            raise ValueError(
+                'pulse_energy and photons_per_pulse can not be set at the same time.'
+            )
         if wavelength_weights is not None and photon_energy_weights is not None:
-            raise ValueError('wavelength_weights and photon_energy_weights can not be set at the same time.')
+            raise ValueError(
+                'wavelength_weights and photon_energy_weights can not be set at the same time.'
+            )
         if wavelength_weights is not None:
             self.set_wavelength_weights(wavelength_weights)
         if photon_energy is not None:
@@ -174,7 +178,7 @@ class SimpleBeam(BeamBase):
             self.set_beam_size(beam_size)
 
     def set_wavelength_weights(self, val):
-        self._attrs['wavelength_weights'] = setValue(val,'')
+        self._attrs['wavelength_weights'] = setValue(val, '')
 
     def get_wavelength_weights(self):
         return self._attrs['wavelength_weights']
@@ -182,48 +186,53 @@ class SimpleBeam(BeamBase):
     def set_photon_energy(self, val, unit='eV'):
         photon_energy = setValue(val, unit)
         # Convert to wavelength
-        self._attrs['wavelength'] = setValue(hcDivide(photon_energy.to('keV').magnitude), 'angstrom')
+        self._attrs['wavelength'] = setValue(
+            hcDivide(photon_energy.to('keV').magnitude), 'angstrom')
 
     def set_photon_energy_weights(self, val):
         # Convert to wavelength
-        self._attrs['wavelength_weights'] = setValue(val,'')
+        self._attrs['wavelength_weights'] = setValue(val, '')
 
     def get_photon_energy_weights(self):
         # Convert to wavelength
         return self.get_wavelength_weights()
 
     def set_photons_per_pulse(self, val):
-        pulse_energy = val*self.get_photon_energy()
+        pulse_energy = val * self.get_photon_energy()
         self._attrs['pulse_energy'] = setValue(pulse_energy, 'joule')
 
     def set_profile(self, val):
         if not isinstance(val, str):
             raise TypeError("profile should be in str type.")
-        if val in ['gaussian','airy','top-hat','rectangular']:
+        if val in ['gaussian', 'airy', 'top-hat', 'rectangular']:
             self._attrs['profile'] = val
         else:
-            raise ValueError("profile should be one of: gaussian|airy|top-hat|rectangular")
+            raise ValueError(
+                "profile should be one of: gaussian|airy|top-hat|rectangular")
 
     def get_profile(self):
         return self._attrs['profile']
 
     def set_beam_size(self, val, unit='m'):
         if not isinstance(val, (list, np.array)):
-            raise TypeError("beamsize should be a list or numpy array of [x, y]")
+            raise TypeError(
+                "beamsize should be a list or numpy array of [x, y]")
         if len(val) != 2:
-            raise TypeError("beamsize should be a list or numpy array of [x, y]")
+            raise TypeError(
+                "beamsize should be a list or numpy array of [x, y]")
         beam_size = setValue(val, unit)
         self._attrs['beam_size'] = beam_size.to('m')
         profile = self.get_profile()
         # This will override focus_area
-        if profile in ['gaussian','airy','top-hat']:
-            focus = beam_size[0]*beam_size[1]*np.pi/4
+        if profile in ['gaussian', 'airy', 'top-hat']:
+            focus = beam_size[0] * beam_size[1] * np.pi / 4
         elif profile == 'rectangular':
-            focus = beam_size[0]*beam_size[1]
+            focus = beam_size[0] * beam_size[1]
         self._attrs['focus_area'] = focus.to('m**2')
 
     def get_beam_size(self, unit='m'):
         return self._attrs['beam_size'].to(unit)
+
 
 if __name__ == "__main__":
     pass

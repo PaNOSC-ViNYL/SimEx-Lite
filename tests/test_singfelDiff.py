@@ -1,7 +1,7 @@
 """Test singfelDiff data"""
 
-from SimExLite.DiffractionData.singfelDiffr import getPatternTotal, getPatternShape, write, read, iread, getParameters
-from SimExLite.DiffractionData.singfelDiffr import isSingfelDiffr
+from SimExLite.DiffractionData.singfelDiffr import getPatternTotal, getPatternShape, write, read, ireadPattern, getParameters
+from SimExLite.DiffractionData.singfelDiffr import isFormat
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -10,11 +10,11 @@ from pathlib import Path
 
 h5_file = './testFiles/singfel-multi.h5'
 
-# def test_getParameters():
-#     params = getParameters(h5_file)
-#     if __name__ == "__main__":
-#         print(params)
-#     assert params['beam']['photonEnergy'] == 4960.0
+def test_getParameters():
+    params = getParameters(h5_file)
+    if __name__ == "__main__":
+        print(params)
+    assert params['beam']['photonEnergy'] == 4960.0
 
 
 def test_getPatternTotal():
@@ -23,27 +23,23 @@ def test_getPatternTotal():
         print(npattern)
     assert npattern == 13
 
-def test_isSingfelDiffr():
-    assert isSingfelDiffr(h5_file) is True
-    assert isSingfelDiffr('./test_singfelDiff.py') is False
+
+def test_isFormat():
+    assert isFormat(h5_file) is True
+    assert isFormat('./test_singfelDiff.py') is False
+
 
 def test_write(tmp_path):
     tmp_h5 = str(tmp_path / 'tmp.h5')
-    arr_counts,quaternions = read(h5_file, poissonize=True)
-    arr_intensity,_ = read(h5_file, poissonize=False)
-    params = getParameters(h5_file)
     write(tmp_h5,
-          arr_counts,
-          arr_intensity,
-          quaternions,
-          params['geom'],
-          params['beam'],
+          read(h5_file),
           method_desciption='',
           pmi_file_list=None)
 
 
 def test_read():
-    diffr_patterns,_ = read(h5_file, poissonize=False)
+    diffrData = read(h5_file, poissonize=False)
+    diffr_patterns = diffrData.array
     assert len(diffr_patterns) == 13
     assert np.sum(diffr_patterns) != 0
 
@@ -57,9 +53,11 @@ def test_read():
 
 
 def test_createArray_one():
-    diffr_pattern,_ = read(h5_file, index=2, poissonize=False)
-    diffr_pattern,_ = read(h5_file, index="2", poissonize=False)
-    diffr_patterns,_ = read(h5_file, poissonize=False)
+    diffrData = read(h5_file, index=2, poissonize=False)
+    diffrData = read(h5_file, index="2", poissonize=False)
+    diffr_pattern = diffrData.array
+    diffrData = read(h5_file, poissonize=False)
+    diffr_patterns = diffrData.array
     assert len(diffr_pattern) == 1
     assert np.array_equal(diffr_patterns[2], diffr_pattern[0]) is True
 
@@ -71,8 +69,10 @@ def test_createArray_one():
 
 
 def test_createArray_partial():
-    diffr_patterns,_ = read(h5_file, index="2:5", poissonize=False)
-    diffr_pattern,_ = read(h5_file, index=4, poissonize=False)
+    diffrData = read(h5_file, index="2:5", poissonize=False)
+    diffr_patterns = diffrData.array
+    diffrData = read(h5_file, index=4, poissonize=False)
+    diffr_pattern = diffrData.array
     assert len(diffr_patterns) == 3
     assert np.array_equal(diffr_patterns[2], diffr_pattern[0]) is True
     if __name__ == "__main__":
@@ -92,8 +92,8 @@ def test_createArray_partial():
 
 
 def test_Poission():
-    diffr_patterns,_ = read(h5_file, poissonize=True)
-    assert np.sum(diffr_patterns) == 0
+    diffrData = read(h5_file, poissonize=True)
+    assert np.sum(diffrData.array) == 0
 
 
 def test_pattern_shape():
@@ -104,7 +104,7 @@ def test_pattern_shape():
 
 
 def test_iterator():
-    my_iter = iread(h5_file, poissonize=True)
+    my_iter = ireadPattern(h5_file, poissonize=True)
     n = 0
     for ix,_ in my_iter:
         n += 1
@@ -127,8 +127,8 @@ def test_iterator():
 
 if __name__ == "__main__":
     test_iterator()
+    test_write(Path('./'))
     # test_getPatternTotal()
     # test_read()
-    # test_write(Path('./'))
-    # test_createArray_one()
+    test_createArray_one()
     # test_createArray_partial()

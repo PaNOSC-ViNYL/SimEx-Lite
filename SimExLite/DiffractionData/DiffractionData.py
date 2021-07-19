@@ -148,9 +148,20 @@ class DiffractionData:
     :param distance: Sample to detector distance (meter)
     :type distance: float
     :param pixel_mask: The 32-bit pixel mask for the detector. [np,i,j]
-        0 = Bad pixel
-        1 = Good pixel
-    :type pixel_mask: 2D numpy.array
+        https://manual.nexusformat.org/classes/applications/NXmx.html
+        bit unset: perfect pixel; value = 0
+        bit 0: gap (pixel with no sensor); value = 1
+        bit 1: dead; value = 2
+        bit 2: under-responding; value = 4
+        bit 3: over-responding; value = 8
+        bit 4: noisy; value = 16
+        bit 5: -undefined-
+        bit 6: pixel is part of a cluster of problematic pixels (bit set in addition to others); value = 64
+        bit 7: -undefined-
+        bit 8: user defined mask (e.g. around beamstop); value = 256
+        bits 9-30: -undefined-
+        bit 31: virtual pixel (corner pixel with interpolated value); value = 2147483648
+    :type pixel_mask: 2D numpy.uint32 ndarray
     """
     def __init__(self,
                  arrary: ndarray = None,

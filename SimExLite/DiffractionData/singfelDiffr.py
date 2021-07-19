@@ -4,15 +4,18 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """singfelDiffr module to read and write a singfel diffr output data"""
 import numpy as np
+from copy import deepcopy
 import h5py
 from tqdm import tqdm
 from extra_geom import GenericGeometry
+from extra_geom.base import DetectorGeometryBase
+from SimExLite.PhotonBeamData import SimpleBeam, BeamBase
 from SimExLite.utils.io import parseIndex
 from SimExLite.DiffractionData import DiffractionData
 import SimExLite
 
 
-def iread(filename, index=None, poissonize=True):
+def ireadPattern(filename, index=None, poissonize=True):
     """Iterator for reading diffraction patterns from a file."""
     index = parseIndex(index)
     pattern_type = getPatternType(poissonize)
@@ -29,6 +32,8 @@ def iread(filename, index=None, poissonize=True):
 def read(filename, index=None, poissonize=True) -> DiffractionData:
     """Read diffraction patterns into an array from a file."""
     # Flush to print it before tqdm
+    print('Reading singfelDiffr data...', flush=True)
+
     index = parseIndex(index)
     arr_size = len(range(getPatternTotal(filename))[index])
     pattern_shape = getPatternShape(filename)
@@ -36,32 +41,55 @@ def read(filename, index=None, poissonize=True) -> DiffractionData:
     quaternions = np.zeros((arr_size, 4))
     if isinstance(index, (slice, str)):
         with tqdm(total=arr_size) as progress_bar:
-            for i, (pattern,
-                    quaternion) in enumerate(iread(filename, index,
-                                                   poissonize)):
+            for i, (pattern, quaternion) in enumerate(
+                    ireadPattern(filename, index, poissonize)):
                 arr[i] = pattern
                 quaternions[i] = quaternion
                 progress_bar.update(1)  # update progress
     else:
         # If only reading one pattern
-        arr[0], quaternions[0] = next(iread(filename, index, poissonize))
+        arr[0], quaternions[0] = next(ireadPattern(filename, index,
+                                                   poissonize))
 
     params = getParameters(filename)
-    geom, distance = params2extra_geom(params)
-    # The beam dict from the file
-    file_beam = params['beam']
+    geom, distance, pixel_mask = params2extra_geom(params['geom'])
+    beam = params2SimpleBeam(params['beam'])
 
-    DiffrData = DiffractionData(arr, geom=geom, )
+    DiffrData = DiffractionData(arr,
+                                geom=geom,
+                                beam=beam,
+                                distance=distance,
+                                quaternions=quaternions,
+                                pixel_mask=pixel_mask)
+    return DiffrData
 
 
 def write(filename,
-          arr_counts,
-          arr_intensity,
-          quaternions,
-          geom,
-          beam,
+          DiffrData: DiffractionData,
           method_desciption='',
           pmi_file_list=None):
+    arr_counts = DiffrData.array
+    quaternions = DiffrData.quaternions
+    geom = extra_geom2params(DiffrData.geom, DiffrData.distance,
+                             DiffrData.pixel_mask)
+    beam = BeamData2params(DiffrData.beam)
+    write_singfelDiffr(filename,
+                       arr_counts=arr_counts,
+                       geom=geom,
+                       beam=beam,
+                       quaternions=quaternions,
+                       method_desciption=method_desciption,
+                       pmi_file_list=pmi_file_list)
+
+
+def write_singfelDiffr(filename,
+                       arr_counts,
+                       geom,
+                       beam,
+                       arr_intensity=None,
+                       quaternions=None,
+                       method_desciption='',
+                       pmi_file_list=None):
     """
     Save pattern arrays as pysingfel diffraction data.
 
@@ -85,12 +113,11 @@ def write(filename,
     with h5py.File(filename, 'a') as f:
         f.create_dataset('info/method_description',
                          data=np.string_(method_desciption))
+        # Flush to print it before tqdm
+        print('Writing singfelDiffr data: data...', flush=True)
         for i, pattern_counts in enumerate(tqdm(arr_counts)):
             group_name = '/data/' + '{0:07}'.format(i + 1) + '/'
             f.create_dataset(group_name + 'data', data=pattern_counts)
-            f.create_dataset(group_name + 'diffr', data=arr_intensity[i])
-            f.create_dataset(group_name + 'angle', data=quaternions[i])
-
             if (pmi_file_list is not None):
                 # Link history from input pmi file into output diffr file
                 group_name_history = group_name + 'history/parent/detail/'
@@ -107,6 +134,18 @@ def write(filename,
                     pmi_file_list[i], 'params')
                 f[group_name_history + 'version'] = h5py.ExternalLink(
                     pmi_file_list[i], 'version')
+
+        if arr_intensity is not None:
+            print('Writing singfelDiffr data: diffr...', flush=True)
+            for i, intensity in enumerate(tqdm(arr_intensity)):
+                group_name = '/data/' + '{0:07}'.format(i + 1) + '/'
+                f.create_dataset(group_name + 'diffr', data=intensity)
+
+        if quaternions is not None:
+            print('Writing singfelDiffr data: angle...', flush=True)
+            for i, quaternion in enumerate(tqdm(quaternions)):
+                group_name = '/data/' + '{0:07}'.format(i + 1) + '/'
+                f.create_dataset(group_name + 'angle', data=quaternion)
 
         # Geometry
         f.create_dataset('params/geom/detectorDist', data=geom['detectorDist'])
@@ -207,14 +246,13 @@ def getParameters(filename):
     return parameters_dict
 
 
-def params2extra_geom(params):
+def params2extra_geom(file_geom):
     # The geometry dict from the file
-    file_geom = params['geom']
     pixel_size = file_geom['pixelHeight']
     mask = file_geom['mask']
-    center_pixel = (np.array(mask.shape))/2
-    corner_coordinates = -center_pixel*pixel_size
-    corner_coordinates = np.append(corner_coordinates,0)
+    center_pixel = (np.array(mask.shape)) / 2
+    corner_coordinates = -center_pixel * pixel_size
+    corner_coordinates = np.append(corner_coordinates, 0)
     simple_config = {
         'pixel_size': pixel_size,
         'slow_pixels': mask.shape[0],
@@ -225,7 +263,44 @@ def params2extra_geom(params):
     }
     geom = GenericGeometry.from_simple_description(**simple_config)
     distance = file_geom['detectorDist']
-    return geom, distance
+    pixel_mask = deepcopy(file_geom['mask'])
+    # In NeXus standard, bit 1 (value = 2) means dead.
+    pixel_mask[file_geom['mask'] == 0] = 2
+    pixel_mask[file_geom['mask'] == 1] = 0
+    return geom, distance, pixel_mask
+
+
+def params2SimpleBeam(file_beam):
+    focus_area = file_beam['focusArea']
+    photon_energy = file_beam['photonEnergy']
+    beam = SimpleBeam(photon_energy=photon_energy, focus_area=focus_area)
+    return beam
+
+
+def extra_geom2params(geom: DetectorGeometryBase, distance, pixel_mask):
+    if (geom.n_modules != 1):
+        raise ValueError(
+            "pysingfel can only deal with single-module geometry.")
+    # extra_geom only deals with square pixel yet.
+    pixel_size = geom.pixel_size
+    mask = deepcopy(pixel_mask)
+    # In pysingfel data, good_pixel = 1, bad_pixel = 0.
+    mask[pixel_mask != 0] = 0
+    mask[pixel_mask == 0] = 1
+    geom_param = {
+        'detectorDist': distance,
+        'mask': mask,
+        'pixelHeight': pixel_size,
+        'pixelWidth': pixel_size
+    }
+    return geom_param
+
+
+def BeamData2params(beam: BeamBase):
+    focus_area = beam.get_focus_area().magnitude
+    photon_energy = beam.get_photon_energy().magnitude
+    beam_param = {'focusArea': focus_area, 'photonEnergy': photon_energy}
+    return beam_param
 
 
 #     def __set_solid_angles(self):
