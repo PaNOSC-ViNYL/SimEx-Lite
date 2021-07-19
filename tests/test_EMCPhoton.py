@@ -1,5 +1,5 @@
 import numpy as np
-import SimExLite.DataAPI.EMCPhoton as EMC
+import SimExLite.DiffractionData.EMCPhoton as EMC
 from SimExLite.DiffractionData import DiffractionData
 from pathlib import Path
 import shutil
@@ -13,32 +13,32 @@ def test_RandomData(tmp_path):
         EMC.plotEMCbin(data_fn, 3)
 
 
-def test_EMC_geometry(tmp_path):
-    diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData()
-    diffr.read(diffr_path)
-    diffr.createArray()
-    out_path = tmp_path / "t.bin"
-    diffr.multiply(1e5)
-    data_fn = str(out_path)
-    geom_path = out_path.with_suffix('.geom')
-    diffr.saveAs('emc', data_fn, with_geom=True)
-    assert out_path.is_file() is True
-    assert geom_path.is_file() is True
+# def test_EMC_geometry(tmp_path):
+#     diffr_path = './testFiles/singfel-multi.h5'
+#     diffr = DiffractionData()
+#     diffr.read(diffr_path)
+#     diffr.createArray()
+#     out_path = tmp_path / "t.bin"
+#     diffr.multiply(1e5)
+#     data_fn = str(out_path)
+#     geom_path = out_path.with_suffix('.geom')
+#     diffr.saveAs('emc', data_fn, with_geom=True)
+#     assert out_path.is_file() is True
+#     assert geom_path.is_file() is True
 
 
-def test_plotEMC(tmp_path):
-    diffr_path = './testFiles/singfel-multi.h5'
-    diffr = DiffractionData()
-    diffr.read(diffr_path)
-    diffr.createArray()
-    out_path = tmp_path / "t.emc"
-    diffr.multiply(1e5)
-    data_fn = str(out_path)
-    diffr.saveAs('emc', data_fn)
-    if __name__ == "__main__":
-        EMC.plotEMCPhoton(data_fn, 0, log_scale=True)
-    assert out_path.is_file() is True
+# def test_plotEMC(tmp_path):
+#     diffr_path = './testFiles/singfel-multi.h5'
+#     diffr = DiffractionData()
+#     diffr.read(diffr_path)
+#     diffr.createArray()
+#     out_path = tmp_path / "t.emc"
+#     diffr.multiply(1e5)
+#     data_fn = str(out_path)
+#     diffr.saveAs('emc', data_fn)
+#     if __name__ == "__main__":
+#         EMC.plotEMCPhoton(data_fn, 0, log_scale=True)
+#     assert out_path.is_file() is True
 
 
 def test_pattern_total_h5(tmp_path):

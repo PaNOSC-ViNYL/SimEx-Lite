@@ -5,6 +5,7 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """EMCPhoton module to read and write a EMC photon sparse binary file"""
 
+from SimExLite.DiffractionData import DiffractionData
 import os
 from tqdm import tqdm
 from pathlib import Path
@@ -13,103 +14,112 @@ import h5py
 import matplotlib.pylab as plt
 import matplotlib.colors as colors
 from scipy.sparse import csr_matrix
+from SimExLite.utils.io import UnknownFileTypeError
+from .Dragonfly.utils.py_src import writeemc
+from SimExLite.utils.io import parseIndex
 
 
-class EMCPhoton:
-    """A EMC sparce photon data class
+# Essential
+def isFormat(fn: str):
+    """Check if the data is in EMC H5/binary format"""
+    return isEMCH5(fn) or isEMCBinary(fn)
 
-    :input_path: The path of the input file name
-    :input_path: str
-    :param pattern_shape: The array shape of the diffraction pattern, (H W). If not povided,
-    H and W will be set as the square root of the number of elements in the array.
-    :type pattern_shape: array-shape-like, optional
-    """
-    def __init__(self,
-                 input_path: str,
-                 pattern_shape=None,
-                 index_range=None) -> None:
-        self.input_path = input_path
-        self.is_EMCH5 = isEMCH5(self.input_path)
-        if self.is_EMCH5:
-            num_pix = readH5frame(self.input_path, 0)[0]
-        else:
-            num_pix = readBinaryframe(self.input_path, 0)[0]
 
-        if not pattern_shape:
-            self.pattern_shape = (int(np.sqrt(num_pix)), int(np.sqrt(num_pix)))
-        else:
-            self.pattern_shape = pattern_shape
-        self.index_range = index_range
-        self.__setIndices()
-        if self.is_EMCH5:
-            getArray = getFrameArray
-        else:
-            getArray = getFrameArrayBinary
-        self.__getArray = getArray
+# Essential
+def getPatternTotal(filename):
+    """The total number of diffraction patterns in the EMC photon file"""
+    if isEMCH5(filename):
+        with h5py.File(filename, 'r') as h5:
+            npattern = len(h5['count_multi'])
+        return npattern
+    else:
+        with open(filename, 'rb') as fptr:
+            num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
+        return num_data
 
-    def __setIndices(self):
-        index_range = self.index_range
-        if index_range is None:
-            indices = range(self.pattern_total)
-        else:
-            try:
-                len(index_range)
-                indices = index_range
-            except TypeError:
-                indices = [index_range]
-        self.indices = indices
 
-    @property
-    def iterator(self):
-        indices = self.indices
-        pattern_shape = self.pattern_shape
-        getArray = self.__getArray
-        for ix in indices:
-            pattern = getArray(self.input_path, ix).reshape(pattern_shape)
-            yield pattern
+# Essential
+def ireadPattern_h5(filename, index=None, pattern_shape=None):
+    """Iterator for reading diffraction patterns from a file."""
+    index = parseIndex(index)
+    pattern_total = getPatternTotal(filename)
+    indices = range(pattern_total)[index]
+    for i in indices:
+        yield getFrameArray(filename, i).reshape(pattern_shape)
 
-    @property
-    def pattern_total(self):
-        """The total number of diffraction patterns in the EMC photon file"""
-        if self.is_EMCH5:
-            with h5py.File(self.input_path, 'r') as h5:
-                npattern = len(h5['count_multi'])
-            return npattern
-        else:
-            with open(self.input_path, 'rb') as fptr:
-                num_data = np.fromfile(fptr, dtype='i4', count=1)[0]
-            return num_data
 
-    def createArray(self, index_range=None):
-        """Get a numpy array of the diffraction data
+# Essential
+def ireadPattern_binary(filename, index=None, pattern_shape=None):
+    """Iterator for reading diffraction patterns from a file."""
+    index = parseIndex(index)
+    pattern_total = getPatternTotal(filename)
+    indices = range(pattern_total)[index]
+    for i in indices:
+        yield getFrameArrayBinary(filename, i).reshape(pattern_shape)
 
-        :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-        defaults to `None` meaning to take all the patterns. The array can be accessed by
-        func:`EMCPhoton.array`.
-        :type index_range: list-like or `int`, optional
-        """
-        if index_range != self.index_range:
-            # Reset the class indices
-            self.index_range = index_range
-            self.__setIndices()
 
-        indices = self.indices
-        getArray = self.__getArray
+# Essential
+def read(filename, index=None, pattern_shape=None) -> DiffractionData:
+    """Read diffraction patterns into an array from a file."""
 
-        arr_size = len(indices)
-        pattern_shape = self.pattern_shape
-        arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
-
+    if isEMCH5(filename):
+        ireadPattern = ireadPattern_h5
         # Flush to print it before tqdm
-        print('Creating the array...', flush=True)
-        for i, ix in enumerate(tqdm(indices)):
-            arr[i] = getArray(self.input_path, ix).reshape(pattern_shape)
-        self.__array = arr
+        print('Reading EMC h5 data...', flush=True)
+    elif isEMCBinary(filename):
+        ireadPattern = ireadPattern_binary
+        # Flush to print it before tqdm
+        print('Reading EMC binary data...', flush=True)
+    else:
+        raise UnknownFileTypeError(
+            'This is not an EMC file, please provide the correct file type.')
 
-    @property
-    def array(self):
-        """Diffraction pattern numpy array"""
-        return self.__array
+    arr_size = len(range(getPatternTotal(filename))[index])
+    arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
+
+    if isinstance(index, (slice, str)):
+        with tqdm(total=arr_size) as progress_bar:
+            for i, pattern in enumerate(
+                    ireadPattern(filename, index, pattern_shape)):
+                arr[i] = pattern
+                progress_bar.update(1)  # update progress
+
+    DiffrData = DiffractionData(arr)
+
+    return DiffrData
+
+
+# Essential
+def write(filename, DiffrData: DiffractionData):
+    arr = DiffrData.array
+    emcwriter = writeemc.EMCWriter(filename, arr[0].shape[0] * arr[0].shape[1])
+    for photons in tqdm(arr):
+        emcwriter.write_frame(photons.astype(np.int32).ravel())
+
+
+def isEMCH5(fn):
+    """If the data is a EMC HDF5 file"""
+    try:
+        with h5py.File(fn, 'r') as h5:
+            # If the h5 file has these keys
+            if h5.keys() >= {
+                    'count_multi', 'num_pix', 'place_multi', 'place_ones'
+            }:
+                return True
+            else:
+                return False
+    except OSError:
+        return False
+
+
+def isEMCBinary(fn):
+    """If the data is a EMC HDF5 file"""
+    try:
+        pdict = parse_binaryheader(fn)
+        if len(pdict['ones_accum']) > 0 and len(pdict['multi_accum']) > 0:
+            return True
+    except OSError:
+        return False
 
 
 class PatternsSOne:
@@ -132,13 +142,13 @@ class PatternsSOne:
     ATTRS = ["ones", "multi", "place_ones", "place_multi", "count_multi"]
 
     def __init__(
-            self,
-            num_pix: int,
-            ones: np.ndarray,
-            multi: np.ndarray,
-            place_ones: np.ndarray,
-            place_multi: np.ndarray,
-            count_multi: np.ndarray,
+        self,
+        num_pix: int,
+        ones: np.ndarray,
+        multi: np.ndarray,
+        place_ones: np.ndarray,
+        place_multi: np.ndarray,
+        count_multi: np.ndarray,
     ) -> None:
         self.num_pix = num_pix
         self._ones = ones
@@ -399,26 +409,3 @@ def main(input_file, output_file):
     print(patterns.shape)
     print('writing')
     patterns.write(output_file)
-
-
-def isEMCH5(fn):
-    """If the data is a EMC HDF5 file"""
-    try:
-        with h5py.File(fn, 'r') as h5:
-            # If the h5 file has these keys
-            if h5.keys() >= {
-                    'count_multi', 'num_pix', 'place_multi', 'place_ones'
-            }:
-                return True
-            else:
-                return False
-    except OSError:
-        return False
-
-def isEMCBinary(fn):
-    """If the data is a EMC HDF5 file"""
-    try:
-        parse_binaryheader(fn)
-        return True
-    except OSError:
-        return False

@@ -9,12 +9,40 @@ import h5py
 from tqdm import tqdm
 from extra_geom import GenericGeometry
 from extra_geom.base import DetectorGeometryBase
-from SimExLite.PhotonBeamData import SimpleBeam, BeamBase
+# Essiental
 from SimExLite.utils.io import parseIndex
+from SimExLite.PhotonBeamData import SimpleBeam, BeamBase
 from SimExLite.DiffractionData import DiffractionData
 import SimExLite
 
 
+# Essential
+def isFormat(fn: str):
+    """Check if the data is in SimEx singfel diffraction HDF5 format"""
+    try:
+        with h5py.File(fn, 'r') as h5:
+            if h5.keys() >= {"data", "info", "params"}:
+                data_grp = h5['data']
+                data_list = list(data_grp)
+                if data_grp[data_list[0]].keys() >= {"diffr"}:
+                    return True
+                else:
+                    return False
+            else:
+                return False
+    except OSError:
+        return False
+
+
+# Essential
+def getPatternTotal(filename):
+    """Get the total number of diffraction patterns in the hdf5 file"""
+    with h5py.File(filename, 'r') as h5:
+        npattern = len(h5['data'])
+    return npattern
+
+
+# Essential
 def ireadPattern(filename, index=None, poissonize=True):
     """Iterator for reading diffraction patterns from a file."""
     index = parseIndex(index)
@@ -29,6 +57,7 @@ def ireadPattern(filename, index=None, poissonize=True):
             yield data_grp[i][pattern_type][...], data_grp[i]['angle'][...]
 
 
+# Essential
 def read(filename, index=None, poissonize=True) -> DiffractionData:
     """Read diffraction patterns into an array from a file."""
     # Flush to print it before tqdm
@@ -64,6 +93,7 @@ def read(filename, index=None, poissonize=True) -> DiffractionData:
     return DiffrData
 
 
+# Essential
 def write(filename,
           DiffrData: DiffractionData,
           method_desciption='',
@@ -158,23 +188,6 @@ def write_singfelDiffr(filename,
         f.create_dataset('params/beam/photonEnergy', data=beam['photonEnergy'])
 
 
-def isFormat(fn: str):
-    """Check if the data is in SimEx singfel diffraction HDF5 format"""
-    try:
-        with h5py.File(fn, 'r') as h5:
-            if h5.keys() >= {"data", "info", "params"}:
-                data_grp = h5['data']
-                data_list = list(data_grp)
-                if data_grp[data_list[0]].keys() >= {"diffr"}:
-                    return True
-                else:
-                    return False
-            else:
-                return False
-    except OSError:
-        return False
-
-
 def prepH5(filename):
     """
     Create output file, prepare top level groups, write metadata.
@@ -202,13 +215,6 @@ def prepH5(filename):
             ))
         # Data format version
         f.create_dataset('version', data=np.string_('0.2'))
-
-
-def getPatternTotal(filename):
-    """Get the total number of diffraction patterns in the hdf5 file"""
-    with h5py.File(filename, 'r') as h5:
-        npattern = len(h5['data'])
-    return npattern
 
 
 def getPatternShape(filename):
