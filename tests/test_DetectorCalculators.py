@@ -5,6 +5,8 @@ import numpy as np
 import h5py
 from SimExLite.DiffractionData import histogramParams
 from SimExLite.DetectorCalculators import GaussianNoiseCalculator, GaussianNoisePrameters
+import matplotlib.pyplot as plt
+from SimExLite.utils.io import UnknownFileTypeError
 
 
 def getGNC():
@@ -16,8 +18,7 @@ def getGNC():
     gnc = GaussianNoiseCalculator(h5_file, params)
     gnc.backengine()
     gnc_data = gnc.data
-    if __name__ == "__main__":
-        gnc_data.plotPattern(0, logscale=True)
+    gnc_data.plotPattern(0, logscale=True)
     return gnc
 
 
@@ -26,24 +27,28 @@ def gnc():
     return getGNC()
 
 
-def test_GaussianNoiseCalculator_save_error(gnc):
-    with pytest.raises(TypeError) as excinfo:
-        gnc.saveH5()
-    assert "Unrecognized output_path" in str(excinfo.value)
-
-
 def test_GaussianNoiseCalculator_save(gnc, tmp_path):
     data_fn = str(tmp_path / "photons.h5")
     gnc.output_path = data_fn
+    gnc.data.plotPattern(0)
     gnc.saveH5()
     assert h5py.is_hdf5(data_fn) is True
 
 
-def test_GaussianNoiseCalculator_save_EMC(gnc, tmp_path):
-    data_fn = str(tmp_path / "photons.emc")
+def test_GaussianNoiseCalculator_save_singfel(gnc, tmp_path):
+    data_fn = str(tmp_path / "photons.h5")
     gnc.output_path = data_fn
-    gnc.saveEMC()
+    gnc.saveH5('singfel')
+    assert h5py.is_hdf5(data_fn) is True
+
+
+def test_GaussianNoiseCalculator_save_unknown(gnc, tmp_path):
+    data_fn = str(tmp_path / "photons.h5")
+    gnc.output_path = data_fn
+    with pytest.raises(UnknownFileTypeError):
+        gnc.saveH5('test')
 
 
 if __name__ == "__main__":
     getGNC()
+    plt.show()

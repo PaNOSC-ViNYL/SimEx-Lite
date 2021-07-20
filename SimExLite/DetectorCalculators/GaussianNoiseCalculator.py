@@ -5,7 +5,7 @@
 """Gaussian Noise Detector Calculator Module"""
 
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
-from SimExLite.DiffractionData import DiffractionData
+import SimExLite.DiffractionData as DD
 import numpy as np
 
 
@@ -16,9 +16,15 @@ class GaussianNoisePrameters(Parameters):
     :type mu: float
     :param sigs_popt: [slop, intercept]
     :type sigs_popt: list-like
-    :param index_range: The indices of the diffraction patterns to dump to the numpy array,
-        defaults to ``None`` meaning to take all the patterns.
-    :type index_range: list-like or `int`, optional
+    :param index: All the snapshots will be read by default.  Examples:
+        * ``index=None``: read all the snapshots
+        * ``index=0``: first snapshot
+        * ``index=-2``: second to last
+        * ``index=':'`` or ``index=slice(None)``: all
+        * ``index='-3:'`` or ``index=slice(-3, None)``: three last
+        * ``index='::2'`` or ``index=slice(0, None, 2)``: even
+        * ``index='1::2'`` or ``index=slice(1, None, 2)``: odd
+    :type index: int, slice or str
     :param poissionize: Whether to read the patterns with poission noise,
         defaults to ``false``.
     :type poissionize: bool, optional
@@ -29,15 +35,14 @@ class GaussianNoisePrameters(Parameters):
     def __init__(self,
                  mu,
                  sigs_popt,
-                 index_range=None,
-                 poissonize=True,
-                 save_geom=True):
+                 index=None,
+                 read_args: dict = {'poissonize': True},
+                 ):
         super().__init__()
         self.mu = mu
         self.sigs_popt = sigs_popt
-        self.index_range = index_range
-        self.poissonize = poissonize
-        self.save_geom = save_geom
+        self.index = index
+        self.read_args = read_args
 
 
 class GaussianNoiseCalculator(BaseCalculator):
@@ -47,7 +52,7 @@ class GaussianNoiseCalculator(BaseCalculator):
                  parameters=None,
                  dumpfile=None,
                  output_path=None):
-        """ Constructor of the RandomImageCalculator class. """
+        """ Constructor of the BaseCalcularor class. """
         super().__init__(parameters=parameters,
                          dumpfile=dumpfile,
                          output_path=output_path)
@@ -55,10 +60,9 @@ class GaussianNoiseCalculator(BaseCalculator):
 
     def backengine(self):
         """ Method to do the actual calculation."""
-        diffr_data = DiffractionData()
-        diffr_data.read(self.input_path, self.parameters.index_range,
-                        self.parameters.poissonize)
-        diffr_data.createArray()
+        diffr_data = DD.read(self.input_path,
+                             self.parameters.index,
+                             **self.parameters.read_args)
         diffr_data.addGaussianNoise(self.parameters.mu,
                                     self.parameters.sigs_popt)
         diffr_data.multiply(1 / self.parameters.mu)
@@ -68,21 +72,10 @@ class GaussianNoiseCalculator(BaseCalculator):
         self._set_data(diffr_data)
         return 0
 
-    def saveH5(self, data_format='simple'):
+    def saveH5(self, format='emc'):
         """Save noised diffraction data as a HDF5 file
 
-        :param data_format: What format to save the data in.
-        :type data_format: str
+        :param format: What format to save the data in.
+        :type format: str
         """
-        try:
-            self.data.saveAs(data_format, self.output_path)
-        except TypeError:
-            raise TypeError("Unrecognized output_path")
-
-    def saveEMC(self):
-        """Save noised diffraction data in a EMC sparse photon file"""
-
-        try:
-            self.data.saveAs('emc', self.output_path, self.parameters.save_geom)
-        except TypeError:
-            raise TypeError("Unrecognized output_path")
+        DD.write(self.output_path, self.data, format)

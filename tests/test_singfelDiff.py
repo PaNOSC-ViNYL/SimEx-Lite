@@ -10,6 +10,7 @@ from pathlib import Path
 
 h5_file = './testFiles/singfel-multi.h5'
 
+
 def test_getParameters():
     params = getParameters(h5_file)
     if __name__ == "__main__":
@@ -31,10 +32,7 @@ def test_isFormat():
 
 def test_write(tmp_path):
     tmp_h5 = str(tmp_path / 'tmp.h5')
-    write(tmp_h5,
-          read(h5_file),
-          method_desciption='',
-          pmi_file_list=None)
+    write(tmp_h5, read(h5_file), method_desciption='', pmi_file_list=None)
 
 
 def test_read():
@@ -106,7 +104,7 @@ def test_pattern_shape():
 def test_iterator():
     my_iter = ireadPattern(h5_file, poissonize=True)
     n = 0
-    for ix,_ in my_iter:
+    for ix, _ in my_iter:
         n += 1
         pattern = ix
     assert n == 13

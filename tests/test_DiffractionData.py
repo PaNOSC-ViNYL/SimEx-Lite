@@ -77,6 +77,13 @@ def test_filetype():
         assert True
 
 
+def test_unexpected_read_argument(tmp_path):
+    diffr_path = './testFiles/singfel-multi.h5'
+    with pytest.raises(TypeError) as excinfo:
+        DD.read(diffr_path, pattern_shape=[81, 81])
+        assert "got an unexpected keyword argument" in str(excinfo.value)
+
+
 def test_read():
     h5_file = './testFiles/singfel.h5'
     DiffrData = DD.read(h5_file)
