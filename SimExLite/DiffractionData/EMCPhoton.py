@@ -15,7 +15,7 @@ import matplotlib.pylab as plt
 import matplotlib.colors as colors
 from scipy.sparse import csr_matrix
 from SimExLite.utils.io import UnknownFileTypeError
-from .Dragonfly.utils.py_src import writeemc
+from . import writeemc
 from SimExLite.utils.io import parseIndex
 
 

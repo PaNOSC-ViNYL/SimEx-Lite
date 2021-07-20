@@ -1,5 +1,0 @@
-[submodule "SimExLite/DataAPI/Dragonfly"]
-	path = SimExLite/DiffractionData/Dragonfly
-	url = https://github.com/duaneloh/Dragonfly.git
-[submodule "./SimExLite/DiffractionData/Dragonfly"]
-	url = https://github.com/JunCEEE/Dragonfly.git
