@@ -212,11 +212,11 @@ class DiffractionData:
         self.__array = self.array.astype(data_type)
         self.__statistic_to_update = True
 
-    def writeGeometry(self, data_format: str, file_name: str):
+    def writeGeometry(self, file_name: str):
         """Write the detector geometry in crystFEL geometry file
 
-        :param data_type: The numpy dtype to be set. E.g. 'int32'
-        :type data_type: `numpy.dtype`
+        :param file_name: The name of the output geometry file.
+        :type file_name: str
         """
         file_path = Path(file_name)
         geom_path = file_path.with_suffix('.geom')
@@ -382,7 +382,10 @@ class DiffractionData:
     @property
     def stop_rad(self):
         """Beamstop radius in pixel"""
-        return self.__stop_rad
+        try:
+            return self.__stop_rad
+        except AttributeError:
+            raise AttributeError("Please run the class method 'addBeamStop' first.")
 
     @property
     def pattern_total(self) -> int:
@@ -583,7 +586,7 @@ def plotImage(pattern,
 
     if 0 in pattern and not offset and (logscale or symlog):
         print(
-            'Warnning: zero-value detected. Setting a small offset to get correct log display.'
+            'Warnning: zero-value detected. Please set a small offset (e.g. 1e-3) to get correct log display.'
         )
 
     if (logscale or symlog):
