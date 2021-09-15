@@ -90,11 +90,24 @@ class BeamBase:
         return my_attrs
 
     def showAttrs(self):
+        # for key, value in self._attrs.items():
+        #     try:
+        #         print('{} = {:.3~P}'.format(key, value))
+        #     except ValueError:
+        #         print('{} = {}'.format(key, value))
+        print(self.__repr__)
+
+    def __repr__(self):
+        """
+        Returns string with all the parameters
+        """
+        string = "Beam parameters:\n"
         for key, value in self._attrs.items():
             try:
-                print('{} = {:.3~P}'.format(key, value))
+                string += '{} = {:.3~P}\n'.format(key, value)
             except ValueError:
-                print('{} = {}'.format(key, value))
+                string += '{} = {}\n'.format(key, value)
+        return string
 
 
 class SimpleBeam(BeamBase):

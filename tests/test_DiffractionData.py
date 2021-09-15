@@ -183,13 +183,21 @@ def test_pattern_total():
     assert dd.pattern_total == 13
 
 
+def test_data_simplebeam():
+    h5_file = './testFiles/singfel-multi.h5'
+    dd = DD.read(h5_file)
+    assert pytest.approx(dd.beam.attrs['wavelength'], 0.1) == 2.5
+    print(dd.beam)
+
+
 if __name__ == "__main__":
     # pass
     # test_writeUnsupported()
-    test_print_format_keys()
-    test_write_emc_h5_multi(Path('./'))
-    test_read_emc_h5_multi()
-    plt.show()
+    # test_print_format_keys()
+    # test_write_emc_h5_multi(Path('./'))
+    # test_read_emc_h5_multi()
+    # plt.show()
+    test_data_simplebeam()
     # test_filetype_content()
     # test_getDataType()
     # test_addBeamStop()
