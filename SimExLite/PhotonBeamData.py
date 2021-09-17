@@ -58,8 +58,27 @@ class BeamBase:
     def get_pulse_energy(self, unit='joule'):
         return self._attrs['pulse_energy'].to(unit)
 
+    @property
+    def pulse_energy(self):
+        """The pulse_energy property."""
+        return self.get_pulse_energy().magnitude
+
+    @pulse_energy.setter
+    def pulse_energy(self, value):
+        self.set_pulse_energy(value)
+
     def get_wavelength(self, unit='angstrom'):
         return self._attrs['wavelength'].to(unit)
+
+    # This is to be compatile with the attribute access way.
+    @property
+    def wavelength(self):
+        """The wavelength property."""
+        return self.get_wavelength().magnitude
+
+    @wavelength.setter
+    def wavelength(self, value):
+        self.set_wavelength(value)
 
     def get_photons_per_pulse(self):
         return self._attrs['pulse_energy'].to(

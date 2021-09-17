@@ -187,7 +187,16 @@ def test_data_simplebeam():
     h5_file = './testFiles/singfel-multi.h5'
     dd = DD.read(h5_file)
     assert pytest.approx(dd.beam.attrs['wavelength'], 0.1) == 2.5
+    assert pytest.approx(dd.beam.wavelength, 0.1) == 2.5
     print(dd.beam)
+
+
+def test_write_EMC_ini(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    out_path = tmp_path / "config.ini"
+    # out_path = 'config.ini'
+    dd = DD.read(h5_file)
+    dd.writeEmcIni(str(out_path))
 
 
 if __name__ == "__main__":
