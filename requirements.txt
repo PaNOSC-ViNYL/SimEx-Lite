@@ -5,5 +5,5 @@ h5py
 ase
 pint
 future-fstrings
-libpyvinyl
+libpyvinyl<=0.0.2
 extra-geom>=1.1
