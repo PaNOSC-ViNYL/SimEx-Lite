@@ -147,8 +147,8 @@ $ git push --tags
 
 Travis will then deploy to PyPI if tests pass.
 
-Deploy to PyPI manually.
-~~~~~~~~~~~~~~~~~~~~~~~~
+Deploy to PyPI manually
+~~~~~~~~~~~~~~~~~~~~~~~
 
 When Travis CI is not working, one can deploy the package to PyPI manually.
 
