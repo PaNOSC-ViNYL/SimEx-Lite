@@ -91,7 +91,7 @@ Ready to contribute? Here's how to set up `SimEx-Lite` for local development.
     $ python setup.py test or pytest
     $ tox
 
-   To get tox, just pip install them into your virtualenv.
+   To get tox, just install them with :command:`pip`  into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -125,8 +125,15 @@ $ pytest tests.test_SimExLite
 Deploying
 ---------
 
-A reminder for the maintainers on how to deploy.
-Make sure all your changes are committed (including an entry in HISTORY.rst).
+This is a reminder for the maintainers on how to deploy a new version to `PyPI <http://linkhttps://pypi.org/>`_. |br|
+In order to :command:`bump2version`, please make sure:
+
+- All your changes are committed.
+- The documents in :file:`docs` are updated.
+- The version description in :file:`HISTORY.rst` is updated.
+
+bump2version
+~~~~~~~~~~~~
 
 Firstly do a dryrun to check if the files are ready for a release::
 
@@ -139,3 +146,20 @@ $ git push
 $ git push --tags
 
 Travis will then deploy to PyPI if tests pass.
+
+Deploy to PyPI manually.
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+When Travis CI is not working, one can deploy the package to PyPI manually.
+
+1. Generate the package.::
+
+    $ python setup.py bdist_wheel sdist
+
+2. Test pushing to the testing pypi server.::
+
+    $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+.. |br| raw:: html
+
+      <br>
