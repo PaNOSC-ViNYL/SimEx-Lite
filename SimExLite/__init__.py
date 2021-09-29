@@ -6,7 +6,7 @@
 
 __author__ = """Juncheng E"""
 __email__ = 'juncheng.e@xfel.eu'
-__version__ = '0.2.1'
+__version__ = '0.3.0'
 
 # Using pint in the whole project
 # https://pint.readthedocs.io/en/0.10.1/tutorial.html#using-pint-in-your-projects
