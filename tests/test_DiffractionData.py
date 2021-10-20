@@ -102,6 +102,33 @@ def test_readSingFEL():
     assert len(data.array) == 13
 
 
+def test_writeSingFEL(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    data = DD.read(h5_file)
+    ofn = tmp_path / 'rewrite_singfel.h5'
+    DD.write(str(ofn), data, 'singfel')
+
+
+def test_readRewriteSingFEL(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    data = DD.read(h5_file)
+    ofn = tmp_path / 'rewrite_singfel.h5'
+    DD.write(str(ofn), data, 'singfel')
+    DD.read(str(ofn), format='singfel')
+
+
+def test_readAutoRewriteSingFEL(tmp_path):
+    h5_file = './testFiles/singfel-multi.h5'
+    data = DD.read(h5_file)
+    ofn = tmp_path / 'rewrite_singfel.h5'
+    DD.write(str(ofn), data, 'singfel')
+    DD.read(str(ofn))
+
+
+def test_listFormats():
+    DD.listFormats()
+
+
 def test_writeUnsupported():
     input_arr = np.random.rand(10, 10)
     data = DiffractionData(arrary=input_arr)
