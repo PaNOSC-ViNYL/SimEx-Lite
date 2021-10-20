@@ -160,6 +160,11 @@ When Travis CI is not working, one can deploy the package to PyPI manually.
 
     $ twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 
+3. Push to the real pypi server.::
+
+    $ twine check dist/*
+    $ twine upload dist/*
+
 .. |br| raw:: html
 
       <br>
