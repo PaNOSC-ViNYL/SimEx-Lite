@@ -52,6 +52,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/PaNOSC-ViNYL/SimEx-Lite',
-    version='0.3.1',
+    version='0.3.2',
     zip_safe=False,
 )
