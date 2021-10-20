@@ -24,7 +24,7 @@ from pprint import pprint
 ioformats = {
     'UNKNOWN': {
         'desc': 'UNKNOWN data format',  # FORMAT_DISCRIPTION
-        'ext': 'unknown',  # FORMAT_EXTENSION
+        'ext': '',  # FORMAT_EXTENSION
         'module': '',  # MODULE_NAME
         'kwargs': ['']  # KEYWORDS_LIST
     }
@@ -50,10 +50,23 @@ ioformats['emc'] = {
 
 
 def listFormats():
-    print(
-        'Supported format keys and their desciption, extension, keywords and module:'
-    )
-    pprint(ioformats)
+    """Print supported formats"""
+    out_string = ''
+    for key in ioformats:
+        dicts = ioformats[key]
+        out_string += f'Key: {key}\n'
+        out_string += 'Description: {}\n'.format(dicts['desc'])
+        ext = dicts['ext']
+        if ext != '':
+            out_string += 'File extension: {}\n'.format(ext)
+        module = dicts['module']
+        if module != '':
+            out_string += 'API module: {}\n'.format(module)
+        kwargs = dicts['kwargs']
+        if kwargs != ['']:
+            out_string += 'Extra reading keywords: {}\n'.format(kwargs)
+        out_string += '\n'
+    print(out_string)
 
 
 def filetype(filename, kwargs=None) -> str:
@@ -64,7 +77,6 @@ def filetype(filename, kwargs=None) -> str:
         raise FileNotFoundError()
 
     format = 'UNKNOWN'
-    ext = 'unknown'
     # 1. Check if it is h5 file
     if fp.suffix.lower() == '.h5':
         ext = 'h5'
@@ -73,23 +85,20 @@ def filetype(filename, kwargs=None) -> str:
             return format
 
     # 2. If 1 failed, Check it with other extension
-    if ext == 'unknown':
-        for i in ioformats.keys():
-            ext = ioformats[i]['ext']
-            if fp.suffix.lower() == '.' + ext:
-                format = i
-                return format
+    for i in ioformats.keys():
+        ext = ioformats[i]['ext']
+        if fp.suffix.lower() == '.' + ext:
+            format = i
+            return format
 
     # 3. If 2 failed, check it with its content
-    if ext == 'unknown':
-        for i in ioformats.keys():
-            format = filetype_content(filename)
-            if format != 'UNKNOWN':
-                ext = ioformats[i]['ext']
-                return format
+    key = filetype_content(filename)
+    if key != 'UNKNOWN':
+        format = key
+        return format
 
     # 4. check the extra keywords
-    if ext == 'unkown' and kwargs is not None:
+    if format == 'UNKNOWN' and kwargs is not None:
         format = filetype_keywords(kwargs)
 
     if format == 'UNKNOWN':
@@ -437,8 +446,8 @@ def read(filename: str,
         * ``index='::2'`` or ``index=slice(0, None, 2)``: even
         * ``index='1::2'`` or ``index=slice(1, None, 2)``: odd
     :type index: int, slice or str
-    :param format: Used to specify the file-format.  If not given, the
-        file-format will be guessed by the *getFileType* function.
+    :param format: The format key to specify the file-format.  If not given, the function will
+        guess the file-format. `listFormats()` to list supported formats.
     :type format: str
 
     :return: Diffraction data class instance
@@ -466,7 +475,7 @@ def write(filename: str, object: DiffractionData, format: str,
     :param object: The object of DiffractionData class to save.
     :type object: :class:`SimEx.DiffractionData.DiffractionData`
     :param format: The format key to specify the file-format. Supported format keys
-    can be checked with `SimExLite.DiffractionData.listFormats()`
+    can be checked with `listFormats()`
     :type format: str
     """
     try:

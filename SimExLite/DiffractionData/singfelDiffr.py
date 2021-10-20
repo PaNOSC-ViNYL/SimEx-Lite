@@ -24,7 +24,7 @@ def isFormat(fn: str):
             if h5.keys() >= {"data", "info", "params"}:
                 data_grp = h5['data']
                 data_list = list(data_grp)
-                if data_grp[data_list[0]].keys() >= {"diffr"}:
+                if data_grp[data_list[0]].keys() >= {"data"}:
                     return True
                 else:
                     return False
@@ -221,7 +221,10 @@ def getPatternShape(filename):
     """Get the shape of diffraction patterns in the hdf5 file"""
     with h5py.File(filename, 'r') as h5:
         group_name = list(h5['data'])[0]
-        return h5['data'][group_name]['diffr'].shape
+        try:
+            return h5['data'][group_name]['diffr'].shape
+        except KeyError:
+            return h5['data'][group_name]['data'].shape
 
 
 def getPatternType(poissonize):
