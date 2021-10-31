@@ -2,51 +2,119 @@
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
-"""Sample Structure Data APIs"""
+
 import h5py
-# import ase
+import numpy as np
+import matplotlib.pyplot as plt
+from pysingfel import radiationDamage
 
 
-class MolecularDynamicsData:
-    """Molecular Dynamics Data class
-
-    :param input_path: Path to data file
-    :type input_path: str
-    """
-    def __init__(self, input_path=None):
-        self.input_path = input_path
-        self.file_format = self.__getFileFormat()
-
-    def __getFileFormat(self) -> str:
-        """ Check the file format.
-        HDF5:
-            openPMD-MD
-            XMDYN
-        ASCII:
-            Handled by ASE
-
-        """
-        if h5py.is_hdf5(self.input_path):
-            with h5py.File(self.input_path, 'r') as h5:
-                try:
-                    version = h5['/info/package_version'][()].decode('ascii')
-                except KeyError:
-                    return "UNKNOWN"
-                if version.find('XMDYN') != -1:
-                    return "XMDYN"
-                else:
-                    return "UNKNOWN"
-
-
-# %%
 class xmdynData:
     """xmdyn Data class
 
-    :param input_path: Path to XMDYN hdf5 data
+    :param input_path: Path to XMDYN HDF5 data
     :type input_path: str
     """
     def __init__(self, input_path=None):
         self.input_path = input_path
+
+    @property
+    def diam(self):
+        try:
+            return self._diam
+        except AttributeError:
+            return self.getDiam()
+
+    @property
+    def focus_area(self):
+        return np.pi / 4 * self.diam**2
+
+    @property
+    def n_photons(self):
+        """The n_photons property."""
+        try:
+            return self._n_photons
+        except AttributeError:
+            return self.get_n_photons()
+
+    def get_n_photons(self):
+        """Get the number of photons of each time frame"""
+        fname = self.input_path
+        n_photons = []
+        with h5py.File(fname, 'r') as f:
+            n_frame = len(f['data']) - 1
+            for i in range(n_frame):
+                datasetname = '/data/snp_' + '{0:07}'.format(i + 1) + '/Nph'
+                n_photons.append(f[datasetname][()][0])
+        self._n_photons = np.array(n_photons)
+        return self.n_photons
+
+    def plot_n_photons(self):
+        n_photons = self.n_photons
+        #     plt.figure(figsize=(8,6))
+        plt.figure()
+        plt.plot(n_photons)
+        n_phontons_idx = np.indices(n_photons.shape)
+        plt.plot(n_phontons_idx[0][::10], n_photons[::10], 'o')
+        plt.xlabel('time slice #')
+        plt.ylabel('number of photons')
+
+    def plot_n_photons_time(self):
+        n_photons = self.n_photons
+        #     plt.figure(figsize=(8,6))
+        times = self.getTime() * 1e15
+        plt.figure()
+        plt.plot(times, n_photons)
+        plt.plot(times[::10], n_photons[::10], 'o')
+        plt.xlabel('time (fs)')
+        plt.ylabel('number of photons')
+
+    def getTime(self, *snapshots, is_print=False):
+        file = self.input_path
+        with h5py.File(file, 'r') as f:
+            times = []
+            g_time = f['misc/time']
+            for i in g_time:
+                times.append(g_time[i][0])
+            times = np.array(times)
+            t_step = times[1] - times[0]
+
+            if (is_print):
+                print(f"n_frame = {times.shape[0]}")
+                print(f"time start = {times[0]*1e15:.3g} fs")
+                print(f"time end = {times[-1]*1e15:.3g} fs")
+                print(f"time step = {t_step*1e15:.3g} fs")
+                print("Returned time in unit of second")
+
+                if (snapshots):
+                    for step in snapshots:
+                        print(
+                            f"time at step {step} = {times[step]*1e15:.3g} fs")
+
+            return np.array(times)
+
+    def getDiam(self):
+        """The diameter (m) of the beam"""
+        with h5py.File(self.input_path, 'r') as h5:
+            lines = [
+                l.split(' ')
+                for l in h5['params/xparams'][()].decode('utf-8').split("\n")
+            ]
+            xparams = radiationDamage.get_dict_from_lines(lines)
+            diam = xparams['DIAM']
+            self._diam = diam
+        return self._diam
+
+    def getN_phot_slice(self, timeSlice, sliceInterval):
+        """Get the photons in one time slice"""
+        fname = self.input_path
+        n_phot = 0
+        for i in range(sliceInterval):
+            with h5py.File(fname, 'r') as f:
+                datasetname = '/data/snp_' + '{0:07}'.format(
+                    timeSlice - i) + '/Nph'
+                n_phot += f[datasetname][0]
+        return n_phot
 
     def getSnpGroupList(self, snp_idx=1):
         """Get the dataset list of a snapshot group.
@@ -58,33 +126,6 @@ class xmdynData:
         :rtype: list
         """
         return getItemList(self.input_path, 'data/' + snpName(snp_idx))
-
-    # Softlink seems not working for datasets
-    # def softlinkData(self, ref_dset, ref_snp=1):
-    #     """Replace a dataset of a snapshot with a softlink of a
-    #     reference snapshot.
-
-    #     :param ref_dset: The reference dataset name.
-    #     :type ref_dset: str
-    #     :param ref_snp: The reference snapshot, defaults to 1.
-    #     :type ref_snp: int
-    #     """
-    #     input_path = self.input_path
-    #     ref_snp_name = snpName(ref_snp)
-
-    #     with h5py.File(input_path, "r+") as h5_in:
-    #         snp_range = getSnpRange(input_path)
-    #         ref_snp_index = ref_snp - 1
-    #         snp_range.pop(ref_snp_index)
-    #         # for snp_idx in tqdm(snp_range):
-    #         for snp_idx in snp_range:
-    #             snp = snpName(snp_idx)
-    #             try:
-    #                 del h5_in['data'][snp][ref_dset]
-    #             except KeyError:
-    #                 pass
-    #             h5_in['data'][snp][ref_dset] = h5py.SoftLink(
-    #                 'data/{}/{}'.format(ref_snp_name, ref_dset))
 
     def replaceWithExternal(self,
                             ref_path,
@@ -232,6 +273,20 @@ def getSnpRange(input_path):
             if group_name != 'angle':
                 snp_range.append(int(group_name.split('_')[1]))
     return snp_range
+
+
+def getTimeSlices(slice_interval, number_of_slices):
+    done = False
+    time_slice = 0
+    time_slices = []
+    while not done:
+        # set time slice to calculate diffraction pattern
+        if time_slice + slice_interval >= number_of_slices:
+            slice_interval = number_of_slices - time_slice
+            done = True
+        time_slice += slice_interval
+        time_slices.append(time_slice)
+    return time_slices
 
 
 def replaceDset(input_path, ref_path, ref_dsets):
