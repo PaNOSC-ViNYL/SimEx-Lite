@@ -5,6 +5,7 @@
 """Gaussian Noise Detector Calculator Module"""
 
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
+from tqdm import tqdm
 import SimExLite.DiffractionData as DD
 import numpy as np
 from tqdm import tqdm
