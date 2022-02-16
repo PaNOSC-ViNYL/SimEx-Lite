@@ -5,6 +5,7 @@
 """Gaussian Noise Detector Calculator Module"""
 
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
+from tqdm import tqdm
 import SimExLite.DiffractionData as DD
 import numpy as np
 
@@ -66,7 +67,8 @@ class GaussianNoiseCalculator(BaseCalculator):
         diffr_data.addGaussianNoise(self.parameters.mu,
                                     self.parameters.sigs_popt)
         diffr_data.multiply(1 / self.parameters.mu)
-        diffr_data.array = np.round(diffr_data.array)
+        for i in tqdm(range(len(diffr_data.array))):
+            diffr_data.array[i] = np.round(diffr_data.array[i])
         diffr_data.array[diffr_data.array < 0] = 0
         diffr_data.setArrayDataType('i4')
         self._set_data(diffr_data)
