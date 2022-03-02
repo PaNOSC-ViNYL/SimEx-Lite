@@ -8,7 +8,7 @@ from libpyvinyl import BaseData
 
 
 class WavefrontData(BaseData):
-    """Example dict mapping data"""
+    """Wavefront data mapper"""
 
     def __init__(
         self,
@@ -43,7 +43,7 @@ class WavefrontData(BaseData):
         return {}
 
     @classmethod
-    def from_file(cls, filename: str, format_class, key, **kwargs):
+    def from_file(cls, filename: str, format_class, key:str, **kwargs):
         return cls(
             key,
             filename=filename,
