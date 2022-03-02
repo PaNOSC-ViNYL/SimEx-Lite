@@ -1,6 +1,6 @@
 import numpy as np
 import h5py
-from libpyvinyl import BaseFormat
+from libpyvinyl.BaseFormat import BaseFormat
 from .WavefrontData import WavefrontData
 
 
@@ -11,12 +11,12 @@ class WPGFormat(BaseFormat):
     @classmethod
     def format_register(self):
         key = "WPG"
-        desciption = "WPG format for WavefrontData"
+        description = "WPG format for WavefrontData"
         file_extension = ".h5"
         read_kwargs = [""]
         write_kwargs = [""]
         return self._create_format_register(
-            key, desciption, file_extension, read_kwargs, write_kwargs
+            key, description, file_extension, read_kwargs, write_kwargs
         )
 
     @staticmethod
