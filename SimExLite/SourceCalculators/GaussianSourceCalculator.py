@@ -2,6 +2,7 @@
 
 import logging
 import numpy as np
+import sys
 from pathlib import Path
 from pint import Quantity, Unit
 from scipy.constants import hbar, c
