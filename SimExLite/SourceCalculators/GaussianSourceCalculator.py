@@ -1,11 +1,10 @@
 """:module GaussianSourceCalculator: Module that holds the GaussianSourceCalculator class.  """
 
-import sys
 import numpy as np
+import sys
 from pathlib import Path
-from scipy.constants import hbar, c
 from pint import Quantity, Unit
-import imp
+from scipy.constants import hbar, c
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from SimExLite.WavefrontData import WavefrontData
