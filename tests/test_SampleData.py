@@ -30,7 +30,7 @@ def test_create_from_dict(tmp_data):
 
 @pytest.fixture(scope="session")
 def SD_pdb(tmp_data, tmp_path_factory):
-    """Test writing a pdb file from"""
+    """Test writing a pdb file from the data class"""
     SD = SampleData.from_dict(tmp_data, key="tmp_data")
     fn = tmp_path_factory.mktemp("data") / "atoms.pdb"
     SD_pdb = SD.write(str(fn), ASEFormat)
@@ -38,7 +38,7 @@ def SD_pdb(tmp_data, tmp_path_factory):
 
 
 def test_create_from_file(SD_pdb, tmp_data):
-    """Test creating a SampleData from data_dict"""
+    """Test creating a SampleData from a file"""
     filename = SD_pdb.filename
     SD = SampleData.from_file(filename, ASEFormat, key="tmp_data")
     data_dict = SD.get_data()
