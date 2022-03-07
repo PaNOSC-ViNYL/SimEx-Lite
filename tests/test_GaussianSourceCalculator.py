@@ -12,13 +12,5 @@ def test_run_default_parameters():
     print(type(data_out))
 
 
-def test_run_default_parameters():
-    calculator = GaussianSourceCalculator("gaussian_source", WPG_path)
-    print(calculator.parameters)
-    data_out = calculator.backengine()
-    data_out.get_data()
 
-
-def test_wrong_WPG_path(tmpdir):
-    with pytest.raises(ValueError):
-        GaussianSourceCalculator("gaussian_source")
+# test_wrong_WPG_path()
