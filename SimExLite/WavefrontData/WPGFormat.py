@@ -1,12 +1,17 @@
 import numpy as np
 import h5py
-from libpyvinyl import BaseFormat
+from libpyvinyl.BaseFormat import BaseFormat
 from .WavefrontData import WavefrontData
 
 
 class WPGFormat(BaseFormat):
     def __init__(self) -> None:
         super().__init__()
+
+    @staticmethod
+    def data_type():
+        """Return the DataClass for which this FormatClass is working"""
+        return WavefrontData
 
     @classmethod
     def format_register(self):
@@ -38,9 +43,9 @@ class WPGFormat(BaseFormat):
             data_dict["electricField"] = {}
             data_dict["electricField"]["x"] = Ex
             data_dict["electricField"]["y"] = Ey
-            assert Ex.shape[0] == h5["params/Mesh/nx"]
-            assert Ex.shape[1] == h5["params/Mesh/ny"]
-            assert Ex.shape[2] == h5["params/Mesh/nSlices"]
+            assert Ex.shape[0] == h5["params/Mesh/nx"][()]
+            assert Ex.shape[1] == h5["params/Mesh/ny"][()]
+            assert Ex.shape[2] == h5["params/Mesh/nSlices"][()]
 
             data_dict["zCoordinate"] = h5["params/Mesh/zCoord"][()]
             data_dict["radiusOfCurvatureX"] = h5["params/Rx"][()]
