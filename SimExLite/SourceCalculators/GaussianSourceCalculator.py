@@ -1,5 +1,6 @@
 """:module GaussianSourceCalculator: Module that holds the GaussianSourceCalculator class.  """
 
+from warnings import warn
 import sys
 import numpy as np
 from pathlib import Path
@@ -10,6 +11,14 @@ import imp
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from SimExLite.WavefrontData import WavefrontData
 
+# WPG is neccessary to execute the calculator, but it's not a hard dependency of SimExLite.
+try:
+    from wpg.generators import build_gauss_wavefront
+    from wpg import Wavefront
+    WPG_AVAILABLE = True
+except ModuleNotFoundError:
+    WPG_AVAILABLE = False
+
 
 class GaussianSourceCalculator(BaseCalculator):
     """:class GaussianSourceCalculator: Class representing a x-ray free electron laser photon source."""
@@ -17,7 +26,6 @@ class GaussianSourceCalculator(BaseCalculator):
     def __init__(
         self,
         name: str,
-        WPG_path: str,
         input=None,
         output_keys: str = "Gaussian_wavefront",
         output_data_types=WavefrontData,
@@ -26,6 +34,10 @@ class GaussianSourceCalculator(BaseCalculator):
         calculator_base_dir="GaussianSourceCalculator",
         parameters=None,
     ):
+        if not WPG_AVAILABLE:
+            warn('Cannot find the "WPG" module, which is required to run '
+                 'GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?'
+                )
         super().__init__(
             name,
             input,
@@ -36,27 +48,7 @@ class GaussianSourceCalculator(BaseCalculator):
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
-        self.__WPG_path = None
-        self.WPG_path = WPG_path
 
-    @property
-    def WPG_path(self) -> str:
-        return self.__WPG_path
-
-    @WPG_path.setter
-    def WPG_path(self, value: str):
-        self.set_WPG_path(value)
-
-    def set_WPG_path(self, value: str):
-        if isinstance(value, str):
-            self.__WPG_path = value
-            if not Path(self.__WPG_path).is_dir():
-                raise ValueError("The input for WPG_path is not a valid directory.")
-            sys.path.insert(0, self.WPG_path)
-        else:
-            raise TypeError(
-                f"WPG_path is supposed to be in type str, instead of {type(value)}"
-            )
 
     def init_parameters(self):
         parameters = CalculatorParameters()
@@ -118,8 +110,13 @@ class GaussianSourceCalculator(BaseCalculator):
         self.parameters = parameters
 
     def backengine(self):
-        from wpg.generators import build_gauss_wavefront
-        from wpg import Wavefront
+
+        # check for WPG first
+        if not WPG_AVAILABLE:
+            raise ModuleNotFoundError(
+                'Cannot find the "WPG" module, which is required to run '
+                'GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?'
+                )
 
         # The rms of the amplitude distribution (Gaussian)
         theta = self.parameters["divergence"].value_no_conversion.to("radian").magnitude
