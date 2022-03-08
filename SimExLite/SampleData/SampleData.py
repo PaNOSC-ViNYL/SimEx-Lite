@@ -22,8 +22,8 @@ class SampleData(BaseData):
         expected_data = {}
 
         # Atomic position of each atom in angstrom [n, 3] (3D) or [n, 2] (2D)
-        expected_data["positions"] = {}
-        # Atomic number of each atom
+        expected_data["positions"] = None
+        # Atomic number (Z) of each atom
         expected_data["atomic_numbers"] = None
         ### DataClass developer's job end
 
