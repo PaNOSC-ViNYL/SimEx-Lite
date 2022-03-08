@@ -210,7 +210,7 @@ class GaussianSourceCalculator(BaseCalculator):
 
 
 def get_divergence_from_beam_diameter(E, beam_diameter_fwhm):
-    """Calculate the divergence (radian) from and photon energy (eV) beam_diameter (m)"""
+    """Calculate the divergence (radian) from photon energy (eV) and beam_diameter (m)"""
     # The rms of the amplitude distribution (Gaussian)
     E = Quantity(E, Unit("eV"))
     beam_waist = beam_diameter_fwhm / np.sqrt(2.0 * np.log(2.0))
