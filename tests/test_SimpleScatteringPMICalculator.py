@@ -1,10 +1,6 @@
 """Test SimpleScatteringPMICalculator"""
 
 import pytest
-import sys
-WPG_path = "/home/juncheng/GPFS/exfel/data/user/juncheng/WPG"
-sys.path.insert(0, WPG_path)
-
 from SimExLite import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
