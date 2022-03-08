@@ -120,7 +120,7 @@ class WPGPropagationCalculator(BaseCalculator):
         assert len(self.output_keys) == 1
         key = self.output_keys[0]
         output_data = self.output[key]
-        output_data.set_file(output_fn, WavefrontData)
+        output_data.set_file(output_fn, WPGFormat)
 
         return self.output
 
