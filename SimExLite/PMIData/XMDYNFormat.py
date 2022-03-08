@@ -49,7 +49,7 @@ class XMDYNFormat(BaseFormat):
                 data_dict[step] = {}
                 time_step = data_dict[step]
                 # Time of each step in second
-                time_step["time"] = h5["misc/time"][snp][0]
+                time_step["time"] = h5["misc/time"][snp][()]
                 time_step["atomic_numbers"] = step_in["Z"][()]
                 # Velocity of each atom. The unit is m/s
                 time_step["velocity"] = step_in["Z"][()]
