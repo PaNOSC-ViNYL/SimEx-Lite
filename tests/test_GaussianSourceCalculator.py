@@ -139,7 +139,7 @@ def test_paths(tmp_path="tmp"):
     assert validate_result(gsc)
     assert os.path.exists(gsc.base_dir)
     assert os.path.exists(gsc.output_file_paths[0])
-    assert os.path.samefile(gsc.basedir, os.path.join(instr_dir, calc_dir))
+    assert os.path.samefile(gsc.base_dir, os.path.join(instr_dir, calc_dir))
     assert os.path.samefile(gsc.output_file_paths[0], os.path.join(instr_dir, calc_dir, outf))
 
 
