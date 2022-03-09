@@ -183,7 +183,7 @@ class GaussianSourceCalculator(BaseCalculator):
         srwl_wf.Ry = Ry
 
         key = self.output_keys[0]
-        filename = self.output_filenames[0]
+        filename = self.output_file_paths[0]
         output_data = self.output[key]
 
         wavefront = Wavefront(srwl_wf)
