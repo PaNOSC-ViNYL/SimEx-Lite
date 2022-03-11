@@ -4,4 +4,5 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """DiffractionData package for SimEx-Lite."""
 
-from .DiffractionData import *
+from .DiffractionData import DiffractionData
+from .SingfelFormat import SingfelFormat
