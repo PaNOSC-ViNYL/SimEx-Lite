@@ -9,7 +9,7 @@ from SimExLite.utils.io import parseIndex
 from SimExLite.PhotonBeamData import SimpleBeam
 
 
-class SingfelFormat(BaseFormat):
+class SingFELFormat(BaseFormat):
     def __init__(self) -> None:
         super().__init__()
 

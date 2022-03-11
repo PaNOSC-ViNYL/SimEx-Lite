@@ -5,4 +5,4 @@
 """DiffractionData package for SimEx-Lite."""
 
 from .DiffractionData import DiffractionData
-from .SingfelFormat import SingfelFormat
+from .SingFELFormat import SingFELFormat

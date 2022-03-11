@@ -7,7 +7,7 @@ from pint import Quantity, Unit
 from scipy.constants import hbar, c
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
-from SimExLite.WavefrontData import WavefrontData
+from SimExLite.WavefrontData import WavefrontData,WPGFormat
 
 
 class GaussianSourceCalculator(BaseCalculator):
@@ -185,13 +185,13 @@ class GaussianSourceCalculator(BaseCalculator):
         srwl_wf.Ry = Ry
 
         key = self.output_keys[0]
-        filename = self.output_filenames[0]
+        filename = self.output_file_paths[0]
         output_data = self.output[key]
 
         wavefront = Wavefront(srwl_wf)
         wavefront.store_hdf5(filename)
 
-        output_data.set_file(filename, WavefrontData)
+        output_data.set_file(filename, WPGFormat)
 
         return self.output
 
