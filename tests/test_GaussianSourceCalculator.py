@@ -2,15 +2,10 @@
 
 import os
 import numpy as np
-from ocelot import spectrum
-import pytest
 from SimExLite.SourceCalculators.GaussianSourceCalculator import (
     GaussianSourceCalculator,
     get_divergence_from_beam_diameter,
 )
-from libpyvinyl import BaseCalculator, CalculatorParameters
-from libpyvinyl.BaseData import DataCollection
-from SimExLite.WavefrontData import WavefrontData
 from matplotlib import pyplot as plt
 import h5py
 from scipy.constants import hbar, c, electron_volt
