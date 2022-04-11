@@ -4,12 +4,23 @@ from pathlib import Path
 import shutil
 import sys
 
-# Requires WPG package: https://github.com/samoylv/WPG
-from s2e.prop import propagate_s2e
-
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
+from SimExLite.utils.Logger import setLogger
+
+logger = setLogger(__name__)
+
+# WPG (https://github.com/samoylv/WPG) is neccessary to execute the calculator,
+# but it's not a hard dependency of SimExLite.
+try:
+    from wpg.generators import build_gauss_wavefront
+    from wpg import Wavefront
+    from s2e.prop import propagate_s2e
+
+    WPG_AVAILABLE = True
+except ModuleNotFoundError:
+    WPG_AVAILABLE = False
 
 
 class WPGPropagationCalculator(BaseCalculator):
@@ -26,6 +37,10 @@ class WPGPropagationCalculator(BaseCalculator):
         calculator_base_dir="WPGPropagationCalculator",
         parameters=None,
     ):
+        if not WPG_AVAILABLE:
+            logger.warning('Cannot find the "WPG" module, which is required to run '
+                    'WPGPropagationCalculator.backengine(). Is it included in PYTHONPATH?'
+                )
         super().__init__(
             name,
             input,
@@ -36,7 +51,6 @@ class WPGPropagationCalculator(BaseCalculator):
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
-        self.__WPG_path = None
 
     def init_parameters(self):
         parameters = CalculatorParameters()
@@ -68,11 +82,16 @@ class WPGPropagationCalculator(BaseCalculator):
 
         return input_fn
 
-    def backengine(self):
+    def backengine(self)->DataCollection:
+
+        # check for WPG first
+        if not WPG_AVAILABLE:
+            raise ModuleNotFoundError(
+                'Cannot find the "WPG" module, which is required to run '
+                "WPGPropagationCalculator.backengine(). Is it included in PYTHONPATH?"
+            )
 
         self.prep_beamline_config()
-        sys.path.insert(0, self.base_dir)
-        import WPG_beamline
 
         input_fn = self.get_input_fn()
         output_fn = str(Path(self.base_dir) / self.output_filenames[0])
