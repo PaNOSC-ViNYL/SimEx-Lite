@@ -92,6 +92,8 @@ class WPGPropagationCalculator(BaseCalculator):
             )
 
         self.prep_beamline_config()
+        sys.path.insert(0, self.base_dir)
+        import WPG_beamline
 
         input_fn = self.get_input_fn()
         output_fn = str(Path(self.base_dir) / self.output_filenames[0])
