@@ -8,6 +8,7 @@ from SimExLite.SourceCalculators.GaussianSourceCalculator import (
 )
 from matplotlib import pyplot as plt
 import h5py
+from pathlib import Path
 from scipy.constants import hbar, c, electron_volt
 
 
@@ -52,11 +53,11 @@ def test_divergence():
     assert np.allclose(res, ref, rtol=1e-8, atol=1e-8)
 
 
-def test_get_data(tmp_path="tmp"):
+def test_get_data(tmp_path):
     "test accessing to the results via output.get_data()"
     os.makedirs(tmp_path, exist_ok=True)
     gsc = GaussianSourceCalculator(
-        "gaussian_source", instrument_base_dir=tmp_path
+        "gaussian_source", instrument_base_dir=str(tmp_path)
     )
     gsc.backengine()
     d = gsc.output.get_data()
@@ -76,18 +77,18 @@ def test_get_data(tmp_path="tmp"):
     plt.savefig(os.path.join(tmp_path, f"gsc_{i}.png"))
 
 
-def test_run_default_parameters(tmp_path='tmp'):
+def test_run_default_parameters(tmp_path):
     "Test a simple execution of GSC with the default parameters."
-    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=tmp_path)
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     print(gsc.parameters)
     data_out = gsc.backengine()
     print(type(data_out))
     assert validate_result(gsc)
 
 
-def test_custom_params(tmp_path='tmp'):
+def test_custom_params(tmp_path):
     "Execute GSC with some uglier cusstom parameters."
-    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=tmp_path)
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
 
     # set some "ugly" parameters
     gsc.parameters["photon_energy"].value = 1e3 * np.pi + 0.6
@@ -108,19 +109,19 @@ def test_custom_params(tmp_path='tmp'):
     assert validate_result(gsc)
 
 
-def test_spectrums(tmp_path='tmp'):
+def test_spectrums(tmp_path):
     "Test the spectrum options with the default parameters."
-    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=tmp_path)
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     for spectrum in ["SASE", "tophat", "twocolour"]:
         gsc.parameters["photon_energy_spectrum_type"].value = spectrum
         gsc.backengine()
         assert validate_result(gsc)
 
 
-def test_paths(tmp_path="tmp"):
+def test_paths(tmp_path):
     "Check if passing custom paths works as excepted"
-    os.makedirs(tmp_path, exist_ok=True)
-    instr_dir = os.path.join(tmp_path, "gsc_path_test_instr")
+    os.makedirs(str(tmp_path), exist_ok=True)
+    instr_dir = os.path.join(str(tmp_path), "gsc_path_test_instr")
     calc_dir = "gsc_path_test_calc"
     outf = "gsc_path_test.h5"
     gsc = GaussianSourceCalculator(
@@ -138,10 +139,10 @@ def test_paths(tmp_path="tmp"):
     assert os.path.samefile(gsc.output_file_paths[0], os.path.join(instr_dir, calc_dir, outf))
 
 
-def test_save_data(tmp_path="tmp"):
+def test_save_data(tmp_path):
     "Check if the calculation produces a valid HDF5 file"
-    os.makedirs(tmp_path, exist_ok=True)
-    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=tmp_path)
+    os.makedirs(str(tmp_path), exist_ok=True)
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     gsc.backengine()
     for f in gsc.output_file_paths:
         print(f)
@@ -149,11 +150,11 @@ def test_save_data(tmp_path="tmp"):
         assert h5py.is_hdf5(f)
 
 
-def test_dump_and_load(tmp_path="tmp"):
+def test_dump_and_load(tmp_path):
     "Check if dumping and loading an instrument works and leaves parameters unchanged."
-    os.makedirs(tmp_path, exist_ok=True)
-    tmpf = os.path.join(tmp_path, "dumptest.dump")
-    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=tmp_path)
+    os.makedirs(str(tmp_path), exist_ok=True)
+    tmpf = os.path.join(str(tmp_path), "dumptest.dump")
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     # gsc.backengine()
     gsc.dump(tmpf)
     gsc2 = GaussianSourceCalculator("fromdump")
@@ -170,14 +171,15 @@ def test_dump_and_load(tmp_path="tmp"):
 
 
 def main():
+    tmp_path = Path('./tmp')
     test_divergence()
-    test_get_data()
-    test_run_default_parameters()
-    test_custom_params()
-    test_spectrums()
-    test_dump_and_load()
-    test_paths()
-    test_save_data()
+    test_get_data(tmp_path)
+    test_run_default_parameters(tmp_path)
+    test_custom_params(tmp_path)
+    test_spectrums(tmp_path)
+    test_dump_and_load(tmp_path)
+    test_paths(tmp_path)
+    test_save_data(tmp_path)
 
 
 if __name__ == "__main__":
