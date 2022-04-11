@@ -1,11 +1,8 @@
 """Test EMCPhoton"""
 
-import sys
 import pytest
 
-WPG_path = "/home/juncheng/GPFS/exfel/data/user/juncheng/WPG"
-sys.path.insert(0, WPG_path)
-from SimExLite.PropagationCalculators.WPGProgagationCalculator import (
+from SimExLite.PropagationCalculators.WPGPropagationCalculator import (
     create_simple_beamline_file,
     WPGPropagationCalculator,
 )
