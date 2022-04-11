@@ -37,6 +37,21 @@ class WPGPropagationCalculator(BaseCalculator):
         calculator_base_dir="WPGPropagationCalculator",
         parameters=None,
     ):
+        """
+        Args:
+            name (str): The name of this calculator.
+            input (DataCollection): The input `DataCollection` of this calculator.
+            output_keys (str, optional): The key(s) of this calculator's output data. It's a list of `str`s or
+        a single str. Defaults to "WPG_wavefront".
+            output_filenames (str, optional): The output filename of this calculator. Defaults to "wavefront.h5".
+            instrument_base_dir (str, optional): The base directory for the instrument to which this calculator
+        belongs. Defaults to "./". The final exact output file path depends on `instrument_base_dir`
+        and `calculator_base_dir`: `instrument_base_dir`/`calculator_base_dir`/filename.
+            calculator_base_dir (str, optional): The base directory for this calculator. Defaults to "./". The final
+        exact output file path depends on `instrument_base_dir` and `calculator_base_dir`:
+        `instrument_base_dir`/`calculator_base_dir`/filename.
+        """
+ 
         if not WPG_AVAILABLE:
             logger.warning('Cannot find the "WPG" module, which is required to run '
                     'WPGPropagationCalculator.backengine(). Is it included in PYTHONPATH?'
@@ -53,6 +68,7 @@ class WPGPropagationCalculator(BaseCalculator):
         )
 
     def init_parameters(self):
+        """Initialize the calculator parameters."""
         parameters = CalculatorParameters()
         beamline_config = parameters.new_parameter(
             "beamline_config_file", comment="The beamline_configfile"
@@ -64,13 +80,13 @@ class WPGPropagationCalculator(BaseCalculator):
         self.parameters = parameters
 
     def prep_beamline_config(self):
-        """Copy the beamline config file to the working dir to import the beamline module"""
+        """Copy the beamline config file to the working dir to import the beamline module."""
         beamline_config_fn = self.parameters["beamline_config_file"].value
         dst_path = Path(self.base_dir) / "WPG_beamline.py"
         shutil.copyfile(beamline_config_fn, str(dst_path))
 
     def get_input_fn(self):
-        """Make sure the data is a mapping of WPGFormat file"""
+        """Make sure the data is a mapping of WPGFormat file."""
         assert len(self.input) == 1
         input_data = self.input.to_list()[0]
         if input_data.mapping_type == WPGFormat:
@@ -83,6 +99,7 @@ class WPGPropagationCalculator(BaseCalculator):
         return input_fn
 
     def backengine(self)->DataCollection:
+        """Run the simulation using WPG."""
 
         # check for WPG first
         if not WPG_AVAILABLE:
