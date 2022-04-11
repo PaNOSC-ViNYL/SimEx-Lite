@@ -1,54 +1,75 @@
 """:module GaussianSourceCalculator: Module that holds the GaussianSourceCalculator class.  """
 
-from warnings import warn
-import sys
+import logging
 import numpy as np
 from pathlib import Path
-from scipy.constants import hbar, c
 from pint import Quantity, Unit
-import imp
+from scipy.constants import hbar, c
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 
-# WPG is neccessary to execute the calculator, but it's not a hard dependency of SimExLite.
+# WPG is necessary to execute the calculator, but it's not a hard dependency of SimExLite.
 try:
     from wpg.generators import build_gauss_wavefront
     from wpg import Wavefront
+
     WPG_AVAILABLE = True
 except ModuleNotFoundError:
     WPG_AVAILABLE = False
 
+# Logging setting
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+# Example:
+# 2022-04-07 16:06:34,572:module_name:INFO: My first message.
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+# Console handler
+ch = logging.StreamHandler()
+ch.setFormatter(formatter)
+logger.addHandler(ch)
 
 class GaussianSourceCalculator(BaseCalculator):
-    """:class GaussianSourceCalculator: Class representing a x-ray free electron laser photon source."""
+    """:class GaussianSourceCalculator: Class calculating a x-ray free electron
+    laser photon source under the gaussian assumption."""
 
     def __init__(
         self,
         name: str,
-        input=None,
         output_keys: str = "Gaussian_wavefront",
-        output_data_types=WavefrontData,
         output_filenames: str = "wavefront.h5",
         instrument_base_dir="./",
         calculator_base_dir="GaussianSourceCalculator",
         parameters=None,
     ):
+        """
+        Args:
+            name (str): The name of this calculator.
+            output_keys (str, optional): The key(s) of this calculator's output data. It's a list of `str`s or
+        a single str. Defaults to "Gaussian_wavefront".
+            output_filenames (str, optional): The output filename of this calculator. Defaults to "wavefront.h5".
+            instrument_base_dir (str, optional): The base directory for the instrument to which this calculator
+        belongs. Defaults to "./". The final exact output file path depends on `instrument_base_dir`
+        and `calculator_base_dir`: `instrument_base_dir`/`calculator_base_dir`/filename.
+            calculator_base_dir (str, optional): The base directory for this calculator. Defaults to "./". The final
+        exact output file path depends on `instrument_base_dir` and `calculator_base_dir`:
+        `instrument_base_dir`/`calculator_base_dir`/filename.
+        """
         if not WPG_AVAILABLE:
-            warn('Cannot find the "WPG" module, which is required to run '
-                 'GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?'
-                )
+            logger.warning(
+                'Cannot find the "WPG" module, which is required to run '
+                "GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?"
+            )
         super().__init__(
             name,
-            input,
+            None,
             output_keys,
-            output_data_types=output_data_types,
+            output_data_types=WavefrontData,
             output_filenames=output_filenames,
             instrument_base_dir=instrument_base_dir,
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
-
 
     def init_parameters(self):
         parameters = CalculatorParameters()
@@ -78,10 +99,9 @@ class GaussianSourceCalculator(BaseCalculator):
             "divergence", comment="Beam divergence angle", unit="radian"
         )
         divergence.add_interval(0, 2 * np.pi, True)
-        diver_value = get_divergence_from_beam_diameter(
+        divergence.value = get_divergence_from_beam_diameter(
             photon_energy.value, diameter.value
         )
-        divergence.value = diver_value
 
         spectrum_type = parameters.new_parameter(
             "photon_energy_spectrum_type",
@@ -115,8 +135,8 @@ class GaussianSourceCalculator(BaseCalculator):
         if not WPG_AVAILABLE:
             raise ModuleNotFoundError(
                 'Cannot find the "WPG" module, which is required to run '
-                'GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?'
-                )
+                "GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?"
+            )
 
         # The rms of the amplitude distribution (Gaussian)
         theta = self.parameters["divergence"].value_no_conversion.to("radian").magnitude
@@ -124,20 +144,15 @@ class GaussianSourceCalculator(BaseCalculator):
             self.parameters["photon_energy"].value_no_conversion.to("joule").magnitude
         )
         E_eV = self.parameters["photon_energy"].value_no_conversion.to("eV").magnitude
-        coherence_time = (
-            2.0
-            * np.pi
-            * hbar
-            / self.parameters["photon_energy_relative_bandwidth"].value
-            / E_joule
-        )
+        relative_bandwidth = self.parameters["photon_energy_relative_bandwidth"].value
+        coherence_time = 2.0 * np.pi * hbar / relative_bandwidth / E_joule
         pulse_energy = self.parameters["pulse_energy"].value_no_conversion
 
         beam_waist = 2.0 * hbar * c / theta / E_joule
         wavelength = 1239.8e-9 / E_eV
         rayleigh_length = np.pi * beam_waist**2 / wavelength
 
-        print("rayleigh_length =", rayleigh_length)
+        logger.info(f"rayleigh_length = {rayleigh_length}")
 
         beam_diameter_fwhm = (
             self.parameters["beam_diameter_fwhm"]
