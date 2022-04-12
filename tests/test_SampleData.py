@@ -1,9 +1,9 @@
 """Test MolecularDynamicsData"""
 
-import h5py
 import numpy as np
 import pytest
 from SimExLite.SampleData import SampleData, ASEFormat
+from ase.io import read, write
 
 
 @pytest.fixture(scope="session")
@@ -22,9 +22,8 @@ def test_create_from_dict(tmp_data):
     """Test creating a SampleData from data_dict"""
     SD = SampleData.from_dict(tmp_data, key="tmp_data")
     data_dict = SD.get_data()
-    print(data_dict)
-    print(tmp_data)
-    # assert False
+    # print(data_dict)
+    # print(tmp_data)
     assert data_dict == tmp_data
 
 
@@ -34,6 +33,8 @@ def SD_pdb(tmp_data, tmp_path_factory):
     SD = SampleData.from_dict(tmp_data, key="tmp_data")
     fn = tmp_path_factory.mktemp("data") / "atoms.pdb"
     SD_pdb = SD.write(str(fn), ASEFormat)
+    atoms = read(fn)
+    assert (SD_pdb.get_data()["positions"] == atoms.positions).all()
     return SD_pdb
 
 
@@ -43,7 +44,7 @@ def test_create_from_file(SD_pdb, tmp_data):
     SD = SampleData.from_file(filename, ASEFormat, key="tmp_data")
     data_dict = SD.get_data()
     assert SD.mapping_type == ASEFormat
-    print(data_dict)
-    print(tmp_data)
+    # print(data_dict)
+    # print(tmp_data)
     assert np.all(data_dict["positions"] == tmp_data["positions"])
     assert np.all(data_dict["atomic_numbers"] == tmp_data["atomic_numbers"])
