@@ -192,7 +192,7 @@ class PMIScattering(object):
         for ZZ in range(1, maxZ + 1):
             for qq in range(ZZ + 1):
                 g_dbase["ff"][ii, :] = xdbase[:, ZZ] * (ZZ - qq) / (ZZ * 1.0)
-                ii = ii + 1
+                ii += 1
 
         g_dbase["Sq_halfQ"] = g_dbase["halfQ"]
         g_dbase["Sq_bound"] = numpy.zeros((numQ,))
@@ -630,27 +630,27 @@ def f_eval_numE(a_snp, a_sample):
 ##############################################################################
 
 
-def f_md_step(r, v, m, dt):
-    r = r.copy()
-    v = v.copy()
-    a = (force(config, param) + external_force(config, param)) / m
-    r = r + v * dt + 0.5 * a * dt**2.0
-    config["r"] = r
-    an = (force(config, param) + external_force(config, param)) / m
-    v = v + 0.5 * (a + an) * dt
-    config["v"] = v
-    E = f_sysenergy_kin(v, m) + syspot(config, param) + ext_syspot(config, param)
+# def f_md_step(r, v, m, dt):
+#     r = r.copy()
+#     v = v.copy()
+#     a = (force(config, param) + external_force(config, param)) / m
+#     r = r + v * dt + 0.5 * a * dt**2.0
+#     config["r"] = r
+#     an = (force(config, param) + external_force(config, param)) / m
+#     v = v + 0.5 * (a + an) * dt
+#     config["v"] = v
+#     E = f_sysenergy_kin(v, m) + syspot(config, param) + ext_syspot(config, param)
 
 
 ##############################################################################
 
 
-def f_pmi_diagnostics_help():
-    print(
-        """
-    ----
-    """
-    )
+# def f_pmi_diagnostics_help():
+#     print(
+#         """
+#     ----
+#     """
+#     )
 
     ##############################################################################
     ##############################################################################
