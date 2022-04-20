@@ -16,6 +16,7 @@ from SimExLite.PMIData import XMDYNFormat
 
 
 class SingFELCalculator(BaseCalculator):
+    """SingFEL diffraction pattern calculator."""
     def __init__(
         self,
         name: str,
@@ -108,7 +109,6 @@ class SingFELCalculator(BaseCalculator):
 
     def backengine(self):
         input_fn = self.get_input_fn()
-        assert Path(input_fn).suffix == ".h5"
         input_dir = Path(input_fn).parent
         output_stem = str(Path(self.output_file_paths[0]).stem)
         output_dir = Path(self.output_file_paths[0]).parent / output_stem
@@ -206,7 +206,6 @@ def write_singfel_geom_file(file_name, simeple_config, distance):
         fh.write(serialization)
 
 def saveH5(path_to_files):
-    """ """
     """
     Private method to save the object to a file. Creates links to h5 files that all contain only one pattern.
 
