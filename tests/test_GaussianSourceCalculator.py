@@ -1,4 +1,4 @@
-"""Test EMCPhoton"""
+"""Test GaussianSourceCalculator"""
 
 import os
 import numpy as np
