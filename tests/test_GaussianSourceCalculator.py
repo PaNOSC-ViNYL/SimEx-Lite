@@ -9,6 +9,7 @@ from SimExLite.SourceCalculators.GaussianSourceCalculator import (
 from matplotlib import pyplot as plt
 import h5py
 from pathlib import Path
+import pytest
 from scipy.constants import hbar, c, electron_volt
 
 
@@ -32,7 +33,9 @@ def validate_result(gsc):
         d[which] for which in ["gridxMax", "gridxMin", "gridyMax", "gridyMin"]
     ]
     ints = np.abs(elf["x"]) ** 2 + np.abs(elf["y"]) ** 2
-    nothing_is_none = np.all([thing is not None for thing in [elf, xmax, xmin, ymax, ymin]])
+    nothing_is_none = np.all(
+        [thing is not None for thing in [elf, xmax, xmin, ymax, ymin]]
+    )
     lims_ok = xmax > xmin and ymax > ymin
     data_ok = not np.all(ints == 0 + 0j)
     return nothing_is_none and lims_ok and data_ok
@@ -55,10 +58,7 @@ def test_divergence():
 
 def test_get_data(tmp_path):
     "test accessing to the results via output.get_data()"
-    os.makedirs(tmp_path, exist_ok=True)
-    gsc = GaussianSourceCalculator(
-        "gaussian_source", instrument_base_dir=str(tmp_path)
-    )
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     gsc.backengine()
     d = gsc.output.get_data()
     elf = d["electricField"]
@@ -84,6 +84,14 @@ def test_run_default_parameters(tmp_path):
     data_out = gsc.backengine()
     print(type(data_out))
     assert validate_result(gsc)
+
+
+def test_minus_z(tmp_path):
+    "Test if the error is raised if z is minus"
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
+    gsc.parameters["z"].value = 0
+    with pytest.raises(ValueError):
+        gsc.parameters["z"].value = -1
 
 
 def test_custom_params(tmp_path):
@@ -136,7 +144,9 @@ def test_paths(tmp_path):
     assert os.path.exists(gsc.base_dir)
     assert os.path.exists(gsc.output_file_paths[0])
     assert os.path.samefile(gsc.base_dir, os.path.join(instr_dir, calc_dir))
-    assert os.path.samefile(gsc.output_file_paths[0], os.path.join(instr_dir, calc_dir, outf))
+    assert os.path.samefile(
+        gsc.output_file_paths[0], os.path.join(instr_dir, calc_dir, outf)
+    )
 
 
 def test_save_data(tmp_path):
@@ -161,7 +171,8 @@ def test_dump_and_load(tmp_path):
     gsc2.from_dump(tmpf)
     assert np.all(
         [
-            gsc.output_filenames[i] == gsc2.output_filenames[i] for i in range(len(gsc.output_filenames))
+            gsc.output_filenames[i] == gsc2.output_filenames[i]
+            for i in range(len(gsc.output_filenames))
         ]
     )
     for key in gsc.parameters.parameters.keys():
@@ -171,7 +182,7 @@ def test_dump_and_load(tmp_path):
 
 
 def main():
-    tmp_path = Path('./tmp')
+    tmp_path = Path("./tmp")
     test_divergence()
     test_get_data(tmp_path)
     test_run_default_parameters(tmp_path)
