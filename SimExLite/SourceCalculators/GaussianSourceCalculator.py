@@ -125,6 +125,7 @@ class GaussianSourceCalculator(BaseCalculator):
         param_z = parameters.new_parameter(
             "z", comment="The position of the pulse in the beam direction", unit="m"
         )
+        param_z.add_interval(0, None, True)
         param_z.value = 100
 
         self.parameters = parameters
