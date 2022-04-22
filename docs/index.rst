@@ -12,8 +12,10 @@ Welcome to SimEx-Lite's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Users
+   :includehidden:
 
    installation
+   calculators
    backengines
    usage
    modules

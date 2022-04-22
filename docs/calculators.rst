@@ -3,6 +3,6 @@ Calculators
 -----------
 
 .. toctree::
-    :maxdepth: -1
+    :maxdepth: 2
 
-    detectorCalculators
+    calculators/SourceCalculators
