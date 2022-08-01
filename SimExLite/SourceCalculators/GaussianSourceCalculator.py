@@ -24,15 +24,29 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 # Example:
 # 2022-04-07 16:06:34,572:module_name:INFO: My first message.
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s: %(message)s')
+formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s: %(message)s")
 # Console handler
 ch = logging.StreamHandler()
 ch.setFormatter(formatter)
 logger.addHandler(ch)
 
+
 class GaussianSourceCalculator(BaseCalculator):
-    """:class GaussianSourceCalculator: Class calculating a x-ray free electron
-    laser photon source under the gaussian assumption."""
+    """
+    Class calculating a x-ray free electron laser photon source under the gaussian assumption.
+
+    Args:
+        name (str): The name of this calculator.
+        output_keys (str, optional): The key(s) of this calculator's output data. It's a list of ``str``s or
+            a single str. Defaults to "Gaussian_wavefront".
+        output_filenames (str, optional): The output filename of this calculator. Defaults to "wavefront.h5".
+            instrument_base_dir (str, optional): The base directory for the instrument to which this calculator
+            belongs. Defaults to "./". The final exact output file path depends on ``instrument_base_dir``
+            and ``calculator_base_dir``: ``instrument_base_dir``/``calculator_base_dir``/filename.
+        calculator_base_dir (str, optional): The base directory for this calculator. Defaults to "./". The final
+            exact output file path depends on `instrument_base_dir` and `calculator_base_dir`:
+            ``instrument_base_dir``/``calculator_base_dir``/filename.
+    """
 
     def __init__(
         self,
@@ -43,19 +57,6 @@ class GaussianSourceCalculator(BaseCalculator):
         calculator_base_dir="GaussianSourceCalculator",
         parameters=None,
     ):
-        """
-        Args:
-            name (str): The name of this calculator.
-            output_keys (str, optional): The key(s) of this calculator's output data. It's a list of `str`s or
-        a single str. Defaults to "Gaussian_wavefront".
-            output_filenames (str, optional): The output filename of this calculator. Defaults to "wavefront.h5".
-            instrument_base_dir (str, optional): The base directory for the instrument to which this calculator
-        belongs. Defaults to "./". The final exact output file path depends on `instrument_base_dir`
-        and `calculator_base_dir`: `instrument_base_dir`/`calculator_base_dir`/filename.
-            calculator_base_dir (str, optional): The base directory for this calculator. Defaults to "./". The final
-        exact output file path depends on `instrument_base_dir` and `calculator_base_dir`:
-        `instrument_base_dir`/`calculator_base_dir`/filename.
-        """
         if not WPG_AVAILABLE:
             logger.warning(
                 'Cannot find the "WPG" module, which is required to run '
