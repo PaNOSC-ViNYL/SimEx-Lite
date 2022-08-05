@@ -13,7 +13,7 @@ from tqdm import tqdm
 def spliterate(buf, chunk):
     for start in range(0, len(buf), chunk):
         # print(start, start+chunk)
-        yield buf[start : start + chunk]
+        yield buf[start: start + chunk]
 
 
 class GaussianNoisePrameters(Parameters):
@@ -46,12 +46,14 @@ class GaussianNoisePrameters(Parameters):
         sigs_popt,
         index=None,
         read_args: dict = {"poissonize": True},
+        chunk_size: int = 10000,
     ):
         super().__init__()
         self.mu = mu
         self.sigs_popt = sigs_popt
         self.index = index
         self.read_args = read_args
+        self.chunk_size = chunk_size
 
 
 class GaussianNoiseCalculator(BaseCalculator):
@@ -71,7 +73,7 @@ class GaussianNoiseCalculator(BaseCalculator):
         )
         diffr_data.addGaussianNoise(self.parameters.mu, self.parameters.sigs_popt)
         print("Convert back to nphotons...", flush=True)
-        chunk_size = 10000
+        chunk_size = self.parameters.chunk_size
         diffr_data.multiply(1 / self.parameters.mu, chunk_size)
         print("Get round values...", flush=True)
         for arr in tqdm(
