@@ -7,6 +7,13 @@
 from libpyvinyl.BaseCalculator import BaseCalculator, Parameters
 import SimExLite.DiffractionData as DD
 import numpy as np
+from tqdm import tqdm
+
+
+def spliterate(buf, chunk):
+    for start in range(0, len(buf), chunk):
+        # print(start, start+chunk)
+        yield buf[start : start + chunk]
 
 
 class GaussianNoisePrameters(Parameters):
@@ -32,12 +39,14 @@ class GaussianNoisePrameters(Parameters):
         defaults to ``True``.
     :type save_geom: bool, optional
     """
-    def __init__(self,
-                 mu,
-                 sigs_popt,
-                 index=None,
-                 read_args: dict = {'poissonize': True},
-                 ):
+
+    def __init__(
+        self,
+        mu,
+        sigs_popt,
+        index=None,
+        read_args: dict = {"poissonize": True},
+    ):
         super().__init__()
         self.mu = mu
         self.sigs_popt = sigs_popt
@@ -47,32 +56,35 @@ class GaussianNoisePrameters(Parameters):
 
 class GaussianNoiseCalculator(BaseCalculator):
     """Implement Gaussian noise to input diffraction data"""
-    def __init__(self,
-                 input_path,
-                 parameters=None,
-                 dumpfile=None,
-                 output_path=None):
-        """ Constructor of the BaseCalcularor class. """
-        super().__init__(parameters=parameters,
-                         dumpfile=dumpfile,
-                         output_path=output_path)
+
+    def __init__(self, input_path, parameters=None, dumpfile=None, output_path=None):
+        """Constructor of the BaseCalcularor class."""
+        super().__init__(
+            parameters=parameters, dumpfile=dumpfile, output_path=output_path
+        )
         self.input_path = input_path
 
     def backengine(self):
-        """ Method to do the actual calculation."""
-        diffr_data = DD.read(self.input_path,
-                             self.parameters.index,
-                             **self.parameters.read_args)
-        diffr_data.addGaussianNoise(self.parameters.mu,
-                                    self.parameters.sigs_popt)
-        diffr_data.multiply(1 / self.parameters.mu)
-        diffr_data.array = np.round(diffr_data.array)
-        diffr_data.array[diffr_data.array < 0] = 0
-        diffr_data.setArrayDataType('i4')
+        """Method to do the actual calculation."""
+        diffr_data = DD.read(
+            self.input_path, self.parameters.index, **self.parameters.read_args
+        )
+        diffr_data.addGaussianNoise(self.parameters.mu, self.parameters.sigs_popt)
+        print("Convert back to nphotons...", flush=True)
+        chunk_size = 10000
+        diffr_data.multiply(1 / self.parameters.mu, chunk_size)
+        print("Get round values...", flush=True)
+        for arr in tqdm(
+            spliterate(diffr_data.array, chunk_size),
+            total=int(np.ceil(float(len(diffr_data.array)) / chunk_size)),
+        ):
+            arr[:] = np.round(arr)
+            arr[arr < 0] = 0
+        diffr_data.setArrayDataType("i4")
         self._set_data(diffr_data)
         return 0
 
-    def saveH5(self, format='emc'):
+    def saveH5(self, format="emc"):
         """Save noised diffraction data as a HDF5 file
 
         :param format: What format to save the data in.

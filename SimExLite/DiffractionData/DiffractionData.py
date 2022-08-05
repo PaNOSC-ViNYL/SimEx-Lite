@@ -48,6 +48,10 @@ ioformats['emc'] = {
 
 ###################### IO FORMATS LIST END ###################################
 
+def spliterate(buf, chunk):
+    for start in range(0, len(buf), chunk):
+        # print(start, start+chunk)
+        yield buf[start:start + chunk]
 
 def listFormats():
     """Print supported formats"""
@@ -203,13 +207,16 @@ class DiffractionData:
             array[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
         self.__statistic_to_update = True
 
-    def multiply(self, val):
+    def multiply(self, val, chunk_size=10000):
         """Multiply a number to the diffraction patterns.
 
         :param val: The value to be multiplied.
         :type val: float
+        :param chunk: The chunk size to conduct the operation
+        :type chunk_size: int
         """
-        self.__array = self.array * val
+        for arr in tqdm(spliterate(self.array, chunk_size),total=int(np.ceil(float(len(self.array))/chunk_size))):
+            arr[:] = arr * val
         self.__statistic_to_update = True
 
     def setArrayDataType(self, data_type):
