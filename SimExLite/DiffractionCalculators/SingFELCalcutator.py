@@ -10,7 +10,6 @@ import shlex
 import h5py
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
-from extra_geom import GenericGeometry
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 from SimExLite.PMIData import XMDYNFormat
 
