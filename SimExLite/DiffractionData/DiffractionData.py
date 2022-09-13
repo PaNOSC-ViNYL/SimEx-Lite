@@ -22,54 +22,56 @@ from pprint import pprint
 
 # Initialize ioformats with UNKNOWN.
 ioformats = {
-    'UNKNOWN': {
-        'desc': 'UNKNOWN data format',  # FORMAT_DISCRIPTION
-        'ext': '',  # FORMAT_EXTENSION
-        'module': '',  # MODULE_NAME
-        'kwargs': ['']  # KEYWORDS_LIST
+    "UNKNOWN": {
+        "desc": "UNKNOWN data format",  # FORMAT_DISCRIPTION
+        "ext": "",  # FORMAT_EXTENSION
+        "module": "",  # MODULE_NAME
+        "kwargs": [""],  # KEYWORDS_LIST
     }
 }
 
 # Each IO format can have extra keywords,
 # such as ['poissonize'], which defines if some of the formats will read the poissonized patterns.
-ioformats['singfel'] = {
-    'desc': 'SIMEX SingFEL',
-    'ext': 'h5',
-    'module': 'SimExLite.DiffractionData.singfelDiffr',
-    'kwargs': ['poissonize']
+ioformats["singfel"] = {
+    "desc": "SIMEX SingFEL",
+    "ext": "h5",
+    "module": "SimExLite.DiffractionData.singfelDiffr",
+    "kwargs": ["poissonize"],
 }
 
-ioformats['emc'] = {
-    'desc': 'EMC Sparse Photon',
-    'ext': 'emc',
-    'module': 'SimExLite.DiffractionData.EMCPhoton',
-    'kwargs': ['pattern_shape']
+ioformats["emc"] = {
+    "desc": "EMC Sparse Photon",
+    "ext": "emc",
+    "module": "SimExLite.DiffractionData.EMCPhoton",
+    "kwargs": ["pattern_shape"],
 }
 
 ###################### IO FORMATS LIST END ###################################
 
+
 def spliterate(buf, chunk):
     for start in range(0, len(buf), chunk):
         # print(start, start+chunk)
-        yield buf[start:start + chunk]
+        yield buf[start : start + chunk]
+
 
 def listFormats():
     """Print supported formats"""
-    out_string = ''
+    out_string = ""
     for key in ioformats:
         dicts = ioformats[key]
-        out_string += f'Key: {key}\n'
-        out_string += 'Description: {}\n'.format(dicts['desc'])
-        ext = dicts['ext']
-        if ext != '':
-            out_string += 'File extension: {}\n'.format(ext)
-        module = dicts['module']
-        if module != '':
-            out_string += 'API module: {}\n'.format(module)
-        kwargs = dicts['kwargs']
-        if kwargs != ['']:
-            out_string += 'Extra reading keywords: {}\n'.format(kwargs)
-        out_string += '\n'
+        out_string += f"Key: {key}\n"
+        out_string += "Description: {}\n".format(dicts["desc"])
+        ext = dicts["ext"]
+        if ext != "":
+            out_string += "File extension: {}\n".format(ext)
+        module = dicts["module"]
+        if module != "":
+            out_string += "API module: {}\n".format(module)
+        kwargs = dicts["kwargs"]
+        if kwargs != [""]:
+            out_string += "Extra reading keywords: {}\n".format(kwargs)
+        out_string += "\n"
     print(out_string)
 
 
@@ -80,33 +82,33 @@ def filetype(filename, kwargs=None) -> str:
     if not fp.exists():
         raise FileNotFoundError()
 
-    format = 'UNKNOWN'
+    format = "UNKNOWN"
     # 1. Check if it is h5 file
-    if fp.suffix.lower() == '.h5':
-        ext = 'h5'
+    if fp.suffix.lower() == ".h5":
+        ext = "h5"
         format = filetype_content(filename)
-        if format != 'UNKNOWN':
+        if format != "UNKNOWN":
             return format
 
     # 2. If 1 failed, Check it with other extension
     for i in ioformats.keys():
-        ext = ioformats[i]['ext']
-        if fp.suffix.lower() == '.' + ext:
+        ext = ioformats[i]["ext"]
+        if fp.suffix.lower() == "." + ext:
             format = i
             return format
 
     # 3. If 2 failed, check it with its content
     key = filetype_content(filename)
-    if key != 'UNKNOWN':
+    if key != "UNKNOWN":
         format = key
         return format
 
     # 4. check the extra keywords
-    if format == 'UNKNOWN' and kwargs is not None:
+    if format == "UNKNOWN" and kwargs is not None:
         format = filetype_keywords(kwargs)
 
-    if format == 'UNKNOWN':
-        raise UnknownFileTypeError('Could not guess file type')
+    if format == "UNKNOWN":
+        raise UnknownFileTypeError("Could not guess file type")
 
     return format
 
@@ -115,24 +117,24 @@ def filetype_content(filename) -> str:
     """Guess the type of a file by its content"""
 
     for i in ioformats.keys():
-        module_name = ioformats[i]['module']
-        if module_name == '':
+        module_name = ioformats[i]["module"]
+        if module_name == "":
             continue
         data_module = import_module(module_name)
         if data_module.isFormat(filename):
             return i
-    return 'UNKNOWN'
+    return "UNKNOWN"
 
 
 def filetype_keywords(kwargs) -> str:
     """Guess the type from the input keywords"""
     for kw in kwargs.keys():
         for i in ioformats.keys():
-            kws = ioformats[i]['kwargs']
+            kws = ioformats[i]["kwargs"]
             if kw in kws:
                 return i
     # When there is no match, return UNKNOWN.
-    return 'UNKNOWN'
+    return "UNKNOWN"
 
 
 class DiffractionData:
@@ -162,13 +164,16 @@ class DiffractionData:
         bit 31: virtual pixel (corner pixel with interpolated value); value = 2147483648
     :type pixel_mask: 2D numpy.uint32 ndarray
     """
-    def __init__(self,
-                 arrary: ndarray = None,
-                 geom: DetectorGeometryBase = None,
-                 beam: BeamBase = None,
-                 distance: float = None,
-                 quaternions: ndarray = None,
-                 pixel_mask: ndarray = None) -> None:
+
+    def __init__(
+        self,
+        arrary: ndarray = None,
+        geom: DetectorGeometryBase = None,
+        beam: BeamBase = None,
+        distance: float = None,
+        quaternions: ndarray = None,
+        pixel_mask: ndarray = None,
+    ) -> None:
         super().__init__()
 
         self.__array = arrary
@@ -191,6 +196,10 @@ class DiffractionData:
             array[i] = addBeamStop(img, stop_rad)
         self.__stop_rad = stop_rad
         self.__statistic_to_update = True
+
+    def poissonize(self):
+        """Poissonize the data array in this data class"""
+        self.__array = np.random.poisson(self.array)
 
     def addGaussianNoise(self, mu, sigs_popt):
         """Add Gaussian noise to one diffraction pattern.
@@ -215,7 +224,10 @@ class DiffractionData:
         :param chunk: The chunk size to conduct the operation
         :type chunk_size: int
         """
-        for arr in tqdm(spliterate(self.array, chunk_size),total=int(np.ceil(float(len(self.array))/chunk_size))):
+        for arr in tqdm(
+            spliterate(self.array, chunk_size),
+            total=int(np.ceil(float(len(self.array)) / chunk_size)),
+        ):
             arr[:] = arr * val
         self.__statistic_to_update = True
 
@@ -235,24 +247,24 @@ class DiffractionData:
         :type file_name: str
         """
         file_path = Path(file_name)
-        geom_path = file_path.with_suffix('.geom')
+        geom_path = file_path.with_suffix(".geom")
         fn_geom = str(geom_path)
-        print('writing .geom to {}'.format(fn_geom))
+        print("writing .geom to {}".format(fn_geom))
         self.geom.write_crystfel_geom(
             fn_geom,
-            dims=('frame', 'ss', 'fs'),
+            dims=("frame", "ss", "fs"),
             adu_per_ev=1.0,
             clen=self.distance,
             photon_energy=self.beam.get_photon_energy().magnitude,
             nquads=1,
-            data_path='/data/data',
+            data_path="/data/data",
         )
 
     def writeEmcIni(self, file_name=None):
         if file_name:
             conf_path = file_name
         else:
-            conf_path = 'config.ini'
+            conf_path = "config.ini"
         config_ini = """# Generated by SimEx
 [parameters]
 detd = {}
@@ -267,22 +279,28 @@ polarization = x
 #in_detector_file = 
 #num_div = 6 9 12 15 19 24
 output_folder = ./
-log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
-                             self.geom.frag_ss_pixels,
-                             self.geom.frag_fs_pixels,
-                             self.geom.pixel_size * 1e3, self.stop_rad)
-        with open(str(conf_path), 'w') as f:
+log_file = EMC.log""".format(
+            self.distance * 1e3,
+            self.beam.wavelength,
+            self.geom.frag_ss_pixels,
+            self.geom.frag_fs_pixels,
+            self.geom.pixel_size * 1e3,
+            self.stop_rad,
+        )
+        with open(str(conf_path), "w") as f:
             f.write(config_ini)
 
-    def plotPattern(self,
-                    idx: int,
-                    logscale=True,
-                    offset=None,
-                    symlog=False,
-                    fn_png=None,
-                    *argv,
-                    **kwargs):
-        """ Plot a pattern.
+    def plotPattern(
+        self,
+        idx: int,
+        logscale=True,
+        offset=None,
+        symlog=False,
+        fn_png=None,
+        *argv,
+        **kwargs,
+    ):
+        """Plot a pattern.
 
         :param idx: The array index of the pattern to plot (starting from 0)
         :type idx: idx
@@ -299,13 +317,15 @@ log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
         :rtype: ``matplotlib.axes``
         """
         array_to_plot = self.array[idx]
-        plotImage(array_to_plot,
-                  logscale=logscale,
-                  offset=offset,
-                  symlog=symlog,
-                  fn_png=fn_png,
-                  *argv,
-                  **kwargs)
+        plotImage(
+            array_to_plot,
+            logscale=logscale,
+            offset=offset,
+            symlog=symlog,
+            fn_png=fn_png,
+            *argv,
+            **kwargs,
+        )
 
     def __setStatistics(self):
         """Get photon statistics"""
@@ -317,7 +337,8 @@ log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
         pixel_num = pattern_dim[0] * pattern_dim[1]
         # Number of pixels with zero photons
         avg_zero_pixel_num = (
-            patterns.size - np.count_nonzero(patterns)) / pattern_total
+            patterns.size - np.count_nonzero(patterns)
+        ) / pattern_total
         # Sum the photons in each pattern
         photons = np.sum(patterns, axis=(1, 2))
         # Average photon number over all the patterns
@@ -340,26 +361,17 @@ log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
         avg_min_per_pattern = np.mean(min_per_pattern)
 
         statistics = {
-            'Number of patterns':
-            pattern_total,
-            'Average number of photons of a pattern':
-            avg_photons,
-            'Maximum number of photons of a pattern':
-            max_photons,
-            'Minimum number of photons of a pattern':
-            min_photons,
-            'STD of total number of photons of a pattern':
-            np.std(photons),
-            'Average number of zero-photon pixels':
-            avg_zero_pixel_num,
-            'Average percentage of zero-photon pixels':
-            avg_zero_pixel_num / patterns[0].size,
-            'Average number of photons of a pixel':
-            avg_avg_per_pattern,
-            'Maximum number of photons of a pixel averaging over the patterns':
-            avg_max_per_pattern,
-            'Minimum number of photons of a pixel averaging over the patterns':
-            avg_min_per_pattern,
+            "Number of patterns": pattern_total,
+            "Average number of photons of a pattern": avg_photons,
+            "Maximum number of photons of a pattern": max_photons,
+            "Minimum number of photons of a pattern": min_photons,
+            "STD of total number of photons of a pattern": np.std(photons),
+            "Average number of zero-photon pixels": avg_zero_pixel_num,
+            "Average percentage of zero-photon pixels": avg_zero_pixel_num
+            / patterns[0].size,
+            "Average number of photons of a pixel": avg_avg_per_pattern,
+            "Maximum number of photons of a pixel averaging over the patterns": avg_max_per_pattern,
+            "Minimum number of photons of a pixel averaging over the patterns": avg_min_per_pattern,
         }
 
         self.__photon_totals = photons
@@ -367,22 +379,21 @@ log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
         self.__statistic_to_update = False
 
     def plotHistogram(self, fn_png=None):
-        pattern_total = self.photon_statistics['Number of patterns']
-        max_photons = self.photon_statistics[
-            'Maximum number of photons of a pattern']
-        min_photons = self.photon_statistics[
-            'Minimum number of photons of a pattern']
+        pattern_total = self.photon_statistics["Number of patterns"]
+        max_photons = self.photon_statistics["Maximum number of photons of a pattern"]
+        min_photons = self.photon_statistics["Minimum number of photons of a pattern"]
         number_of_bins = min(20, pattern_total)
         binwidth = (max_photons - min_photons) / number_of_bins
         try:
-            plt.hist(self.photon_totals,
-                     bins=np.arange(min_photons, max_photons, binwidth),
-                     facecolor='red',
-                     alpha=0.75)
+            plt.hist(
+                self.photon_totals,
+                bins=np.arange(min_photons, max_photons, binwidth),
+                facecolor="red",
+                alpha=0.75,
+            )
         except ValueError as e:
-            if 'cannot compute length' in str(e):
-                raise ValueError(
-                    'Please load more than one diffraction pattern.')
+            if "cannot compute length" in str(e):
+                raise ValueError("Please load more than one diffraction pattern.")
             else:
                 raise e
         plt.xlabel("Photons")
@@ -436,10 +447,7 @@ log_file = EMC.log""".format(self.distance * 1e3, self.beam.wavelength,
         return len(self.array)
 
 
-def read(filename: str,
-         index=None,
-         format: str = None,
-         **kwargs) -> DiffractionData:
+def read(filename: str, index=None, format: str = None, **kwargs) -> DiffractionData:
     """Read a DiffractionData object from file.
 
     :param filename: Name of the file to read with.
@@ -463,7 +471,7 @@ def read(filename: str,
     if format is None:
         format = filetype(filename)
     try:
-        module_name = ioformats[format]['module']
+        module_name = ioformats[format]["module"]
     except KeyError:
         raise UnknownFileTypeError(f"Unsupported format {format}.")
 
@@ -473,8 +481,7 @@ def read(filename: str,
     return DiffrData
 
 
-def write(filename: str, object: DiffractionData, format: str,
-          **kwargs) -> None:
+def write(filename: str, object: DiffractionData, format: str, **kwargs) -> None:
     """Read a DiffractionData object from file.
 
     :param filename: Name of the file to save with.
@@ -486,7 +493,7 @@ def write(filename: str, object: DiffractionData, format: str,
     :type format: str
     """
     try:
-        module_name = ioformats[format]['module']
+        module_name = ioformats[format]["module"]
     except KeyError:
         raise UnknownFileTypeError(f"Unsupported format: '{format}'.")
     data_module = import_module(module_name)
@@ -529,7 +536,7 @@ def getPatternStatistics(img):
     max_val = img_flat.max()
     min_val = img_flat.min()
 
-    statistics = {'mean': mean_val, 'min': min_val, 'max': max_val}
+    statistics = {"mean": mean_val, "min": min_val, "max": max_val}
 
     return statistics
 
@@ -559,6 +566,7 @@ class histogramParams:
     :param sigs: Sigmas for the peaks
     :type sigs: `numpy.array`, optional
     """
+
     def __init__(self, xcs, fwhms=None, sigs=None):
         if fwhms is not None and sigs is None:
             self.fwhm = fwhms
@@ -578,7 +586,7 @@ class histogramParams:
 
     def plotFitting(self, fn_png="fitting.png"):
         """Plot the fitting results to a .png file, default: fitting.png"""
-        self.fitting.plotResults(xlabel='photons', ylabel='sigma', fn=fn_png)
+        self.fitting.plotResults(xlabel="photons", ylabel="sigma", fn=fn_png)
 
 
 def getSigsFitting(sigs):
@@ -589,16 +597,18 @@ def getSigsFitting(sigs):
     return my_fitting
 
 
-def plotImage(pattern,
-              logscale=True,
-              offset=None,
-              symlog=False,
-              figsize=None,
-              ax=None,
-              fn_png=None,
-              *argv,
-              **kwargs):
-    """ Workhorse function to plot an image.
+def plotImage(
+    pattern,
+    logscale=True,
+    offset=None,
+    symlog=False,
+    figsize=None,
+    ax=None,
+    fn_png=None,
+    *argv,
+    **kwargs,
+):
+    """Workhorse function to plot an image.
 
     :param logscale: Whether to show the data on logarithmic scale (z axis), defaults to `True`.
     :type logscale: bool
@@ -624,29 +634,29 @@ def plotImage(pattern,
         mx = pattern.max() + offset
         pattern = pattern.astype(float) + offset
 
-    if (logscale and symlog):
-        print('logscale and symlog are both true.\noverrided by logscale')
+    if logscale and symlog:
+        print("logscale and symlog are both true.\noverrided by logscale")
 
     if 0 in pattern and not offset and (logscale or symlog):
         print(
-            'Warnning: zero-value detected. Please set a small offset (e.g. 1e-3) to get correct log display.'
+            "Warnning: zero-value detected. Please set a small offset (e.g. 1e-3) to get correct log display."
         )
 
-    if (logscale or symlog):
-        kwargs['cmap'] = kwargs.pop('cmap', "viridis")
+    if logscale or symlog:
+        kwargs["cmap"] = kwargs.pop("cmap", "viridis")
         # default plot setup
         if logscale:
-            kwargs['norm'] = kwargs.pop('norm', colors.LogNorm())
+            kwargs["norm"] = kwargs.pop("norm", colors.LogNorm())
         elif symlog:
-            kwargs['norm'] = kwargs.pop('norm', colors.SymLogNorm(0.015))
-        kwargs.pop('axes', None)
+            kwargs["norm"] = kwargs.pop("norm", colors.SymLogNorm(0.015))
+        kwargs.pop("axes", None)
     else:
-        kwargs['norm'] = kwargs.pop('norm', colors.Normalize(vmin=mn, vmax=mx))
-        kwargs['cmap'] = kwargs.pop('cmap', "viridis")
+        kwargs["norm"] = kwargs.pop("norm", colors.Normalize(vmin=mn, vmax=mx))
+        kwargs["cmap"] = kwargs.pop("cmap", "viridis")
     ax = plt.imshow(pattern, *argv, **kwargs)
 
-    plt.xlabel(r'$x$ (pixel)')
-    plt.ylabel(r'$y$ (pixel)')
+    plt.xlabel(r"$x$ (pixel)")
+    plt.ylabel(r"$y$ (pixel)")
     plt.xlim([0, x_range - 1])
     plt.ylim([0, y_range - 1])
     plt.tight_layout()
