@@ -16,7 +16,8 @@ from SimExLite.PhotonBeamData import BeamBase
 from SimExLite.utils.io import UnknownFileTypeError
 import SimExLite.utils.analysis as utils
 from extra_geom.detectors import DetectorGeometryBase
-from pprint import pprint
+import json
+
 
 ###################### IO FORMATS LIST #######################################
 
@@ -260,7 +261,7 @@ class DiffractionData:
             data_path="/data/data",
         )
 
-    def writeEmcIni(self, file_name=None):
+    def write_EMC_ini(self, file_name=None):
         if file_name:
             conf_path = file_name
         else:
@@ -377,6 +378,10 @@ log_file = EMC.log""".format(
         self.__photon_totals = photons
         self.__photon_statistics = statistics
         self.__statistic_to_update = False
+
+    def write_photon_statistics(self, fn="photon_statistics.txt"):
+        with open("photon_statistics.txt", "w") as f:
+            json.dump(self.photon_statistics, f, indent=4, default=np_encoder)
 
     def plotHistogram(self, fn_png=None):
         pattern_total = self.photon_statistics["Number of patterns"]
