@@ -380,7 +380,7 @@ log_file = EMC.log""".format(
         self.__statistic_to_update = False
 
     def write_photon_statistics(self, fn="photon_statistics.txt"):
-        with open("photon_statistics.txt", "w") as f:
+        with open(fn, "w") as f:
             json.dump(self.photon_statistics, f, indent=4, default=np_encoder)
 
     def plotHistogram(self, fn_png=None):
