@@ -669,3 +669,8 @@ def plotImage(
     if fn_png:
         plt.savefig(fn_png, dpi=300)
     return ax
+
+
+def np_encoder(object):
+    if isinstance(object, np.generic):
+        return object.item()
