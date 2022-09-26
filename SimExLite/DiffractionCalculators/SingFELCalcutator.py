@@ -5,17 +5,19 @@
 
 import os
 from pathlib import Path
-import subprocess
+from subprocess import Popen, PIPE
 import shlex
 import h5py
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 from SimExLite.PMIData import XMDYNFormat
+import shutil
 
 
 class SingFELCalculator(BaseCalculator):
     """SingFEL diffraction pattern calculator."""
+
     def __init__(
         self,
         name: str,
@@ -108,7 +110,8 @@ class SingFELCalculator(BaseCalculator):
 
     def backengine(self):
         input_fn = self.get_input_fn()
-        input_dir = Path(input_fn).parent
+        # input_dir = Path(input_fn).parent
+        input_dir = self.__get_input_dir(input_fn)
         output_stem = str(Path(self.output_file_paths[0]).stem)
         output_dir = Path(self.output_file_paths[0]).parent / output_stem
         geom_file = self.get_geometry_file()
@@ -139,8 +142,14 @@ class SingFELCalculator(BaseCalculator):
                             ]
         # fmt: on
         args = shlex.split(mpi_command) + command_sequence
-        proc = subprocess.Popen(args)
-        proc.wait()
+        proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        # proc.wait()
+        # The above one can be replaced by proc.communicate()
+        output, err = proc.communicate()
+        rc = proc.returncode
+        if rc != 0:
+            print(output.decode('ascii'))
+            raise RuntimeError(err.decode('ascii'))
         saveH5(str(output_dir))
         assert len(self.output_keys) == 1
         key = self.output_keys[0]
@@ -171,6 +180,17 @@ class SingFELCalculator(BaseCalculator):
         filename = str(Path(self.base_dir) / "singfel.geom")
         write_singfel_geom_file(filename, simple_config, distance)
         return filename
+
+    def __get_input_dir(self, input_fn):
+        """Create/get the input dir for PMI_input files"""
+        input_path = Path(input_fn)
+        dir_path = input_path.with_suffix("")
+        if dir_path.exists() and dir_path.is_dir():
+            shutil.rmtree(dir_path)
+        dir_path.mkdir()
+        p = dir_path / "pmi_out_0000001.h5"
+        p.symlink_to(input_path.resolve())
+        return str(dir_path)
 
 
 def write_singfel_geom_file(file_name, simeple_config, distance):
@@ -204,6 +224,7 @@ def write_singfel_geom_file(file_name, simeple_config, distance):
     with open(file_name, "w") as fh:
         fh.write(serialization)
 
+
 def saveH5(path_to_files):
     """
     Private method to save the object to a file. Creates links to h5 files that all contain only one pattern.
@@ -217,8 +238,7 @@ def saveH5(path_to_files):
 
         # Files to read from.
         individual_files = [
-            os.path.join(path_to_files, f)
-            for f in os.listdir(path_to_files)
+            os.path.join(path_to_files, f) for f in os.listdir(path_to_files)
         ]
         individual_files.sort()
 
@@ -227,29 +247,30 @@ def saveH5(path_to_files):
         # Loop over all individual files and link in the top level groups.
         for ind_file in individual_files:
             # Open file.
-            with h5py.File(ind_file, 'r') as h5_infile:
+            with h5py.File(ind_file, "r") as h5_infile:
 
                 # Links must be relative.
                 relative_link_target = os.path.relpath(
-                    path=ind_file,
-                    start=os.path.dirname(os.path.dirname(ind_file)))
+                    path=ind_file, start=os.path.dirname(os.path.dirname(ind_file))
+                )
 
                 # Link global parameters.
                 if not global_parameters:
                     global_parameters = True
 
                     h5_outfile["params"] = h5py.ExternalLink(
-                        relative_link_target, "params")
-                    h5_outfile["info"] = h5py.ExternalLink(
-                        relative_link_target, "info")
-                    h5_outfile["misc"] = h5py.ExternalLink(
-                        relative_link_target, "misc")
+                        relative_link_target, "params"
+                    )
+                    h5_outfile["info"] = h5py.ExternalLink(relative_link_target, "info")
+                    h5_outfile["misc"] = h5py.ExternalLink(relative_link_target, "misc")
                     h5_outfile["version"] = h5py.ExternalLink(
-                        relative_link_target, "version")
+                        relative_link_target, "version"
+                    )
 
-                for key in h5_infile['data']:
+                for key in h5_infile["data"]:
 
                     # Link in the data.
                     ds_path = "data/%s" % (key)
                     h5_outfile[ds_path] = h5py.ExternalLink(
-                        relative_link_target, ds_path)
+                        relative_link_target, ds_path
+                    )
