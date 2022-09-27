@@ -52,12 +52,12 @@ https://simex-lite.readthedocs.io/en/latest/contributing.html
 
 Tests
 -----
-1. Download the testing files.
+1. Enable the `testFiles` submodule.
 
 .. code-block:: bash
 
-    $ cd tests
-    $ git clone https://github.com/PaNOSC-ViNYL/SimEx-Lite-testFiles testFiles
+    $ git submodule init
+    $ git submodule update
 
 2. Run the test
 
@@ -70,14 +70,14 @@ Features
 --------
 
 * Provide the python interface of calculators for the SIMEX platform.
-    * PhotonSourceCalculator
-    * PhotonPropagationCalculator
-    * PhotonMattterInteractor
-    * DiffractionCalculator
-    * DetectorClaculator
+    * SourceCalculators
+    * PropagationCalculators
+    * PMICalculators (PhotonMattterInteractionCalculators)
+    * DiffractionCalculators
+    * DetectorClaculators
 * Provide data APIs for different data formats.
-    * Photon beam data
-    * Photon matter interaction Data
+    * PMI (Photon matter interaction) Data
+    * Wavefront data
     * Diffraction data
 
 Acknowledgement
