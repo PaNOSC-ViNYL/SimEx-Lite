@@ -15,7 +15,7 @@ from SimExLite.PMIData import XMDYNFormat
 import shutil
 
 
-class SingFELCalculator(BaseCalculator):
+class SingFELDiffractionCalculator(BaseCalculator):
     """SingFEL diffraction pattern calculator."""
 
     def __init__(
@@ -26,7 +26,7 @@ class SingFELCalculator(BaseCalculator):
         output_data_types=DiffractionData,
         output_filenames: str = "diffr.h5",
         instrument_base_dir="./",
-        calculator_base_dir="SingFEL",
+        calculator_base_dir="SingFELDiffractionCalculator",
         parameters=None,
     ):
         super().__init__(
@@ -149,7 +149,7 @@ class SingFELCalculator(BaseCalculator):
         return self.output
 
     def get_input_fn(self):
-        """Make sure the data is a mapping of WPGFormat file"""
+        """Make sure the data is a mapping of PMI file"""
         assert len(self.input) == 1
         input_data = self.input.to_list()[0]
         if input_data.mapping_type == XMDYNFormat:

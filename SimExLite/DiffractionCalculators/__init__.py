@@ -1,1 +1,1 @@
-from .SingFELCalcutator import SingFELCalculator
+from .SingFELDiffractionCalculator import SingFELDiffractionCalculator
