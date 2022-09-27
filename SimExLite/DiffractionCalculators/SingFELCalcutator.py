@@ -52,58 +52,49 @@ class SingFELCalculator(BaseCalculator):
         calculate_Compton = parameters.new_parameter(
             "calculate_Compton", comment="If calculate the compton scattering."
         )
-        calculate_Compton.value = False
-
         slice_interval = parameters.new_parameter(
             "slice_interval", comment="The slice interval of the pmi time frames"
         )
-        slice_interval.value = 100
-
         slice_index_upper = parameters.new_parameter(
             "slice_index_upper",
             comment="The upper limit of the slice index for diffraction calculation ",
         )
-        slice_index_upper.value = 1
-
         pmi_start_ID = parameters.new_parameter(
             "pmi_start_ID", comment="The start ID of the pmi files"
         )
-        pmi_start_ID.value = 1
-
         pmi_stop_ID = parameters.new_parameter(
             "pmi_stop_ID", comment="The stop ID of the pmi files"
         )
-        pmi_stop_ID.value = 1
-
         number_of_diffraction_patterns = parameters.new_parameter(
             "number_of_diffraction_patterns",
             comment="The number of diffraction patterns to generate per pmi file",
         )
-        number_of_diffraction_patterns.value = 10
-
         pixel_size = parameters.new_parameter(
             "pixel_size", comment="The pixel size of the detector", unit="m"
         )
-        pixel_size.value = 0.001
-
         pixels_x = parameters.new_parameter(
             "pixels_x", comment="Number of pixels in x direction"
         )
-        pixels_x.value = 10
-
         pixels_y = parameters.new_parameter(
             "pixels_y", comment="Number of pixels in y direction"
         )
-        pixels_y.value = 5
-
         distance = parameters.new_parameter(
             "distance", comment="Sample to detector distance", unit="m"
         )
-        distance.value = 0.13
-
         mpi_command = parameters.new_parameter(
             "mpi_command", comment="The mpi command to run pysingfel"
         )
+
+        calculate_Compton.value = False
+        slice_interval.value = 100
+        slice_index_upper.value = 1
+        pmi_start_ID.value = 1
+        pmi_stop_ID.value = 1
+        number_of_diffraction_patterns.value = 10
+        pixel_size.value = 0.001
+        pixels_x.value = 10
+        pixels_y.value = 5
+        distance.value = 0.13
         mpi_command.value = "mpirun -n 2"
 
         self.parameters = parameters
@@ -148,8 +139,8 @@ class SingFELCalculator(BaseCalculator):
         output, err = proc.communicate()
         rc = proc.returncode
         if rc != 0:
-            print(output.decode('ascii'))
-            raise RuntimeError(err.decode('ascii'))
+            print(output.decode("ascii"))
+            raise RuntimeError(err.decode("ascii"))
         saveH5(str(output_dir))
         assert len(self.output_keys) == 1
         key = self.output_keys[0]
