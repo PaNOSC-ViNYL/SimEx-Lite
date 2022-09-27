@@ -2,6 +2,18 @@
 History
 =======
 
+1.0.0 (2022-09-27)
+------------------
+
+* Refactor based on `libpyvinyl <https://github.com/PaNOSC-ViNYL/libpyvinyl>`_.
+* Support `instrument` class.
+* Updated documents for backengines installation.
+
+0.3.4 - 0.3.7 (2022-09-19)
+--------------------------
+
+* Support for the legacy `DiffractionData` class.
+
 0.3.3 (2022-08-05)
 ------------------
 
