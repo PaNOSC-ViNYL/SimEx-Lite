@@ -3,8 +3,6 @@ import pytest
 import sys
 from pathlib import Path
 
-WPG_path = "/home/juncheng/GPFS/exfel/data/user/juncheng/WPG"
-sys.path.insert(0, WPG_path)
 from libpyvinyl.Instrument import Instrument
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
@@ -17,7 +15,7 @@ from SimExLite.DiffractionCalculators import SingFELDiffractionCalculator
 def test_CalculationInstrument(tmpdir):
     """PlusCalculator test function, the native output of MinusCalculator is a python dictionary"""
 
-    source = GaussianSourceCalculator("gaussian_source", WPG_path)
+    source = GaussianSourceCalculator("gaussian_source")
     source.parameters["photon_energy"] = 9000
     soruce_data = source.output
     propogation = WPGPropagationCalculator(name="WPGCalculator", input=soruce_data)
