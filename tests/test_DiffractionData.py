@@ -1,6 +1,5 @@
 """Test DiffractionData"""
 
-import pytest
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 
 

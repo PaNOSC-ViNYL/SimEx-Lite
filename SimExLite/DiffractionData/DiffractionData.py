@@ -2,9 +2,10 @@
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
-"""Wavefront Data APIs"""
+"""Diffraction Data APIs"""
 
 from libpyvinyl import BaseData
+from .SingFELFormat import SingFELFormat
 
 def spliterate(buf, chunk):
     for start in range(0, len(buf), chunk):
@@ -12,7 +13,7 @@ def spliterate(buf, chunk):
         yield buf[start:start + chunk]
 
 class DiffractionData(BaseData):
-    """Wavefront data mapper"""
+    """Diffraction data mapper"""
 
     def __init__(
         self,
@@ -47,7 +48,9 @@ class DiffractionData(BaseData):
 
     @classmethod
     def supported_formats(self):
-        return {}
+        format_dict = {}
+        self._add_ioformat(format_dict, SingFELFormat)
+        return format_dict
 
     @classmethod
     def from_file(cls, filename: str, format_class, key:str, **kwargs):

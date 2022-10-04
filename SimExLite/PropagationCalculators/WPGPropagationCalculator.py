@@ -73,9 +73,6 @@ class WPGPropagationCalculator(BaseCalculator):
         beamline_config = parameters.new_parameter(
             "beamline_config_file", comment="The beamline_configfile"
         )
-        Path(self.base_dir).mkdir(parents=True, exist_ok=True)
-        simple_beamline_fn = str(Path(self.base_dir) / "simple_beamline.py")
-        beamline_config.value = create_simple_beamline_file(simple_beamline_fn)
 
         self.parameters = parameters
 
@@ -109,6 +106,10 @@ class WPGPropagationCalculator(BaseCalculator):
                 "WPGPropagationCalculator.backengine(). Is it included in PYTHONPATH?"
             )
 
+        if self.parameters["beamline_config_file"].value is None:
+            Path(self.base_dir).mkdir(parents=True, exist_ok=True)
+            simple_beamline_fn = str(Path(self.base_dir) / "simple_beamline.py")
+            self.parameters["beamline_config_file"].value = create_simple_beamline_file(simple_beamline_fn)
         self.prep_beamline_config()
         sys.path.insert(0, self.base_dir)
         import WPG_beamline
