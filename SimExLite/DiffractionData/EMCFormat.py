@@ -19,8 +19,8 @@ class EMCFormat(BaseFormat):
         key = "EMC"
         description = "EMC photon format for DiffractionData"
         file_extension = [".h5", ".emc"]
-        read_kwargs = ["index", "poissonize"]
-        write_kwargs = ["is_h5"]
+        read_kwargs = ["index", "pattern_shape"]
+        write_kwargs = []
         return self._create_format_register(
             key, description, file_extension, read_kwargs, write_kwargs
         )
@@ -36,6 +36,9 @@ class EMCFormat(BaseFormat):
     def read(cls, filename: str, index=None, pattern_shape=None) -> dict:
         """Read diffraction patterns into an array from a file."""
         data_dict = {}
+
+        if pattern_shape is None:
+            raise ValueError("read() missing 'pattern_shape' argument.")
 
         index = parseIndex(index)
         arr_size = len(range(getPatternTotal(filename))[index])

@@ -1,6 +1,6 @@
 """Test DiffractionData"""
 
-from SimExLite.DiffractionData import DiffractionData, SingFELFormat
+from SimExLite.DiffractionData import DiffractionData, SingFELFormat, EMCFormat
 
 
 def test_print_format_keys():
@@ -34,3 +34,32 @@ def test_writeSingFEL(tmp_path):
         ofn,
         SingFELFormat,
     )
+
+
+def test_readSingFELwriteEMC(tmp_path):
+    h5_file = "./testFiles/singfel-multi.h5"
+    DiffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    ofn = str(tmp_path / "EMC.h5")
+    DiffrData.write(
+        ofn,
+        EMCFormat,
+    )
+
+
+def test_readEMC(tmp_path):
+    h5_file = "./testFiles/singfel-multi.h5"
+    DiffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    ofn = str(tmp_path / "EMC.h5")
+    DiffrData.write(
+        ofn,
+        EMCFormat,
+    )
+    EMCData = DiffractionData.from_file(
+        ofn, EMCFormat, pattern_shape=(81, 81), key="test_EMC"
+    )
+    data_dict = EMCData.get_data()
+    assert data_dict["img_array"].shape == (13, 81, 81)
