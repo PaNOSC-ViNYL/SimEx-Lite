@@ -6,3 +6,4 @@
 
 from .DiffractionData import DiffractionData
 from .SingFELFormat import SingFELFormat
+from .EMCFormat import EMCFormat

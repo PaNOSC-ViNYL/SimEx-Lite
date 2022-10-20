@@ -6,11 +6,14 @@
 
 from libpyvinyl import BaseData
 from .SingFELFormat import SingFELFormat
+from .EMCFormat import EMCFormat
+
 
 def spliterate(buf, chunk):
     for start in range(0, len(buf), chunk):
         # print(start, start+chunk)
-        yield buf[start:start + chunk]
+        yield buf[start : start + chunk]
+
 
 class DiffractionData(BaseData):
     """Diffraction data mapper"""
@@ -50,10 +53,11 @@ class DiffractionData(BaseData):
     def supported_formats(self):
         format_dict = {}
         self._add_ioformat(format_dict, SingFELFormat)
+        self._add_ioformat(format_dict, EMCFormat)
         return format_dict
 
     @classmethod
-    def from_file(cls, filename: str, format_class, key:str, **kwargs):
+    def from_file(cls, filename: str, format_class, key: str, **kwargs):
         return cls(
             key,
             filename=filename,
