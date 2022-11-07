@@ -20,7 +20,7 @@ class EMCFormat(BaseFormat):
         description = "EMC photon format for DiffractionData"
         file_extension = [".h5", ".emc"]
         read_kwargs = ["index", "pattern_shape"]
-        write_kwargs = []
+        write_kwargs = [""]
         return self._create_format_register(
             key, description, file_extension, read_kwargs, write_kwargs
         )
@@ -90,7 +90,7 @@ class EMCFormat(BaseFormat):
         emcwriter = writeemc.EMCWriter(filename, arr[0].shape[0] * arr[0].shape[1])
         for photons in tqdm(arr):
             emcwriter.write_frame(photons.astype(np.int32).ravel())
-
+        emcwriter.finish_write()
         if key is None:
             original_key = object.key
             key = original_key + "_to_SingfelFormat"
