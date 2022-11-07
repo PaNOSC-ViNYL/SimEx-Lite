@@ -4,9 +4,13 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Diffraction Data APIs"""
 
+from tqdm import tqdm
+import numpy as np
 from libpyvinyl import BaseData
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat
+from .CondorFormat import CondorFormat
+from . import writeemc
 
 
 def spliterate(buf, chunk):
@@ -54,6 +58,7 @@ class DiffractionData(BaseData):
         format_dict = {}
         self._add_ioformat(format_dict, SingFELFormat)
         self._add_ioformat(format_dict, EMCFormat)
+        self._add_ioformat(format_dict, CondorFormat)
         return format_dict
 
     @classmethod
@@ -69,3 +74,100 @@ class DiffractionData(BaseData):
     def from_dict(cls, data_dict, key):
         """Create the data class by a python dictionary."""
         return cls(key, data_dict=data_dict)
+
+    def multiply(self, val, chunk_size=10000):
+        """Multiply a number to the diffraction patterns.
+        :param val: The value to be multiplied.
+        :type val: float
+        :param chunk: The chunk size to conduct the operation
+        :type chunk_size: int
+        """
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        n_chunks = int(np.ceil(float(len(array)) / chunk_size))
+        print(f"Operation in {n_chunks} chunks", flush=True)
+        for arr in tqdm(
+            spliterate(array, chunk_size),
+            total=n_chunks,
+        ):
+            arr[:] = arr * val
+
+    def addBeamStop(self, stop_rad: int):
+        """Add a beamstop in pixel radius to the diffraction patterns.
+        :param stop_rad: The radius of the beamstop in pixel unit
+        :type stop_rad: int
+        """
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        print("Adding beam stop...", flush=True)
+        for i, img in enumerate(tqdm(array)):
+            array[i] = addBeamStop(img, stop_rad)
+        self.stop_rad = stop_rad
+
+    def poissonize(self):
+        """Poissonize the data array in this data class"""
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        array[:] = np.random.poisson(array)
+
+    def __operation_check(self):
+        """To check if the data operation is allowed."""
+        if self.data_dict is None:
+            err_str = (
+                "This operation is only avaiable for dict type data. To convert:\n"
+            )
+            err_str += "my_dict = YOUR_INSTANCE.get_data() \n"
+            err_str += "dd_in_dict = DiffractionData.from_dict(my_dict, 'YOUR_KEY')"
+
+            raise TypeError(err_str)
+
+
+def addBeamStop(img, stop_rad):
+    """Add the beamstop in pixel radius to diffraction pattern.
+    :param img: Diffraction pattern
+    :type img: np.2darray
+    :param stop_rad: The radius of the beamstop in pixel unit
+    :type stop_rad: int
+    :return: Beamstop masked 2D array
+    :rtype: np.2darray
+    """
+    stop_mask = np.ones_like(img)
+    center = np.array(img.shape) // 2
+    y = np.indices(img.shape)[0] - center[0]
+    x = np.indices(img.shape)[1] - center[1]
+    r = np.sqrt((x * x + y * y))
+    stop_mask[r <= stop_rad] = 0
+    masked = img * stop_mask
+    return masked
+
+
+def write_multiple_file_to_emc(
+    in_file_list,
+    in_file_format_class,
+    filename: str,
+    poissonize=False,
+    stop_rad=None,
+    multiply=None,
+    **kwargs,
+):
+    """Write multiple diffraction files to a single EMC h5 file"""
+    emcwriter = None
+    list_len = len(in_file_list)
+    for idx, in_fn in enumerate(in_file_list):
+        print(f"{idx + 1}/{list_len}: {in_fn}")
+        data_dict = in_file_format_class.read(in_fn, **kwargs)
+        dd_in_dict = DiffractionData.from_dict(data_dict, "tmp")
+        if poissonize:
+            dd_in_dict.poissonize()
+        if stop_rad is not None:
+            dd_in_dict.addBeamStop(stop_rad)
+        if multiply is not None:
+            dd_in_dict.multiply(multiply)
+        arr = data_dict["img_array"]
+        if emcwriter is None:
+            arr_sample = arr[0]
+            emcwriter = writeemc.EMCWriter(
+                filename, arr_sample.shape[0] * arr_sample.shape[1]
+            )
+        for photons in tqdm(arr):
+            emcwriter.write_frame(photons.astype(np.int32).ravel())
