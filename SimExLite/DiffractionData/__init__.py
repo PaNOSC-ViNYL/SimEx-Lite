@@ -6,5 +6,5 @@
 
 from .DiffractionData import DiffractionData, write_multiple_file_to_emc
 from .SingFELFormat import SingFELFormat
-from .EMCFormat import EMCFormat
+from .EMCFormat import EMCFormat, writeEMCGeom
 from .CondorFormat import CondorFormat
