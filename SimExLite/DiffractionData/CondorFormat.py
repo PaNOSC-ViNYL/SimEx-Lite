@@ -5,6 +5,7 @@ from extra_geom import GenericGeometry
 from extra_geom.base import DetectorGeometryBase
 from SimExLite.utils.io import parseIndex
 from SimExLite.PhotonBeamData import SimpleBeam
+from . import writeemc, DetectorEMC
 
 
 class CondorFormat(BaseFormat):
@@ -216,3 +217,60 @@ def write_condor(
         # f["angle"] = None
         # f["direction"] = None
         f["patterns"] = arr
+
+
+def to_emc_geom(in_fn: str, out_fn: str, stoprad: float):
+    """Write the Condor geom in EMC geom H5 format
+
+    :param in_fn: input filename
+    :type in_fn: str
+    :param out_fn: output filename
+    :type out_fn: str
+    :param stoprad: beamstop radius in pixels
+    :type stoprad: float
+    """
+    # Reference: https://github.com/JunCEEE/Dragonfly/blob/8e9075818f00f5d2c45756d2b98803509be67cf0/utils/convert/geomtodet.py#L23
+    params = getParameters(in_fn)
+    geom = params["geom"]
+    beam = params2SimpleBeam(params["beam"])
+    # Sample to detector distance
+    det_dist = geom["distance"] * 1e3  # millimeter
+    # width number of pixels
+    dets_x = geom["mask"].shape[1]
+    # height number of pixels
+    dets_y = geom["mask"].shape[0]
+    # pixel size
+    pix_size = geom["pixelSize"] * 1e3  # milimeter
+    # wavelength
+    in_wavelength = beam.get_wavelength(unit="angstrom")
+    # ewald_rad definition: https://github.com/duaneloh/Dragonfly/wiki/Configuration-parameters-for-experimental-data#parameters-
+    ewald_rad = det_dist / pix_size
+
+    q_pm = writeemc.compute_q_params(
+        det_dist, dets_x, dets_y, pix_size, in_wavelength, ewald_rad
+    )
+    # q_sep = 2sin(min_angle)/lambda
+    y, x = np.indices(geom["mask"].shape)
+    center_x = (dets_x - 1) / 2
+    center_y = (dets_y - 1) / 2
+    y = y - center_y
+    x = x - center_x
+    z = det_dist / pix_size
+    det = DetectorEMC.Detector()
+    qscaling = 1.0 / in_wavelength / q_pm["q_sep"]
+    norm = np.sqrt(x * x + y * y + z * z)
+    det.qx = x * qscaling / norm
+    det.qy = y * qscaling / norm
+    det.qz = qscaling * (z / norm - 1.0)
+    det.corr = det_dist / np.power(norm, 3.0)
+    # x polorization
+    det.corr *= writeemc.compute_polarization("x", x, y, norm)
+    radius = np.sqrt(x * x + y * y)
+    rmax = min(np.abs(x.max()), np.abs(x.min()), np.abs(y.max()), np.abs(y.min()))
+    det.raw_mask = np.zeros(det.corr.shape, dtype="u1")
+    det.raw_mask[radius > rmax] = 1
+    det.raw_mask[radius < stoprad] = 2
+    det.detd = det_dist
+    det.ewald_rad = ewald_rad
+    print("Writing detector file to", out_fn)
+    det.write(out_fn)
