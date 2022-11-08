@@ -5,7 +5,7 @@ from pathlib import Path
 from tqdm import tqdm
 from scipy.sparse import csr_matrix
 from libpyvinyl.BaseFormat import BaseFormat
-from . import writeemc
+from . import writeemc, DetectorEMC
 from SimExLite.utils.io import parseIndex
 from SimExLite.utils.io import UnknownFileTypeError
 
@@ -379,3 +379,73 @@ def parse_binaryheader(fname):
     pdict["ones_accum"] = np.cumsum(ones)
     pdict["multi_accum"] = np.cumsum(multi)
     return pdict
+
+
+def writeEMCGeom(
+    out_fn: str,
+    det_dist: float,
+    dets_x: int,
+    dets_y: int,
+    pix_size: float,
+    in_wavelength: float,
+    stoprad: float,
+):
+    """Get EMC geom from several parameters.
+
+    :param out_fn: Output filename
+    :type out_fn: str
+    :param det_dist: Sample to detector distance (mm)
+    :type det_dist: float
+    :param dets_x: Number of pixels in x direction
+    :type dets_x: int
+    :param dets_y: Number of pixels in y direction
+    :type dets_y: int
+    :param pix_size: Pixel size (mm)
+    :type pix_size: float
+    :param in_wavelength: X-ray wavelength (angstrom)
+    :type in_wavelength: float
+    :param stoprad: Beamstop radius in pixels
+    :type stoprad: float
+    """
+    # Reference: https://github.com/JunCEEE/Dragonfly/blob/8e9075818f00f5d2c45756d2b98803509be67cf0/utils/convert/geomtodet.py#L23
+    # Sample to detector distance
+    # width number of pixels
+    # dets_x = geom["mask"].shape[1]
+    # height number of pixels
+    # dets_y = geom["mask"].shape[0]
+    # pixel size
+    # pix_size = geom["pixelSize"] * 1e3  # milimeter
+    # wavelength
+    # in_wavelength = beam.get_wavelength(unit="angstrom")
+    # Radius of curvature of the Ewald sphere in voxels. See: 
+    # https://github.com/duaneloh/Dragonfly/wiki/Configuration-parameters-for-experimental-data#parameters-
+    ewald_rad = det_dist / pix_size
+
+    q_pm = writeemc.compute_q_params(
+        det_dist, dets_x, dets_y, pix_size, in_wavelength, ewald_rad
+    )
+    # q_sep = 2sin(min_angle)/lambda
+    y, x = np.indices((dets_y, dets_x))
+    center_x = (dets_x - 1) / 2
+    center_y = (dets_y - 1) / 2
+    y = y - center_y
+    x = x - center_x
+    z = det_dist / pix_size
+    det = DetectorEMC.Detector()
+    qscaling = 1.0 / in_wavelength / q_pm["q_sep"]
+    norm = np.sqrt(x * x + y * y + z * z)
+    det.qx = x * qscaling / norm
+    det.qy = y * qscaling / norm
+    det.qz = qscaling * (z / norm - 1.0)
+    det.corr = det_dist / np.power(norm, 3.0)
+    # x polorization
+    det.corr *= writeemc.compute_polarization("x", x, y, norm)
+    radius = np.sqrt(x * x + y * y)
+    rmax = min(np.abs(x.max()), np.abs(x.min()), np.abs(y.max()), np.abs(y.min()))
+    det.raw_mask = np.zeros(det.corr.shape, dtype="u1")
+    det.raw_mask[radius > rmax] = 1
+    det.raw_mask[radius < stoprad] = 2
+    det.detd = det_dist
+    det.ewald_rad = ewald_rad
+    print("Writing detector file to", out_fn)
+    det.write(out_fn)
