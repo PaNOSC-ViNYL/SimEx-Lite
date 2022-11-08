@@ -6,7 +6,9 @@ History
 ------------------
 
 * Add EMC format
+* Add the function to write multiple files into one file in EMC format
 * Add CXI format
+* Add Condor format
 
 
 1.0.0 (2022-09-27)
