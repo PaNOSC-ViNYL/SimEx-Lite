@@ -92,10 +92,10 @@ class DiffractionData(BaseData):
         ):
             arr[:] = arr * val
 
-    def addBeamStop(self, stop_rad: int):
-        """Add a beamstop in pixel radius to the diffraction patterns.
+    def addBeamStop(self, stop_rad: float):
+        """Add a beamstop in pixel radius (float) to the diffraction patterns.
         :param stop_rad: The radius of the beamstop in pixel unit
-        :type stop_rad: int
+        :type stop_rad: float
         """
         self.__operation_check()
         array = self.data_dict["img_array"]
@@ -126,8 +126,8 @@ def addBeamStop(img, stop_rad):
     """Add the beamstop in pixel radius to diffraction pattern.
     :param img: Diffraction pattern
     :type img: np.2darray
-    :param stop_rad: The radius of the beamstop in pixel unit
-    :type stop_rad: int
+    :param stop_rad: The radius of the beamstop in pixel unit (float)
+    :type stop_rad: float
     :return: Beamstop masked 2D array
     :rtype: np.2darray
     """
