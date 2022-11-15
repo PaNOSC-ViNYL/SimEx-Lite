@@ -9,7 +9,7 @@ from libpyvinyl.BaseData import DataCollection
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 from SimExLite.utils.Logger import setLogger
 
-logger = setLogger(__name__)
+logger = setLogger("WPGPropagationCalculator")
 
 # WPG (https://github.com/samoylv/WPG) is neccessary to execute the calculator,
 # but it's not a hard dependency of SimExLite.

@@ -13,6 +13,9 @@ from libpyvinyl.BaseData import DataCollection
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 from SimExLite.PMIData import XMDYNFormat
 import shutil
+from SimExLite.utils.Logger import setLogger
+
+logger = setLogger("SingFELDiffractionCalculator")
 
 
 class SingFELDiffractionCalculator(BaseCalculator):
