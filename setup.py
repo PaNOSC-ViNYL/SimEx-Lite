@@ -40,6 +40,7 @@ setup(
             'SimExLite=SimExLite.cli:main',
         ],
     },
+    scripts=['SimExLite/DiffractionCalculators/crystfel/gen-sfs'],
     install_requires=requirements,
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
