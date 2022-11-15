@@ -86,7 +86,17 @@ class CrystfelDiffractionCalculator(BaseCalculator):
 
         point_group = parameters.new_parameter(
             "point_group",
-            comment="Use pointgroup as the symmetry of the intensity list. E.g. '422' for Lysozyme.",
+            comment="Use point group as the symmetry of the intensity list. E.g. '422' for Lysozyme.",
+        )
+        space_group = parameters.new_parameter(
+            "space_group",
+            comment="The space group used for sfs intensity calculation. E.g. 'P43212' for Lysozyme.",
+        )
+
+        intensities_resolution = parameters.new_parameter(
+            "intensities_resolution",
+            comment="The resolution used for sfs intensity calculation. The default value is 3 angstrom",
+            unit="angstrom",
         )
         intensities_fn = parameters.new_parameter(
             "intensities_fn",
@@ -115,9 +125,15 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         beam_bandwidth.value = 0.01
         photon_energy.value = 9.3e3
         pulse_energy.value = 2e-3
-        intensities_fn.value = None
         gaussian_background.value = [0.0, 0.0]
+        # With the file, one doesn't need to provide the following parameters
+        intensities_fn.value = None
+
+        # SFS intensity calculation
+        intensities_resolution.value = 3.0
+        space_group.value = None
         point_group.value = None
+
         geometry_fn.value = None
         beam_radius.value = 5e-6
         max_crystal_size.value = 5e-8
@@ -127,7 +143,8 @@ class CrystfelDiffractionCalculator(BaseCalculator):
 
         self.parameters = parameters
 
-    def backengine(self):
+    def backengine(self, is_convert_to_cxi: bool = True):
+        """If `is_convert_to_cxi` is False, for debugging, will not convert the result to CXI."""
         input_fn = self.get_input_fn()
         output_fn = self.output_file_paths[0]
         tmp_dir_path = Path(self.base_dir) / "diffr"
@@ -138,7 +155,7 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         assert len(self.output_file_paths) == 1
         assert param["point_group"].value is not None
         geometry_fn = self.__get_geometry_file()
-        intensities_fn = self.__get_intensities_file()
+        intensities_fn = self.__get_intensities_file(input_fn)
 
         # These two noise settings are only for converting to CXI format
         noise_base = param["gaussian_background"].value[0]
@@ -168,7 +185,15 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         print(*command_sequence)
 
         # # Executing:
-        proc = Popen(command_sequence, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        try:
+            proc = Popen(command_sequence, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        except FileNotFoundError as e:
+            if "pattern_sim" in str(e):
+                raise RuntimeError(
+                    "pattern_sim not found, please install crystfel: https://www.desy.de/~twhite/crystfel/manual-pattern_sim.html"
+                )
+            else:
+                raise
 
         while proc.poll() is None:
             # Here the output of crystfel is in stderr
@@ -199,15 +224,16 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         )
         # print(vds_ref_geom)
         # print(sim_geom)
-        convert_to_CXI(
-            sim_geom,
-            vds_ref_geom,
-            str(tmp_dir_path),
-            output_fn,
-            f"{fn_prefix}.(\\d+).h5",
-            noise_base,
-            noise_std,
-        )
+        if is_convert_to_cxi:
+            convert_to_CXI(
+                sim_geom,
+                vds_ref_geom,
+                str(tmp_dir_path),
+                output_fn,
+                f"{fn_prefix}.(\\d+).h5",
+                noise_base,
+                noise_std,
+            )
         assert len(self.output_keys) == 1
         key = self.output_keys[0]
         output_data = self.output[key]
@@ -251,11 +277,57 @@ class CrystfelDiffractionCalculator(BaseCalculator):
             geom_path = self.parameters["geometry_fn"].value
         return geom_path
 
-    def __get_intensities_file(self):
+    def __get_intensities_file(self, input_fn):
         if self.parameters["intensities_fn"].value is None:
-            fn = pkg_resources.resource_filename(
-                "SimExLite.DiffractionCalculators", "agipd_simple_2d.geom"
-            )
+            if self.parameters["space_group"].value is not None:
+                logger.info(
+                    "Intensities list file was not provided, will calculate them with the space_group, point_group and intensities_resolution parameters..."
+                )
+                space_group = self.parameters["space_group"].value
+                point_group = self.parameters["point_group"].value
+                resolution = self.parameters["intensities_resolution"].value
+
+                command_sequence = [
+                    "gen-sfs",
+                    input_fn,
+                    str(space_group),
+                    str(resolution),
+                    str(point_group),
+                ]
+                # print(command_sequence)
+                # # Executing:
+                proc = Popen(command_sequence, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+
+                while proc.poll() is None:
+                    output = proc.stdout.readline()
+                    if output:
+                        logger.info(output.decode("ascii").strip())
+
+                # t0 = time.process_time()
+                output, err = proc.communicate()
+                # t1 = time.process_time()
+                # print("Time spent", t1 - t0)
+
+                rc = proc.returncode
+                if rc != 0:
+                    if "sfall: command not found" in err.decode("ascii"):
+                        err_txt = err.decode("ascii")
+                        err_txt += "\nsfall not found, please install CCP4 (https://www.ccp4.ac.uk/html/index.html)."
+                        raise RuntimeError(err_txt)
+                    else:
+                        print(output.decode("ascii"))
+                        raise RuntimeError(err.decode("ascii"))
+
+                logger.info(f"Save .hkl file in {input_fn}.hkl")
+                return input_fn + ".hkl"
+            else:
+                err = "Intensity information is not provided.\n"
+                err += 'Please set either parameters["intensities_fn"] or parameters["space_group"].'
+                raise KeyError(err)
+        elif self.parameters["space_group"].value is not None:
+            err = 'parameters["intensities_fn"] and parameters["space_group"] cannot be set at the same time, '
+            err += 'please set either "intensities_fn" or "space_group".'
+            raise KeyError(err)
         else:
             fn = self.parameters["intensities_fn"].value
         return fn
