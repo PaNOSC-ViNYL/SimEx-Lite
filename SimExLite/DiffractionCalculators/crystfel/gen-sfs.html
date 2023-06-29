@@ -1,0 +1,945 @@
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<html> <!-- CCP4 HTML LOGFILE -->
+<hr>
+<!--SUMMARY_END--></FONT></B>
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<pre>
+ 
+ ###############################################################
+ ###############################################################
+ ###############################################################
+ ### CCP4 8.0.001: SFALL            version 8.0.001 :         ##
+ ###############################################################
+ User: juncheng  Run date: 15/11/2022 Run time: 12:52:46 
+
+
+ Please reference: Collaborative Computational Project, Number 4. 2011.
+ "Overview of the CCP4 suite and current developments". Acta Cryst. D67, 235-242.
+ as well as any specific reference in the program write-up.
+
+<!--SUMMARY_END--></FONT></B>
+
+ Memory allocation (logical name, type, elements):
+   MEMSIZE R      5000000
+   MEMSIZE I      5000000
+
+FORMATTED      OLD     file opened on unit  45
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: ATOMSF, Filename: /opt/xray/ccp4-8.0/lib/data/atomsf.lib
+<!--SUMMARY_END--></FONT></B>
+
+ Data line--- MODE SFCALC XYZIN
+ Data line--- RESOLUTION 1 1000
+ Data line--- FORM NGAUSS 5
+ Data line--- SYMM P43212
+Reciprocal space symmetry: 
+Space group: "P 43 21 2" Point group: "PG422" Laue group: "4/mmm" 
+Reference asymmetric unit: "h>=k and k>=0 and l>=0" 
+  (change of basis may be applied) 
+
+ Spacegroup 96 "P 43 21 2" 
+ Original indices for reflection hkl with symmetry number ISYM 
+
+                              Bijvoet positive 
+       ISYM              ISYM              ISYM              ISYM              
+  ISYM   1  +h,+k,+l       3  -k,+h,+l       5  -h,-k,+l       7  +k,-h,+l    
+  ISYM   9  +h,-k,-l      11  +k,+h,-l      13  -h,+k,-l      15  -k,-h,-l    
+
+                              Bijvoet negative 
+       ISYM              ISYM              ISYM              ISYM              
+  ISYM   2  -h,-k,-l       4  +k,-h,-l       6  +h,+k,-l       8  -k,+h,-l    
+  ISYM  10  -h,+k,+l      12  -k,-h,+l      14  +h,-k,+l      16  +k,+h,+l    
+ Data line--- END
+ ***  Calculation symmetry using space-group CalcSpaceGroup   96 ***
+
+  Logical name: XYZIN  File name: ../../../tests/testFiles/3WUL.pdb
+  PDB file is being opened on unit 1 for INPUT.
+
+  MATRICES DERIVED FROM CRYST1 CARD IN COORDINATE FILE
+
+
+             RF                                  RO
+
+    0.013  -0.000  -0.000  -0.000       79.000   0.000   0.000  -0.000
+   -0.000   0.013  -0.000   0.000        0.000  79.000   0.000   0.000
+    0.000  -0.000   0.026  -0.000        0.000   0.000  38.000  -0.000
+   -0.000   0.000  -0.000   1.000       -0.000   0.000  -0.000   1.000
+
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+ 
+ $TEXT:Warning: $$ comment $$ 
+ WARNING: No crystal/dataset information given for new MTZ file.
+ $$
+<!--SUMMARY_END--></FONT></B>
+You are creating a new MTZ file (no HKLIN specified).
+It is recommended to sort out the crystal/dataset hierarchy now.
+Use the NAME keyword.
+
+
+
+ Form factors used are   
+ AtomName - formfac number -  (AI BI),I=1,NGauss - sum(AI)
+  Default value is 5 term gaussian
+  H       1     0.49300  10.51090     0.32291  26.12570
+                0.14019   3.14236     0.04081  57.79970     0.00304   0.00000     0.99995
+  C       2     2.31000  20.84390     1.02000  10.20750
+                1.58860   0.56870     0.86500  51.65120     0.21560   0.00000     5.99920
+  N       3    12.21260   0.00570     3.13220   9.89330
+                2.01250  28.99750     1.16630   0.58260   -11.52900   0.00000     6.99460
+  O       4     3.04850  13.27710     2.28680   5.70110
+                1.54630   0.32390     0.86700  32.90890     0.25080   0.00000     7.99940
+  S       5     6.90530   1.46790     5.20340  22.21510
+                1.43790   0.25360     1.58630  56.17200     0.86690   0.00000    15.99980
+
+ Title:  A run of SFALL
+
+ Structure Factor Calculation 
+      -  Atom file Read ***
+   Writes an output file H K L S FC ALPHAC    
+   For all Reflns within SINTHETA Limits  ***
+
+
+ Chain Names - First Residue - Last Residue - serial Kcount
+
+    INPUT X USED AS  X
+    INPUT Y USED AS  Y
+    INPUT Z USED AS  Z
+  Title 
+     A run of SFALL
+
+ Unit CELL Parameters are =    79.0000   79.0000   38.0000   90.0000   90.0000   90.0000
+ Space Group Number       =    96
+
+
+
+ Hmin, Kmin, Lmin, Hmax, Kmax, Lmax are     0    0    0   79   79   38
+
+
+ Sampling Intervals NX,NY,NZ are   240  240  112
+
+
+ Map dimensions are  X =     0 to   239 Y =     0 to   239 Z =     0 to    14
+
+
+ Minimum,Maximum 4(SNTH/L)**2 are  0.0000 and  1.0000
+  intervals of s for rfactor analysis are 1./   20
+
+
+ ie  Resolution Limits 1000.0 to    1.0 Angstroms
+
+
+ BADD =   0.00
+
+
+ Initial Value of Atom radius in "fc" MAP       2.50
+ This is modified by a factor Sqrt(B+25)/2PI to "spread"  the density for atoms with high B factors
+
+   Weight  Omit       0.00   1000.00
+
+
+ Scale  BfactOverall        1.00      0.00
+ FCALC is scaled by SCALE*exp(-BfactOverall*S/4)
+
+
+ DSmin DSmax       1.00      4.47
+ in refinement overall Scale and B are refined using 
+      reflections with DSMN < = D < = DSmax 
+
+
+
+
+ Reflections for which FOBS < -1.0 SIGMA Omitted
+
+
+ Breset is -1.00
+
+ Limits for atoms:     AXIS    MIN      MAX
+                         1  0.00000  1.00000
+                         2  0.00000  1.00000
+                         3 -0.06579  0.19080
+ 
+ 
+
+ Upper limits are:     AXIS    MIN      MAX
+                         1  0.03165  0.96835
+                         2  0.03165  0.96835
+                         3  0.06579  0.06579
+ 
+ 
+
+
+  First 10 atoms of atsort - orthog coordinates
+         1N    LYS         1 10.0200  3.3170 27.6750 1.00   24.37    3
+   fractional coordinates  0.12684 0.04199 0.72829
+         2CA   LYS         1 10.3760  2.3970 28.8010 1.00   24.90    2
+   fractional coordinates  0.13134 0.03034 0.75792
+         3C    LYS         1 11.9000  2.4260 29.0520 1.00   26.19    2
+   fractional coordinates  0.15063 0.03071 0.76453
+         4O    LYS         1 12.7200  2.4170 28.1270 1.00   26.06    4
+   fractional coordinates  0.16101 0.03059 0.74018
+         5CB   LYS         1  9.9690  0.9390 28.4360 1.00   26.96    2
+   fractional coordinates  0.12619 0.01189 0.74832
+         6CG   LYS         1 10.5130 -0.0900 29.4280 1.00   27.52    2
+   fractional coordinates  0.13308-0.00114 0.77442
+
+   6th Form factor added:   
+ AtomName - formfac number  -  (AI BI),I=1,5  -  sum(AI) 
+  NA                6     4.76260   3.28500     3.17360   8.84220
+                          1.26740   0.31360     1.11280 129.42400     0.67600   0.00000    10.99240
+
+
+   7th Form factor added:   
+ AtomName - formfac number  -  (AI BI),I=1,5  -  sum(AI) 
+  CL                7    11.46040   0.01040     7.19640   1.16620
+                          6.25560  18.51940     1.64550  47.77840    -9.55740   0.00000    17.00050
+
+  First 10 atoms of sorted file in asym unit -  
+       40.54199   0.37316  -0.02170    124.37 1.00         3    1N    LYS 
+       70.34937  10.53071  -0.01452    326.19 1.00         2    1C    LYS 
+       40.53059   0.33899  -0.00981    426.06 1.00         4    1O    LYS 
+       70.36866  10.53034  -0.00791    224.90 1.00         2    1CA   LYS 
+       40.51189   0.37381  -0.00167    526.96 1.00         2    1CB   LYS 
+       70.37381  10.51189   0.00168    526.96 1.00         2    1CB   LYS 
+       40.53034   0.36866   0.00792    224.90 1.00         2    1CA   LYS 
+       70.33899  10.53059   0.00982    426.06 1.00         4    1O    LYS 
+       40.53071   0.34937   0.01453    326.19 1.00         2    1C    LYS 
+       70.37316  10.54199   0.02171    124.37 1.00         3    1N    LYS 
+
+  First atom of sorted file in atsort 
+       20.34210  10.71623  -0.06575  55123.35     51.00   69CG2  THR 
+ Number of atoms input            =          1115
+ Number of atoms in sort          =        2303
+ Number in density generation     =   2303
+ Number completely within fft box =      0
+     Minimum B =    15.28
+     Maximum B =    69.10
+     Average B =    28.82
+     Number of Bs < BfactReset =        0
+     Number of Bs > 99.99  =        0
+
+ WRITTEN OUTPUT MTZ FILE 
+ Logical Name: HKLOUT   Filename: ../../../tests/testFiles/3WUL.pdb.mtz 
+
+ * Title:
+
+  A run of SFALL
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 0
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+
+ * Number of Columns = 5
+
+ * Number of Reflections = 65291
+
+ * Missing value set to NaN in input mtz file
+
+ * Column Labels :
+
+ H K L FC PHIC
+
+ * Column Types :
+
+ H H H F P
+
+ * Associated datasets :
+
+ 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   79.0000   79.0000   38.0000   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00032    1.00003     (     55.861 -      1.000 A )
+
+ * Sort Order :
+
+      1     2     3     0     0
+
+ * Space group = 'P 43 21 2' (number     96)
+
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+ SFALL:   Normal Termination of structure factor calc.
+Times: User:       0.4s System:    0.0s Elapsed:     0:00  
+</pre>
+</html>
+<!--SUMMARY_END--></FONT></B>
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<html> <!-- CCP4 HTML LOGFILE -->
+<hr>
+<!--SUMMARY_END--></FONT></B>
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<pre>
+ 
+ ###############################################################
+ ###############################################################
+ ###############################################################
+ ### CCP4 8.0.001: CAD              version 8.0.001 :         ##
+ ###############################################################
+ User: juncheng  Run date: 15/11/2022 Run time: 12:52:46 
+
+
+ Please reference: Collaborative Computational Project, Number 4. 2011.
+ "Overview of the CCP4 suite and current developments". Acta Cryst. D67, 235-242.
+ as well as any specific reference in the program write-up.
+
+<!--SUMMARY_END--></FONT></B>
+ Data line--- TITLE Sorted blah
+ Data line--- LABIN FILE 1 E1=FC E2=PHIC
+ Data line--- CTYPE FILE 1 E1=F  E2=P
+    Indices output even if all data items flagged "missing"
+ Warning, NOT all LABOUT data lines given
+
+ OPENED INPUT MTZ FILE 
+ Logical Name: HKLIN1   Filename: ../../../tests/testFiles/3WUL.pdb.mtz 
+
+ * Title:
+
+  A run of SFALL
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 0
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+
+ * Number of Columns = 5
+
+ * Number of Reflections = 65291
+
+ * Missing value set to NaN in input mtz file
+
+ * Column Labels :
+
+ H K L FC PHIC
+
+ * Column Types :
+
+ H H H F P
+
+ * Associated datasets :
+
+ 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   79.0000   79.0000   38.0000   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00032    1.00003     (     55.861 -      1.000 A )
+
+ * Sort Order :
+
+      1     2     3     0     0
+
+ * Space group = 'P 43 21 2' (number     96)
+
+Reciprocal space symmetry: 
+Space group: "P 43 21 2" Point group: "PG422" Laue group: "4/mmm" 
+Reference asymmetric unit: "h>=k and k>=0 and l>=0" 
+  (change of basis may be applied) 
+
+ Spacegroup 96 "P 43 21 2" 
+ Original indices for reflection hkl with symmetry number ISYM 
+
+                              Bijvoet positive 
+       ISYM              ISYM              ISYM              ISYM              
+  ISYM   1  +h,+k,+l       3  -k,+h,+l       5  -h,-k,+l       7  +k,-h,+l    
+  ISYM   9  +h,-k,-l      11  +k,+h,-l      13  -h,+k,-l      15  -k,-h,-l    
+
+                              Bijvoet negative 
+       ISYM              ISYM              ISYM              ISYM              
+  ISYM   2  -h,-k,-l       4  +k,-h,-l       6  +h,+k,-l       8  -k,+h,-l    
+  ISYM  10  -h,+k,+l      12  -k,-h,+l      14  +h,-k,+l      16  +k,+h,+l    
+
+
+ Chosen Asymmetric unit of reciprocal space: 
+ [4/mmm] hkl:h>=0, k>=0, l>=0 and h>=k
+
+
+ ** "Missing" flag set in HKLIN1 to Nan:
+
+
+ ** "Missing" entries LISTED as           -999.000
+ Data line--- LABIN  E1=FC E2=PHIC
+
+
+ After Processing File_Number:  1
+ Number of columns so far    :   5
+ Accumulated Out_Put_MTZ_labels are:
+  E11=FC  E21=PHIC 
+
+
+ MTZOUT_LABELS are H K L and -
+  FC  PHIC 
+        3 sort keys, in columns    1   2   3
+
+
+
+
+ Data line--- LABIN  E1=FC E2=PHIC
+
+ OPENED INPUT MTZ FILE 
+ Logical Name: HKLIN1   Filename: ../../../tests/testFiles/3WUL.pdb.mtz 
+
+ * Title:
+
+  A run of SFALL
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 0
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+
+ * Number of Columns = 5
+
+ * Number of Reflections = 65291
+
+ * Missing value set to NaN in input mtz file
+
+ * Column Labels :
+
+ H K L FC PHIC
+
+ * Column Types :
+
+ H H H F P
+
+ * Associated datasets :
+
+ 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   79.0000   79.0000   38.0000   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00032    1.00003     (     55.861 -      1.000 A )
+
+ * Sort Order :
+
+      1     2     3     0     0
+
+ * Space group = 'P 43 21 2' (number     96)
+
+
+ Reading from HKLIN mtz file_Number = :1
+ This file written with MTZLIB Version Number : MTZ:V1.1  
+ File HKLIN1 contains a total of      5 Columns
+ and a total of      65291 Reflections
+
+  ******   EPSILON ZONES -  Reflection Classes and their multiplicity ****** 
+
+  EPSILON Zone   1
+  Reflections of type  h00 
+  Multiplicity   2
+
+  EPSILON Zone   2
+  Reflections of type  0k0 
+  Multiplicity   2
+
+  EPSILON Zone   3
+  Reflections of type  00l 
+  Multiplicity   4
+
+  EPSILON Zone   4
+  Reflections of type  hh0 
+  Multiplicity   2
+
+  EPSILON Zone   5
+  Reflections of type  h -h0 
+  Multiplicity   2
+
+  EPSILON Zone   6
+  Reflections of type  hkl 
+  Multiplicity   1
+
+  ******   CENTRIC ZONES  ****** 
+
+  CENTRIC Zone   1
+  Reflections of type  0kl 
+
+  CENTRIC Zone   2
+  Reflections of type  h0l 
+
+  CENTRIC Zone   3
+  Reflections of type  hk0 
+
+  CENTRIC Zone   4
+  Reflections of type  hhl 
+
+  CENTRIC Zone   5
+  Reflections of type  h -hl 
+
+
+
+ For file HKLIN1
+ Total Number of HKL read                         =      65291
+ Total Number of HKL systematic absent            =          0
+ Total Number of HKL reject for resolution limits =          0
+ Total Number of HKL passed to sort for this file =      71929
+
+
+ Total number read for all files    =      65291
+ Total passed to sort for all files =      71929
+ Total number systematic absent     =          0
+ Total number rejected outside resol=          0
+
+
+ Number of columns per file:
+ File_Number =    1 Number_Columns_Selected =     2
+
+ Data line--- LABOUT E11=FC E21=PHIC
+
+ WRITTEN OUTPUT MTZ FILE 
+ Logical Name: HKLOUT   Filename: ../../../tests/testFiles/3WUL.pdb-sorted.mtz 
+
+ * Title:
+
+ Sorted blah  A run of SFALL
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 0
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+
+ * Number of Columns = 5
+
+ * Number of Reflections = 65291
+
+ * Missing value set to NaN in input mtz file
+
+ * Column Labels :
+
+ H K L FC PHIC
+
+ * Column Types :
+
+ H H H F P
+
+ * Associated datasets :
+
+ 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   79.0000   79.0000   38.0000   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00032    1.00003     (     55.861 -      1.000 A )
+
+ * Sort Order :
+
+      1     2     3     0     0
+
+ * Space group = 'P 43 21 2' (number     96)
+
+
+
+ Total number from Sorting Routine =      71929
+ Final Total of Unique records to HKLOUT =      65291
+ Final Total of Missing records to HKLOUT =          0
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+ CAD:   *** Normal Termination of CAD ***
+Times: User:       0.5s System:    0.0s Elapsed:     0:01  
+</pre>
+</html>
+<!--SUMMARY_END--></FONT></B>
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<html> <!-- CCP4 HTML LOGFILE -->
+<hr>
+<!--SUMMARY_END--></FONT></B>
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+<pre>
+ 
+ ###############################################################
+ ###############################################################
+ ###############################################################
+ ### CCP4 8.0.001: MTZ2VARIOUS          version 1.1 :         ##
+ ###############################################################
+ User: juncheng  Run date: 15/11/2022 Run time: 12:52:47 
+
+
+ Please reference: Collaborative Computational Project, Number 4. 2011.
+ "Overview of the CCP4 suite and current developments". Acta Cryst. D67, 235-242.
+ as well as any specific reference in the program write-up.
+
+<!--SUMMARY_END--></FONT></B>
+ Data line--- LABIN H=H K=K L=L FC=FC PHIC=PHIC
+ Data line--- OUTPUT USER '(3I4,2F9.1)'
+
+FORMATTED      UNKNOWN file opened on unit  22
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+Logical name: HKLOUT, Filename: ../../../tests/testFiles/3WUL.pdb-temp.hkl
+<!--SUMMARY_END--></FONT></B>
+
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+ USER format output to ASCII file. 
+
+ *** Better to use mtzutils, and mtzdump with a defined format. See documentation!***
+ The format is 
+(3I4,2F9.1)                                                                     
+<!--SUMMARY_END--></FONT></B>
+
+ OPENED INPUT MTZ FILE 
+ Logical Name: HKLIN   Filename: ../../../tests/testFiles/3WUL.pdb-sorted.mtz 
+
+ * Title:
+
+ Sorted blah  A run of SFALL
+
+ * Base dataset:
+
+        0 HKL_base
+          HKL_base
+          HKL_base
+
+ * Number of Datasets = 0
+
+ * Dataset ID, project/crystal/dataset names, cell dimensions, wavelength:
+
+
+ * Number of Columns = 5
+
+ * Number of Reflections = 65291
+
+ * Missing value set to NaN in input mtz file
+
+ * Column Labels :
+
+ H K L FC PHIC
+
+ * Column Types :
+
+ H H H F P
+
+ * Associated datasets :
+
+ 0 0 0 0 0
+
+ * Cell Dimensions : (obsolete - refer to dataset cell dimensions above)
+
+   79.0000   79.0000   38.0000   90.0000   90.0000   90.0000 
+
+ *  Resolution Range :
+
+    0.00032    1.00003     (     55.861 -      1.000 A )
+
+ * Sort Order :
+
+      1     2     3     0     0
+
+ * Space group = 'P 43 21 2' (number     96)
+
+ Data line--- LABIN H=H K=K L=L FC=FC PHIC=PHIC
+ irng           0           2           0           0           0           0           0           0           0           0           0           0           0           0           0           0           0           0           0           0           0
+
+ ===================================
+  READING REFLECTIONS FROM MTZ FILE
+ ===================================
+
+           0           0           4   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+   0   0   4    0    0    0    0    0    0    0x
+           0           0           4   1274.06250       180.000000    
+           6           6           6   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+   6   6   6    0    0    0    0    0    0    0x
+           6           6           6   505.351990       0.00000000    
+           9           8          20   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+   9   8  20    0    0    0    0    0    0    0x
+           9           8          20   39.1106377       48.5460320    
+          12           1          33   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  12   1  33    0    0    0    0    0    0    0x
+          12           1          33   3.34774137       116.727745    
+          14           1           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  14   1   9    0    0    0    0    0    0    0x
+          14           1           9   157.068314       185.095215    
+          15          12          27   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  15  12  27    0    0    0    0    0    0    0x
+          15          12          27   2.45054054       191.034012    
+          17           6          14   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  17   6  14    0    0    0    0    0    0    0x
+          17           6          14   87.8975754       241.843246    
+          18          15          14   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  18  15  14    0    0    0    0    0    0    0x
+          18          15          14   130.569107       239.751099    
+          20           3          20   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  20   3  20    0    0    0    0    0    0    0x
+          20           3          20   16.3821068       130.564072    
+          21           9          27   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  21   9  27    0    0    0    0    0    0    0x
+          21           9          27   3.56320572       352.681854    
+          22          15           0   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  22  15   0    0    0    0    0    0    0    0x
+          22          15           0   214.843384       0.00000000    
+          23          19          19   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  23  19  19    0    0    0    0    0    0    0x
+          23          19          19   35.8202820       245.703476    
+          24          23           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  24  23   9    0    0    0    0    0    0    0x
+          24          23           9   18.7491684       357.536865    
+          26           0           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  26   0   9    0    0    0    0    0    0    0x
+          26           0           9   158.434326       135.000000    
+          27           1          15   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  27   1  15    0    0    0    0    0    0    0x
+          27           1          15   30.6447239       336.887939    
+          28           1          25   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  28   1  25    0    0    0    0    0    0    0x
+          28           1          25   9.75157070       315.826782    
+          29           1           6   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  29   1   6    0    0    0    0    0    0    0x
+          29           1           6   185.745987       210.396408    
+          29          29          26   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  29  29  26    0    0    0    0    0    0    0x
+          29          29          26   1.74364305       0.00000000    
+          30          28          17   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  30  28  17    0    0    0    0    0    0    0x
+          30          28          17   31.8445320       85.9170303    
+          31          26          20   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  31  26  20    0    0    0    0    0    0    0x
+          31          26          20   13.9459791       316.365997    
+          32          23          27   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  32  23  27    0    0    0    0    0    0    0x
+          32          23          27   3.10198498       323.326385    
+          33          20           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  33  20   9    0    0    0    0    0    0    0x
+          33          20           9   47.0645561       17.1224957    
+          34          16           0   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  34  16   0    0    0    0    0    0    0    0x
+          34          16           0   139.494751       180.000000    
+          35          11           4   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  35  11   4    0    0    0    0    0    0    0x
+          35          11           4   130.088364       46.1445160    
+          36           5          21   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  36   5  21    0    0    0    0    0    0    0x
+          36           5          21   6.00642109       8.36038113    
+          36          36          10   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  36  36  10    0    0    0    0    0    0    0x
+          36          36          10   11.0568123       0.00000000    
+          37          29          20   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  37  29  20    0    0    0    0    0    0    0x
+          37          29          20   4.15457821       252.300201    
+          38          22          15   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  38  22  15    0    0    0    0    0    0    0x
+          38          22          15   8.02850056       88.0604858    
+          39          14          32   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  39  14  32    0    0    0    0    0    0    0x
+          39          14          32  0.537822247       259.118530    
+          40           7           2   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  40   7   2    0    0    0    0    0    0    0x
+          40           7           2   132.532806       47.0680237    
+          40          39           7   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  40  39   7    0    0    0    0    0    0    0x
+          40          39           7   5.98460245       291.175110    
+          41          29          25   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  41  29  25    0    0    0    0    0    0    0x
+          41          29          25   1.34275675       267.792847    
+          42          20          12   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  42  20  12    0    0    0    0    0    0    0x
+          42          20          12   9.04005814       228.439270    
+          43          10          30   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  43  10  30    0    0    0    0    0    0    0x
+          43          10          30  0.513292253       141.412659    
+          44           1           2   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  44   1   2    0    0    0    0    0    0    0x
+          44           1           2   48.9614601       255.919128    
+          44          33          19   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  44  33  19    0    0    0    0    0    0    0x
+          44          33          19   2.90378189       218.888107    
+          45          22          21   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  45  22  21    0    0    0    0    0    0    0x
+          45          22          21   4.93857861       339.765320    
+          46          12           3   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  46  12   3    0    0    0    0    0    0    0x
+          46          12           3   10.4982824       135.974335    
+          47           1           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  47   1   9    0    0    0    0    0    0    0x
+          47           1           9   18.7238541       158.524414    
+          47          35           8   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  47  35   8    0    0    0    0    0    0    0x
+          47          35           8   13.2718449       199.354446    
+          48          23           7   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  48  23   7    0    0    0    0    0    0    0x
+          48          23           7   8.95728016       138.955002    
+          49          11          28   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  49  11  28    0    0    0    0    0    0    0x
+          49          11          28  0.926360905       87.1027603    
+          50           0          22   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  50   0  22    0    0    0    0    0    0    0x
+          50           0          22   1.46709871       90.0000000    
+          50          36           5   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  50  36   5    0    0    0    0    0    0    0x
+          50          36           5  0.701019943       314.343414    
+          51          23          26   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  51  23  26    0    0    0    0    0    0    0x
+          51          23          26  0.184016302       85.2603226    
+          52          12          18   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  52  12  18    0    0    0    0    0    0    0x
+          52          12          18   5.89745998       20.8658257    
+          53           1          24   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  53   1  24    0    0    0    0    0    0    0x
+          53           1          24   2.42691875       256.960205    
+          53          39          18   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  53  39  18    0    0    0    0    0    0    0x
+          53          39          18   1.05665457       335.631714    
+          54          27          18   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  54  27  18    0    0    0    0    0    0    0x
+          54          27          18   3.20103264       283.582153    
+          55          17          10   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  55  17  10    0    0    0    0    0    0    0x
+          55          17          10   9.78823280       326.122498    
+          56           8          10   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  56   8  10    0    0    0    0    0    0    0x
+          56           8          10   3.22367764       249.909607    
+          57           0          14   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  57   0  14    0    0    0    0    0    0    0x
+          57           0          14   1.68102360       0.00000000    
+          57          42           3   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  57  42   3    0    0    0    0    0    0    0x
+          57          42           3   1.76990080       210.435608    
+          58          34           8   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  58  34   8    0    0    0    0    0    0    0x
+          58          34           8   1.09205520       334.942078    
+          59          29           5   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  59  29   5    0    0    0    0    0    0    0x
+          59          29           5   2.50501871       248.658752    
+          60          26           4   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  60  26   4    0    0    0    0    0    0    0x
+          60          26           4   4.72911358       302.211304    
+          61          25           3   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  61  25   3    0    0    0    0    0    0    0x
+          61          25           3   3.40389800       203.986130    
+          62          26           7   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  62  26   7    0    0    0    0    0    0    0x
+          62          26           7   1.49863207       330.678802    
+          63          30          10   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  63  30  10    0    0    0    0    0    0    0x
+          63          30          10   1.30385852       74.6178131    
+          64          38           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  64  38   9    0    0    0    0    0    0    0x
+          64          38           9   1.65726125       147.336639    
+          66           6           6   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  66   6   6    0    0    0    0    0    0    0x
+          66           6           6   3.97041321       186.586502    
+          67          19           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  67  19   9    0    0    0    0    0    0    0x
+          67          19           9   2.35776305       60.5186043    
+          69           2          17   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  69   2  17    0    0    0    0    0    0    0x
+          69           2          17   1.22032714       162.627258    
+          70          28           9   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  70  28   9    0    0    0    0    0    0    0x
+          70          28           9  0.839141846       192.399094    
+          73           1          13   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  73   1  13    0    0    0    0    0    0    0x
+          73           1          13  0.855397344       156.339432    
+          76           9           4   0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000    
+  76   9   4    0    0    0    0    0    0    0x
+          76           9           4   2.85327625       59.5429268    
+
+ ===================================
+  FINISHED READING REFLECTIONS 
+ ===================================
+
+ Number of reflections   output =    65291
+
+ Number in Working Set (indep)  =        0
+ Number in Free    Set (indep)  =        0
+ Number  Missing       (indep)  =    65291
+ Number in Excluded Set (indep) =    65291
+
+ Number in Working Set (total)  =        0
+ Number in Free    Set (total)  =        0
+ Number  Missing       (total)  =    65291
+ Number in Excluded Set (total) =    65291
+
+ Number rejected by EXCLUDE k/w =        0
+
+
+
+ No. of reflections a) altogether b) to output c) independent   by resolution bins
+   0.00032 -   0.02031       416         0         0
+   0.02031 -   0.04031       438         0         0
+   0.04031 -   0.06030       511         0         0
+   0.06030 -   0.08030       599         0         0
+   0.08030 -   0.10029       646         0         0
+   0.10029 -   0.12029       718         0         0
+   0.12029 -   0.14028       756         0         0
+   0.14028 -   0.16027       809         0         0
+   0.16027 -   0.18027       859         0         0
+   0.18027 -   0.20026       889         0         0
+   0.20026 -   0.22026       944         0         0
+   0.22026 -   0.24025       964         0         0
+   0.24025 -   0.26025      1016         0         0
+   0.26025 -   0.28024      1061         0         0
+   0.28024 -   0.30023      1070         0         0
+   0.30023 -   0.32023      1129         0         0
+   0.32023 -   0.34022      1144         0         0
+   0.34022 -   0.36022      1177         0         0
+   0.36022 -   0.38021      1232         0         0
+   0.38021 -   0.40021      1234         0         0
+   0.40021 -   0.42020      1269         0         0
+   0.42020 -   0.44019      1289         0         0
+   0.44019 -   0.46019      1321         0         0
+   0.46019 -   0.48018      1379         0         0
+   0.48018 -   0.50018      1368         0         0
+   0.50018 -   0.52017      1408         0         0
+   0.52017 -   0.54016      1432         0         0
+   0.54016 -   0.56016      1470         0         0
+   0.56016 -   0.58015      1474         0         0
+   0.58015 -   0.60015      1506         0         0
+   0.60015 -   0.62014      1526         0         0
+   0.62014 -   0.64014      1562         0         0
+   0.64014 -   0.66013      1585         0         0
+   0.66013 -   0.68012      1584         0         0
+   0.68012 -   0.70012      1609         0         0
+   0.70012 -   0.72011      1672         0         0
+   0.72011 -   0.74011      1639         0         0
+   0.74011 -   0.76010      1711         0         0
+   0.76010 -   0.78010      1684         0         0
+   0.78010 -   0.80009      1740         0         0
+   0.80009 -   0.82008      1763         0         0
+   0.82008 -   0.84008      1754         0         0
+   0.84008 -   0.86007      1800         0         0
+   0.86007 -   0.88007      1816         0         0
+   0.88007 -   0.90006      1837         0         0
+   0.90006 -   0.92006      1860         0         0
+   0.92006 -   0.94005      1838         0         0
+   0.94005 -   0.96004      1893         0         0
+   0.96004 -   0.98004      1913         0         0
+   0.98004 -   1.00003       977         0         0
+<B><FONT COLOR="#FF0000"><!--SUMMARY_BEGIN-->
+ MTZ2VARIOUS:  Normal termination
+Times: User:       0.5s System:    0.0s Elapsed:     0:00  
+</pre>
+</html>
+<!--SUMMARY_END--></FONT></B>
