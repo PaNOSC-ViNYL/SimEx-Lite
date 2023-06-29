@@ -29,7 +29,7 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         output_data_types=DetectorData,
         output_filenames: str = "diffr.cxi",
         instrument_base_dir="./",
-        calculator_base_dir="CrystfelDiffractionCalculator",
+        calculator_base_dir=None,
         parameters=None,
     ):
         super().__init__(
@@ -53,6 +53,10 @@ class CrystfelDiffractionCalculator(BaseCalculator):
             "number_of_diffraction_patterns",
             comment="The number of diffraction patterns to calculate",
         )
+        number_of_diffraction_patterns.add_interval(
+            min_value=2, max_value=None, intervals_are_legal=True
+        )
+
         random_rotation = parameters.new_parameter(
             "random_rotation",
             comment="If it's False, the orientation of the sample will not change."
@@ -182,7 +186,7 @@ class CrystfelDiffractionCalculator(BaseCalculator):
             command_sequence += ["--really-random"]
         if param["gpu"].value is True:
             command_sequence += ["--gpu"]
-        print(*command_sequence)
+        # print(*command_sequence)
 
         # # Executing:
         try:
@@ -212,7 +216,6 @@ class CrystfelDiffractionCalculator(BaseCalculator):
             raise RuntimeError(err.decode("ascii"))
 
         # Save in CXI format
-        logger.info(f'Writting in CXI format to "{output_fn}" ...')
         vds_ref_geom = pkg_resources.resource_filename(
             "SimExLite.DiffractionCalculators.convert_to_cxi_geoms",
             "agipd_2120_vds.geom",
@@ -225,6 +228,7 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         # print(vds_ref_geom)
         # print(sim_geom)
         if is_convert_to_cxi:
+            logger.info(f'Writting in CXI format to "{output_fn}" ...')
             convert_to_CXI(
                 sim_geom,
                 vds_ref_geom,
@@ -238,6 +242,7 @@ class CrystfelDiffractionCalculator(BaseCalculator):
         key = self.output_keys[0]
         output_data = self.output[key]
         output_data.set_file(self.output_file_paths[0], CXIFormat)
+        logger.info(f"Done")
         return self.output
 
     def get_input_fn(self):
