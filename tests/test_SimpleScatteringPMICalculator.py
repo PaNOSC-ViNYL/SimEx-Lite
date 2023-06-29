@@ -1,14 +1,14 @@
 """Test SimpleScatteringPMICalculator"""
 
 import pytest
+pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
+
 import os
 from SimExLite import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 from SimExLite.PMICalculators import SimpleScatteringPMICalculator
 from SimExLite.PropagationCalculators import WPGPropagationCalculator
-
-pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 
 
 @pytest.fixture(scope="session")
