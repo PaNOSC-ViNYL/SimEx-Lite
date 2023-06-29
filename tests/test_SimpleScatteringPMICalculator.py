@@ -1,9 +1,9 @@
 """Test SimpleScatteringPMICalculator"""
 
 import pytest
+import os
 pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 
-import os
 from SimExLite import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
