@@ -1,7 +1,6 @@
-"""Test singfelDiff data"""
+"""Test singfel format"""
 
-from SimExLite.DiffractionData.singfelDiffr import getPatternTotal, getPatternShape, write, read, ireadPattern, getParameters
-from SimExLite.DiffractionData.singfelDiffr import isFormat
+from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -12,7 +11,11 @@ h5_file = './testFiles/singfel-multi.h5'
 
 
 def test_getParameters():
-    params = getParameters(h5_file)
+    DiffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    data_dict = DiffrData.get_data()
+    params = data_dict[""]
     if __name__ == "__main__":
         print(params)
     assert params['beam']['photonEnergy'] == 4960.0
