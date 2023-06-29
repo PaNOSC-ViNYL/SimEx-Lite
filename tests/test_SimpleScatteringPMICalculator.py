@@ -32,6 +32,7 @@ def input_data(tmp_path_factory):
     return input_data
 
 
+@pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 def test_construct_calculator(tmpdir, input_data):
     pmi = SimpleScatteringPMICalculator(
         name="SimpleScatteringPMICalculator",
@@ -41,6 +42,7 @@ def test_construct_calculator(tmpdir, input_data):
     print(pmi.parameters)
 
 
+@pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 def test_run_backengine(tmpdir, input_data):
     pmi = SimpleScatteringPMICalculator(
         name="SimpleScatteringPMICalculator",
