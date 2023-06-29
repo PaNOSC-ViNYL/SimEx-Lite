@@ -47,7 +47,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SimEx-Lite'
-copyright = "2021, Juncheng E"
+copyright = "2021-2023, Juncheng E"
 author = "Juncheng E"
 
 # The version info for the project you're documenting, acts as replacement
