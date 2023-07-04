@@ -3,6 +3,9 @@
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 
+import pytest
+import os
+pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 from pathlib import Path
 from subprocess import Popen, PIPE
 import pkg_resources

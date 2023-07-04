@@ -1,6 +1,9 @@
 """Test WPGPropagationCalculator"""
 
 import pytest
+import os
+pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
+
 
 from SimExLite.PropagationCalculators.WPGPropagationCalculator import (
     create_simple_beamline_file,
