@@ -1,8 +1,10 @@
+"""Test the Instrument class"""
+
 import pytest
+import os
+pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 
-import sys
 from pathlib import Path
-
 from libpyvinyl.Instrument import Instrument
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
