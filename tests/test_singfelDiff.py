@@ -1,24 +1,30 @@
 """Test singfel format"""
 
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
+from SimExLite.DiffractionData.SingFELFormat import (
+    getPatternTotal,
+    getPatternShape,
+    ireadPattern,
+    getParameters,
+)
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 from pathlib import Path
 
-h5_file = './testFiles/singfel-multi.h5'
+h5_file = "./testFiles/singfel-multi.h5"
 
 
 def test_getParameters():
-    DiffrData = DiffractionData.from_file(
-        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
-    )
-    data_dict = DiffrData.get_data()
-    params = data_dict[""]
+    # DiffrData = DiffractionData.from_file(
+    #     h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    # )
+    # data_dict = DiffrData.get_data()
+    params = getParameters(h5_file)
     if __name__ == "__main__":
         print(params)
-    assert params['beam']['photonEnergy'] == 4960.0
+    assert params["beam"]["photonEnergy"] == 4960.0
 
 
 def test_getPatternTotal():
@@ -28,19 +34,20 @@ def test_getPatternTotal():
     assert npattern == 13
 
 
-def test_isFormat():
-    assert isFormat(h5_file) is True
-    assert isFormat('./test_singfelDiff.py') is False
-
-
 def test_write(tmp_path):
-    tmp_h5 = str(tmp_path / 'tmp.h5')
-    write(tmp_h5, read(h5_file), method_desciption='', pmi_file_list=None)
+    diffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    tmp_h5 = str(tmp_path / "tmp.h5")
+    diffrData.write(tmp_h5, SingFELFormat)
 
 
 def test_read():
-    diffrData = read(h5_file, poissonize=False)
-    diffr_patterns = diffrData.array
+    diffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    data_dict = diffrData.get_data()
+    diffr_patterns = data_dict["img_array"]
     assert len(diffr_patterns) == 13
     assert np.sum(diffr_patterns) != 0
 
@@ -54,11 +61,28 @@ def test_read():
 
 
 def test_createArray_one():
-    diffrData = read(h5_file, index=2, poissonize=False)
-    diffrData = read(h5_file, index="2", poissonize=False)
-    diffr_pattern = diffrData.array
-    diffrData = read(h5_file, poissonize=False)
-    diffr_patterns = diffrData.array
+    diffrData = DiffractionData.from_file(
+        h5_file,
+        format_class=SingFELFormat,
+        index=2,
+        key="test_singfel",
+        poissonize=False,
+    )
+    diffrData = DiffractionData.from_file(
+        h5_file,
+        format_class=SingFELFormat,
+        index="2",
+        key="test_singfel",
+        poissonize=False,
+    )
+    data_dict = diffrData.get_data()
+    diffr_pattern = data_dict["img_array"]
+
+    diffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=False
+    )
+    data_dict = diffrData.get_data()
+    diffr_patterns = data_dict["img_array"]
     assert len(diffr_pattern) == 1
     assert np.array_equal(diffr_patterns[2], diffr_pattern[0]) is True
 
@@ -70,21 +94,37 @@ def test_createArray_one():
 
 
 def test_createArray_partial():
-    diffrData = read(h5_file, index="2:5", poissonize=False)
-    diffr_patterns = diffrData.array
-    diffrData = read(h5_file, index=4, poissonize=False)
-    diffr_pattern = diffrData.array
+    diffrData = DiffractionData.from_file(
+        h5_file,
+        format_class=SingFELFormat,
+        index="2:5",
+        key="test_singfel",
+        poissonize=False,
+    )
+    data_dict = diffrData.get_data()
+    diffr_patterns = data_dict["img_array"]
+    diffrData = DiffractionData.from_file(
+        h5_file,
+        format_class=SingFELFormat,
+        index="4",
+        key="test_singfel",
+        poissonize=False,
+    )
+    data_dict = diffrData.get_data()
+    diffr_pattern = data_dict["img_array"]
     assert len(diffr_patterns) == 3
     assert np.array_equal(diffr_patterns[2], diffr_pattern[0]) is True
     if __name__ == "__main__":
         fig, ax = plt.subplots(1, 2)
-        im = ax[0].imshow(diffr_patterns[0],
-                          norm=mpl.colors.LogNorm(vmin=1e-8, vmax=1e-3))
+        im = ax[0].imshow(
+            diffr_patterns[0], norm=mpl.colors.LogNorm(vmin=1e-8, vmax=1e-3)
+        )
         divider = make_axes_locatable(ax[0])
         cax = divider.append_axes("right", size="5%", pad=0.1)
         fig.colorbar(im, cax=cax)
-        im = ax[1].imshow(diffr_patterns[1],
-                          norm=mpl.colors.LogNorm(vmin=1e-8, vmax=1e-3))
+        im = ax[1].imshow(
+            diffr_patterns[1], norm=mpl.colors.LogNorm(vmin=1e-8, vmax=1e-3)
+        )
         divider = make_axes_locatable(ax[1])
         cax = divider.append_axes("right", size="5%", pad=0.1)
         fig.colorbar(im, cax=cax)
@@ -93,8 +133,11 @@ def test_createArray_partial():
 
 
 def test_Poission():
-    diffrData = read(h5_file, poissonize=True)
-    assert np.sum(diffrData.array) == 0
+    diffrData = DiffractionData.from_file(
+        h5_file, format_class=SingFELFormat, key="test_singfel", poissonize=True
+    )
+    data_dict = diffrData.get_data()
+    assert np.sum(data_dict["img_array"]) == 0
 
 
 def test_pattern_shape():
@@ -128,7 +171,7 @@ def test_iterator():
 
 if __name__ == "__main__":
     test_iterator()
-    test_write(Path('./'))
+    test_write(Path("./"))
     # test_getPatternTotal()
     # test_read()
     test_createArray_one()
