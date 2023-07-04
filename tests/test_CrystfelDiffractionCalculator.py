@@ -1,8 +1,10 @@
 """Test SimpleScatteringPMICalculator"""
 
 import pytest
-from pathlib import Path
+import os
+pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 
+from pathlib import Path
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.DiffractionCalculators import CrystfelDiffractionCalculator
 
