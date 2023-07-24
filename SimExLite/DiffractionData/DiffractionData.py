@@ -5,6 +5,8 @@
 """Diffraction Data APIs"""
 
 from tqdm import tqdm
+from pathlib import Path
+import h5py
 import numpy as np
 from libpyvinyl import BaseData
 from .SingFELFormat import SingFELFormat
@@ -30,7 +32,6 @@ class DiffractionData(BaseData):
         file_format_class=None,
         file_format_kwargs=None,
     ):
-
         expected_data = {}
 
         ### DataClass developer's job start
@@ -84,13 +85,16 @@ class DiffractionData(BaseData):
         """
         self.__operation_check()
         array = self.data_dict["img_array"]
-        n_chunks = int(np.ceil(float(len(array)) / chunk_size))
-        print(f"Operation in {n_chunks} chunks", flush=True)
-        for arr in tqdm(
-            spliterate(array, chunk_size),
-            total=n_chunks,
-        ):
-            arr[:] = arr * val
+        if isinstance(val, np.ndarray):
+            array[:] = array * val
+        else:
+            n_chunks = int(np.ceil(float(len(array)) / chunk_size))
+            print(f"Operation in {n_chunks} chunks", flush=True)
+            for arr in tqdm(
+                spliterate(array, chunk_size),
+                total=n_chunks,
+            ):
+                arr[:] = arr * val
 
     def addBeamStop(self, stop_rad: float):
         """Add a beamstop in pixel radius (float) to the diffraction patterns.
@@ -148,22 +152,35 @@ def write_multiple_file_to_emc(
     poissonize=False,
     stop_rad=None,
     multiply=None,
+    fluct_sample_interval=None,
+    background=None,
     **kwargs,
 ):
     """Write multiple diffraction files to a single EMC h5 file"""
+    # Normally fluct_sample_interval is set to 3.
     emcwriter = None
     list_len = len(in_file_list)
+    if fluct_sample_interval is not None:
+        fluct_I = []
     for idx, in_fn in enumerate(in_file_list):
-        print(f"{idx + 1}/{list_len}: {in_fn}")
+        print(f"{idx + 1}/{list_len}: {in_fn}\n")
         data_dict = in_file_format_class.read(in_fn, **kwargs)
         dd_in_dict = DiffractionData.from_dict(data_dict, "tmp")
-        if poissonize:
-            dd_in_dict.poissonize()
-        if stop_rad is not None:
-            dd_in_dict.addBeamStop(stop_rad)
+        # Scaling before Poissionization
+        arr = data_dict["img_array"]
+        if fluct_sample_interval is not None:
+            I, _ = get_I(len(arr), fluct_sample_interval)
+            arr[:] = arr * I[:, None, None]
+            fluct_I.append(I)
         if multiply is not None:
             dd_in_dict.multiply(multiply)
-        arr = data_dict["img_array"]
+        if poissonize:
+            dd_in_dict.poissonize()
+        if background is not None:
+            arr[:] += background
+        if stop_rad is not None:
+            dd_in_dict.addBeamStop(stop_rad)
+
         if emcwriter is None:
             arr_sample = arr[0]
             emcwriter = writeemc.EMCWriter(
@@ -171,3 +188,18 @@ def write_multiple_file_to_emc(
             )
         for photons in tqdm(arr):
             emcwriter.write_frame(photons.astype(np.int32).ravel())
+    if fluct_sample_interval is not None:
+        fluct_fn = str(Path(filename).with_suffix(".fluct.h5"))
+        with h5py.File(fluct_fn, "w") as h5:
+            h5["fluct_I"] = np.array(fluct_I).ravel()
+
+
+def get_I(n_patterns, sampling_interval):
+    rng = np.random.default_rng()
+    R = sampling_interval * np.sqrt(
+        rng.random(
+            n_patterns,
+        )
+    )  # independently samples the radius uniformly inside a circle N times
+    I = np.exp(-(R**2) / 2)
+    return I, R
