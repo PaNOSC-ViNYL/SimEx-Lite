@@ -1,10 +1,12 @@
-""":module ASEFormat: Module that holds the ASEFormat class."""
+""":module XMDYNFormat: Module that holds the XMDYNFormat class."""
 import h5py
 import numpy as np
 
 from libpyvinyl.BaseFormat import BaseFormat
 from .PMIData import PMIData
+from SimExLite.utils.Logger import setLogger
 
+my_logger = setLogger(__name__)
 
 class XMDYNFormat(BaseFormat):
     """:class ASEFormat: Class that interfacing data format supported by ASE."""
@@ -49,14 +51,22 @@ class XMDYNFormat(BaseFormat):
                 data_dict[step] = {}
                 time_step = data_dict[step]
                 # Time of each step in second
-                time_step["time"] = h5["misc/time"][snp][()]
+                try:
+                    time_step["time"] = h5["misc/time"][snp][()]
+                except KeyError:
+                    my_logger.warning(f"misc/time not found in the file: {filename}, will set time to 0.")
+                    time_step["time"] = 0
                 time_step["atomic_numbers"] = step_in["Z"][()]
                 # Velocity of each atom. The unit is m/s
                 time_step["velocity"] = step_in["Z"][()]
                 # Position of each atom. The unit is m
                 time_step["positions"] = step_in["r"][()]
                 # Charge of each atom.
-                time_step["charge"] = step_in["charge"]
+                try:
+                    time_step["charge"] = step_in["charge"]
+                except KeyError:
+                    my_logger.warning(f"charge not found in the file: {filename}, will set charge to 0.")
+                    time_step["charge"] = 0
                 # Identification number of each atom
                 time_step["id"] = np.arange(len(time_step["atomic_numbers"]))
                 # Number of unique atom types
