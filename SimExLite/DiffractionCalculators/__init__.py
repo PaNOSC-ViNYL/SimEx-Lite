@@ -1,2 +1,3 @@
 from .SingFELDiffractionCalculator import SingFELDiffractionCalculator
+from .SingFELPDBDiffractionCalculator import SingFELPDBDiffractionCalculator
 from .CrystfelDiffractionCalculator import CrystfelDiffractionCalculator

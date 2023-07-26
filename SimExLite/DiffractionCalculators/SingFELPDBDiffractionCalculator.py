@@ -44,6 +44,8 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
+        # The trait of this backengine makes the sample to be treated as
+        # sample to check suffix.
         self.sample = sample
 
     def init_parameters(self):

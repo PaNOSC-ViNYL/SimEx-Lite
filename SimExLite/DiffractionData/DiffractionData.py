@@ -9,6 +9,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 from libpyvinyl import BaseData
+from SimExLite.utils.analysis import linear
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat
 from .CondorFormat import CondorFormat
@@ -108,11 +109,36 @@ class DiffractionData(BaseData):
             array[i] = addBeamStop(img, stop_rad)
         self.stop_rad = stop_rad
 
+    def addGaussianNoise(self, mu, sigs_popt):
+        """Add Gaussian noise to one diffraction pattern
+
+        :param mu: The averange ADU for one photon
+        :type mu: float
+
+        :param sigs_popt: [slop, intercept]
+        :type sigs_popt: list-like
+        """
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        print("Adding Gaussian Noise...", flush=True)
+        for i, diffr_data in enumerate(tqdm(array)):
+            array[i] = addGaussianNoise(diffr_data, mu, sigs_popt)
+
     def poissonize(self):
         """Poissonize the data array in this data class"""
         self.__operation_check()
         array = self.data_dict["img_array"]
         array[:] = np.random.poisson(array)
+
+    def setArrayDataType(self, data_type):
+        """The the data numpy array dtype
+
+        :param data_type: The numpy dtype to be set. E.g. 'int32'
+        :type data_type: `numpy.dtype`
+        """
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        self.data_dict["img_array"] = array.astype(data_type)
 
     def __operation_check(self):
         """To check if the data operation is allowed."""
@@ -203,3 +229,18 @@ def get_I(n_patterns, sampling_interval):
     )  # independently samples the radius uniformly inside a circle N times
     I = np.exp(-(R**2) / 2)
     return I, R
+
+
+def addGaussianNoise(diffr_data, mu, sigs_popt):
+    """Add Gaussian noise to one diffraction pattern
+
+    :param diffr_data: A diffraction pattern
+    :type diffr_data: `numpy.array`
+    :param mu: The averange ADU for one photon
+    :type mu: float
+    :param sigs_popt: [slop, intercept]
+    :type sigs_popt: list-like
+    """
+    sig_arr = linear(diffr_data, *sigs_popt)
+    diffr_noise = np.random.normal(diffr_data * mu, sig_arr)
+    return diffr_noise
