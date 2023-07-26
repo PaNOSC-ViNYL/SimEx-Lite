@@ -6,6 +6,7 @@
 
 import numpy as np
 from numpy import ndarray
+from libpyvinyl import BaseData
 from . import setValue
 
 
@@ -14,7 +15,7 @@ def hcDivide(val):
     return 12.398 / val
 
 
-class BeamBase:
+class BeamBase(BaseData):
     """The simplest description of a pulse of the beam.
 
     :param pulse_energy: The energy of the X-ray pulse in Joule.
@@ -29,7 +30,8 @@ class BeamBase:
     :type focus_area: float, optional
     """
     def __init__(self, pulse_energy=None, wavelength=None, focus_area=None):
-
+        
+        super().__init__("special data", {})
         # Default photon energy unit
         self._attrs = {}
 
@@ -115,6 +117,13 @@ class BeamBase:
         #     except ValueError:
         #         print('{} = {}'.format(key, value))
         print(self.__repr__)
+
+    def supported_formats(self):
+        format_dict = {}
+        # Add the supported format classes when creating a concrete class.
+        # See the example at `tests/BaseDataTest.py`
+        # self._add_ioformat(format_dict, FormatClass)
+        return format_dict
 
     def __repr__(self):
         """
