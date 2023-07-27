@@ -1,3 +1,10 @@
+"""Test SingFELPDBDiffractionCalculator"""
+import pytest
+import os
+
+pytestmark = pytest.mark.skipif(
+    "TRAVIS" in os.environ, reason="Test skipped on Travis CI"
+)
 from SimExLite.DiffractionCalculators import SingFELPDBDiffractionCalculator
 from SimExLite.PhotonBeamData import SimpleBeam
 from SimExLite import DataCollection
@@ -34,6 +41,7 @@ def test_run(tmpdir):
     print(diffraction.parameters)
     output = diffraction.backengine()
     assert "img_array" in output.get_data()
+
 
 def test_run_bin(tmpdir):
     """Test to construct the calculator class."""
