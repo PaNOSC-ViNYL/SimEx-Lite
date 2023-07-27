@@ -47,12 +47,12 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
 
     def init_parameters(self):
         parameters = CalculatorParameters()
-        random_rotation = parameters.new_parameter(
-            "random_rotation",
-            comment="If it's False, the orientations are fixed to ensure the SO3 space is always uniformly sampled."
-            + " If it's True, it will be a random sampling complying a uniform distribution in the SO3 space",
+        uniform_rotation = parameters.new_parameter(
+            "uniform_rotation",
+            comment="If it's True, the orientations are fixed to ensure the SO3 space is always uniformly sampled."
+            + " If it's False, it will be a random sampling complying a uniform distribution in the SO3 space",
         )
-        random_rotation.value = True
+        uniform_rotation.value = False
 
         number_of_diffraction_patterns = parameters.new_parameter(
             "number_of_diffraction_patterns",
@@ -96,7 +96,8 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         output_dir = Path(self.output_file_paths[0]).parent / output_stem
         geom_file = self.get_geometry_file()
         beam_file = self.get_beam_file()
-        uniform_rotation = not self.parameters["random_rotation"].value
+        # uniform_rotation = not self.parameters["random_rotation"].value
+        uniform_rotation = self.parameters["uniform_rotation"].value
         number_of_diffraction_patterns = self.parameters[
             "number_of_diffraction_patterns"
         ].value
@@ -106,6 +107,11 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
                 shutil.rmtree(str(output_dir))
             except FileNotFoundError:
                 pass
+        # If output_dir is empty, always clean it.
+        try:
+            output_dir.rmdir()
+        except FileNotFoundError:
+            pass
         # fmt: off
         output_dir.mkdir(parents=True, exist_ok=False)
         # TODO: include single orientation
