@@ -4,7 +4,7 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """DiffractionData package for SimEx-Lite."""
 
-from .DiffractionData import DiffractionData, write_multiple_file_to_emc
+from .DiffractionData import *
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat, writeEMCGeom
 from .CondorFormat import CondorFormat

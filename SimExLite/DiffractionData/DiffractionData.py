@@ -10,6 +10,7 @@ import h5py
 import numpy as np
 from libpyvinyl import BaseData
 from SimExLite.utils.analysis import linear
+from SimExLite.utils import rebin_sum
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat
 from .CondorFormat import CondorFormat
@@ -97,7 +98,7 @@ class DiffractionData(BaseData):
             ):
                 arr[:] = arr * val
 
-    def addBeamStop(self, stop_rad: float):
+    def add_beam_stop(self, stop_rad: float):
         """Add a beamstop in pixel radius (float) to the diffraction patterns.
         :param stop_rad: The radius of the beamstop in pixel unit
         :type stop_rad: float
@@ -109,7 +110,7 @@ class DiffractionData(BaseData):
             array[i] = addBeamStop(img, stop_rad)
         self.stop_rad = stop_rad
 
-    def addGaussianNoise(self, mu, sigs_popt):
+    def add_Gaussian_noise(self, mu, sigs_popt):
         """Add Gaussian noise to one diffraction pattern
 
         :param mu: The averange ADU for one photon
@@ -130,7 +131,7 @@ class DiffractionData(BaseData):
         array = self.data_dict["img_array"]
         array[:] = np.random.poisson(array)
 
-    def setArrayDataType(self, data_type):
+    def set_array_data_type(self, data_type):
         """The the data numpy array dtype
 
         :param data_type: The numpy dtype to be set. E.g. 'int32'
@@ -139,6 +140,20 @@ class DiffractionData(BaseData):
         self.__operation_check()
         array = self.data_dict["img_array"]
         self.data_dict["img_array"] = array.astype(data_type)
+
+    def apply_geom_mask(self, geom):
+        """Apply the mask from a detector geom to the data, detector gaps will be filled with -1.
+
+        :param geom: extra_geom instance
+        :type geom: ExtraGeomDetectorGeometry
+        """
+        self.__operation_check()
+        array = self.data_dict["img_array"]
+        mask = get_geom_mask(geom, self.data_dict["img_array"][0].shape)
+        print("Applying the mask...", flush=True)
+        for diffr_data in tqdm(array):
+            diffr_data[np.isnan(mask)] = -1
+        return mask
 
     def __operation_check(self):
         """To check if the data operation is allowed."""
@@ -244,3 +259,20 @@ def addGaussianNoise(diffr_data, mu, sigs_popt):
     sig_arr = linear(diffr_data, *sigs_popt)
     diffr_noise = np.random.normal(diffr_data * mu, sig_arr)
     return diffr_noise
+
+
+def get_geom_mask(geom, img_size):
+    """Get a 2D mask from a detector geom
+
+    :param geom: extra_geom instance
+    :type geom: ExtraGeomDetectorGeometry
+    :param img_size: The array size of the output mask
+    :type img_size: list-like [nrow, ncol]
+    """
+    data = np.ones(geom.expected_data_shape)
+    mask, centre = geom.position_modules(data)
+    # Get the mask looking from beam upstream
+    mask = mask[::-1][::-1]
+    new_mask = rebin_sum(mask, img_size)
+    new_mask[~np.isnan(new_mask)] = 1
+    return new_mask

@@ -87,14 +87,15 @@ class EMCFormat(BaseFormat):
         """Save the data with the `filename`."""
         data_dict = object.get_data()
         arr = data_dict["img_array"]
+        img_shape = arr[0].shape
         emcwriter = writeemc.EMCWriter(filename, arr[0].shape[0] * arr[0].shape[1])
         for photons in tqdm(arr):
             emcwriter.write_frame(photons.astype(np.int32).ravel())
         emcwriter.finish_write()
         if key is None:
             original_key = object.key
-            key = original_key + "_to_SingfelFormat"
-        return object.from_file(filename, cls, key)
+            key = original_key + "_to_EMCFormat"
+        return object.from_file(filename, cls, key, pattern_shape=img_shape)
 
 
 def isEMCH5(fn):
@@ -417,7 +418,7 @@ def writeEMCGeom(
     # pix_size = geom["pixelSize"] * 1e3  # milimeter
     # wavelength
     # in_wavelength = beam.get_wavelength(unit="angstrom")
-    # Radius of curvature of the Ewald sphere in voxels. See: 
+    # Radius of curvature of the Ewald sphere in voxels. See:
     # https://github.com/duaneloh/Dragonfly/wiki/Configuration-parameters-for-experimental-data#parameters-
     ewald_rad = det_dist / pix_size
 
