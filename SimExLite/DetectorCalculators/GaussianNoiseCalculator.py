@@ -99,7 +99,7 @@ class GaussianNoiseCalculator(BaseCalculator):
         mu = self.parameters["mu"].value
         sigma_slope = self.parameters["sigma_slope"].value
         sigma_intercept = self.parameters["sigma_intercept"].value
-        output_data.addGaussianNoise(mu, [sigma_slope, sigma_intercept])
+        output_data.add_Gaussian_noise(mu, [sigma_slope, sigma_intercept])
         logger.info("Convert back to nphotons...")
         chunk_size = self.parameters["chunk_size"].value
         output_data.multiply(1 / mu, chunk_size)
@@ -110,7 +110,7 @@ class GaussianNoiseCalculator(BaseCalculator):
         ):
             arr[:] = np.round(arr)
             arr[arr < 0] = 0
-        output_data.setArrayDataType("i4")
+        output_data.set_array_data_type("i4")
         return self.output
 
     def parse_input(self):
