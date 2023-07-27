@@ -1,6 +1,5 @@
 """:module ASEFormat: Module that holds the ASEFormat class."""
 from libpyvinyl.BaseFormat import BaseFormat
-from .SampleData import SampleData
 from ase.io import read, write
 from ase import Atoms
 
@@ -41,7 +40,7 @@ class ASEFormat(BaseFormat):
         return data_dict
 
     @classmethod
-    def write(cls, object: SampleData, filename: str, key: str = None, format=None):
+    def write(cls, object, filename: str, key: str = None, format=None):
         """Save the data with the `filename`."""
         data_dict = object.get_data()
         atoms = Atoms(data_dict["atomic_numbers"], data_dict["positions"])

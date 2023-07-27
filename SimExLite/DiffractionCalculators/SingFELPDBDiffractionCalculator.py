@@ -1,4 +1,3 @@
-
 # Copyright (C) 2023 Juncheng E
 # Contact: Juncheng E <juncheng.e@xfel.eu>
 # This file is part of SimEx-Lite which is released under GNU General Public License v3.
@@ -6,6 +5,7 @@
 
 import os
 from pathlib import Path
+import shutil
 from subprocess import Popen, PIPE
 import shlex
 import h5py
@@ -13,6 +13,7 @@ import numpy as np
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
+from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.PhotonBeamData import SimpleBeam
 from SimExLite.utils.Logger import setLogger
 
@@ -26,7 +27,6 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         self,
         name: str,
         input: DataCollection,
-        sample: str,
         output_keys: str = "singfelPDB_diffraction",
         output_data_types=DiffractionData,
         output_filenames: str = "diffr.h5",
@@ -44,9 +44,6 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
-        # The trait of this backengine makes the sample to be treated as
-        # sample to check suffix.
-        self.sample = sample
 
     def init_parameters(self):
         parameters = CalculatorParameters()
@@ -73,6 +70,10 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         distance = parameters.new_parameter(
             "distance", comment="Sample to detector distance", unit="m"
         )
+        clean_previous_run = parameters.new_parameter(
+            "clean_previous_run",
+            comment="Whether to clean previous run, it's set to False by default.",
+        )
         mpi_command = parameters.new_parameter(
             "mpi_command", comment="The mpi command to run pysingfel"
         )
@@ -82,12 +83,14 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         pixels_x.value = 10
         pixels_y.value = 5
         distance.value = 0.13
-        mpi_command.value = "mpirun -n 2"
+        mpi_command.value = "mpirun"
+        clean_previous_run.value = False
 
         self.parameters = parameters
 
     def backengine(self):
         self.parse_input()
+        sample_fn = self.sample_data.filename
         exec_bin = Path(__file__).parent / "SingFELPDB.py"
         output_stem = str(Path(self.output_file_paths[0]).stem)
         output_dir = Path(self.output_file_paths[0]).parent / output_stem
@@ -98,11 +101,16 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
             "number_of_diffraction_patterns"
         ].value
         mpi_command = self.parameters["mpi_command"].value
+        if self.parameters["clean_previous_run"].value:
+            try:
+                shutil.rmtree(str(output_dir))
+            except FileNotFoundError:
+                pass
         # fmt: off
         output_dir.mkdir(parents=True, exist_ok=False)
         # TODO: include single orientation
         command_sequence = ['python3',             str(exec_bin),
-                            '--inputFile',         str(self.sample),
+                            '--inputFile',         str(sample_fn),
                             '--outputDir',        str(output_dir),
                             '--geomFile',         str(geom_file),
                             '--beamFile',         str(beam_file),
@@ -128,11 +136,13 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
 
     def parse_input(self):
         """Check the beam data"""
-        assert len(self.input) == 1
-        # self.sample_fn = self.input.to_list()[0]
+        assert len(self.input) == 2
+        self.sample_data = self.input.to_list()[1]
         self.photon_beam = self.input.to_list()[0]
         assert isinstance(self.photon_beam, SimpleBeam)
-        
+        assert isinstance(self.sample_data, SampleData)
+        assert Path(self.sample_data.filename).suffix == ".pdb"
+
     def get_geometry_file(self):
         simple_config = {
             "pixel_size": self.parameters["pixel_size"].value,
@@ -150,7 +160,7 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         n_photons = self.photon_beam.get_photons_per_pulse().magnitude
         beam_size = self.photon_beam.get_beam_size().magnitude
         # To get the same area
-        diameter = np.sqrt(beam_size[0]*beam_size[1])
+        diameter = np.sqrt(beam_size[0] * beam_size[1])
         write_singfel_beam_file(filename, photon_energy, n_photons, diameter)
         return filename
 
@@ -217,7 +227,6 @@ def saveH5(path_to_files):
 
     # Setup new file.
     with h5py.File(path_to_files + ".h5", "w") as h5_outfile:
-
         # Files to read from.
         individual_files = [
             os.path.join(path_to_files, f) for f in os.listdir(path_to_files)
@@ -230,7 +239,6 @@ def saveH5(path_to_files):
         for ind_file in individual_files:
             # Open file.
             with h5py.File(ind_file, "r") as h5_infile:
-
                 # Links must be relative.
                 relative_link_target = os.path.relpath(
                     path=ind_file, start=os.path.dirname(os.path.dirname(ind_file))
@@ -250,7 +258,6 @@ def saveH5(path_to_files):
                     )
 
                 for key in h5_infile["data"]:
-
                     # Link in the data.
                     ds_path = "data/%s" % (key)
                     h5_outfile[ds_path] = h5py.ExternalLink(
