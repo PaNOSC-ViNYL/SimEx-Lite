@@ -4,6 +4,7 @@ import argparse
 import copy
 import os
 import sys
+from tqdm import tqdm
 
 from pysingfel.FileIO import saveAsDiffrOutFile, prepH5
 from pysingfel.beam import Beam
@@ -104,10 +105,7 @@ def main(parameters):
         )
         # Setup the output file.
     outputName = (
-        output_dir
-        + "/diffr_out_"
-        + "{0:07}".format(mpi_comm.Get_rank() + 1)
-        + ".h5"
+        output_dir + "/diffr_out_" + "{0:07}".format(mpi_comm.Get_rank() + 1) + ".h5"
     )
 
     if os.path.exists(outputName):
@@ -115,7 +113,10 @@ def main(parameters):
 
     output_is_ready = False
     # Loop over assigned tasks
-    for pattern_index in rank_indices:
+    if mpi_rank == 0:
+        pbar = tqdm(total=100)
+
+    for ii, pattern_index in enumerate(rank_indices):
         # Setup the output hdf5 file if not already done.
         if not output_is_ready:
             prepH5(outputName)
@@ -156,8 +157,11 @@ def main(parameters):
         )
 
         del particle
-
+        if mpi_rank == 0:
+            pbar.update(1.0 / len(rank_indices) * 100)
     mpi_comm.Barrier()
+    if mpi_rank == 0:
+        pbar.close()
 
     return 0
 
