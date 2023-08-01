@@ -1,4 +1,4 @@
-"""Test SimpleScatteringPMICalculator"""
+"""Test CrystfelDiffractionCalculator"""
 
 import pytest
 import os
