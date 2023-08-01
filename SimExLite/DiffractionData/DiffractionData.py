@@ -195,6 +195,7 @@ def write_multiple_file_to_emc(
     multiply=None,
     fluct_sample_interval=None,
     background=None,
+    geom = None,
     **kwargs,
 ):
     """Write multiple diffraction files to a single EMC h5 file"""
@@ -221,6 +222,8 @@ def write_multiple_file_to_emc(
             arr[:] += background
         if stop_rad is not None:
             dd_in_dict.addBeamStop(stop_rad)
+        if geom is not None:
+            dd_in_dict.apply_geom_mask(geom)
 
         if emcwriter is None:
             arr_sample = arr[0]
