@@ -1,12 +1,19 @@
 """:module XMDYNFormat: Module that holds the XMDYNFormat class."""
 import h5py
 import numpy as np
+from pathlib import Path
+from tqdm.autonotebook import tqdm
+from ase.io import read, write
+from ase import Atoms
 
+from libpyvinyl.BaseData import BaseData, DataCollection
 from libpyvinyl.BaseFormat import BaseFormat
-from .PMIData import PMIData
+from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.utils.Logger import setLogger
+from SimExLite.utils.io import parseIndex
 
 my_logger = setLogger(__name__)
+
 
 class XMDYNFormat(BaseFormat):
     """:class ASEFormat: Class that interfacing data format supported by ASE."""
@@ -30,7 +37,7 @@ class XMDYNFormat(BaseFormat):
         # Assume the format can be converted directly to the formats supported by these classes:
         # AFormat, BFormat
         # Redefine this `direct_convert_formats` for a concrete format class
-        return []
+        return [ASEFormat]
 
     @classmethod
     def read(cls, filename: str, format=None) -> dict:
@@ -54,18 +61,22 @@ class XMDYNFormat(BaseFormat):
                 try:
                     time_step["time"] = h5["misc/time"][snp][()]
                 except KeyError:
-                    my_logger.warning(f"misc/time not found in the file: {filename}, will set time to 0.")
+                    my_logger.warning(
+                        f"misc/time not found in the file: {filename}, will set time to 0."
+                    )
                     time_step["time"] = 0
                 time_step["atomic_numbers"] = step_in["Z"][()]
                 # Velocity of each atom. The unit is m/s
                 time_step["velocity"] = step_in["Z"][()]
-                # Position of each atom. The unit is m
-                time_step["positions"] = step_in["r"][()]
+                # Position of each atom. The unit is Angstrom
+                time_step["positions"] = step_in["r"][()] * 1e10
                 # Charge of each atom.
                 try:
                     time_step["charge"] = step_in["charge"]
                 except KeyError:
-                    my_logger.warning(f"charge not found in the file: {filename}, will set charge to 0.")
+                    my_logger.warning(
+                        f"charge not found in the file: {filename}, will set charge to 0."
+                    )
                     time_step["charge"] = 0
                 # Identification number of each atom
                 time_step["id"] = np.arange(len(time_step["atomic_numbers"]))
@@ -102,7 +113,7 @@ class XMDYNFormat(BaseFormat):
         return data_dict
 
     @classmethod
-    def write(cls, object: PMIData, filename: str, key: str = None, format=None):
+    def write(cls, object, filename: str, key: str = None, format=None):
         """Save the data with the `filename`."""
         data_dict = object.get_data()
         steps = np.array(data_dict.keys()).astype(int)
@@ -122,7 +133,7 @@ class XMDYNFormat(BaseFormat):
                 time_step = data_dict[str(step)]
                 snp_grp["Nph"] = time_step["num_photons"]
                 snp_grp["Z"] = time_step["atomic_numbers"]
-                snp_grp["r"] = time_step["positions"]
+                snp_grp["r"] = time_step["positions"] * 1e-10  # meter
                 snp_grp["T"] = np.arange(time_step["num_atom_types"])
                 snp_grp["v"] = time_step["velocity"]
                 snp_grp["xyz"] = time_step["atom_types"]
@@ -142,3 +153,58 @@ class XMDYNFormat(BaseFormat):
             original_key = object.key
             key = original_key + "_to_XMDYNormat"
         return object.from_file(filename, cls, key)
+
+    @classmethod
+    def convert(
+        cls, obj: BaseData, output: str, output_format_class: str, key, **kwargs
+    ):
+        """Direct convert method, if the default converting would be too slow or not suitable for the output_format"""
+        # If there is no direct converting supported:
+        if output_format_class is ASEFormat:
+            # If there is multiple indices defined, the output class is the last atom file.
+            if key is None:
+                original_key = obj.key
+                key = original_key + "_from_XMDYNFormat_to_ASEFormat"
+            return cls.convert_to_ASEFormat(obj.filename, output, key, **kwargs)
+        else:
+            raise TypeError(
+                "Direct converting to format {} is not supported".format(
+                    output_format_class
+                )
+            )
+        # Set the key of the returned object
+        if key is None:
+            original_key = obj.key
+            key = original_key + "_from_XMDYNFormat"
+        return obj.from_file(output, output_format_class, key)
+
+    @classmethod
+    def convert_to_ASEFormat(
+        cls, filename: str, output: str, key: str, index: str = ":", format=None
+    ):
+        """index starts from 0."""
+        index = parseIndex(index)
+        data_collection = DataCollection()
+        with h5py.File(filename, "r") as h5:
+            data = h5["data"]
+            # frames in XMDYN data
+            snps = list(filter(lambda x: x.startswith("snp"), h5["data"]))
+            snps.sort()
+            snps_to_write = snps[index]
+            for snp in tqdm(snps_to_write):
+                step_in = data[snp]
+                positions = step_in["r"][()] * 1e10 # Angstrom
+                atomic_numbers = step_in["Z"][()]
+                p_output = Path(output)
+                p_stem = p_output.stem + f"_{snp}"
+                p_suffix = p_output.suffix
+                p_output = p_output.with_name(p_stem + p_suffix)
+                atoms = Atoms(atomic_numbers, positions)
+                my_logger.info(f"Writing to {p_output} ...")
+                write(str(p_output), atoms, format=format)
+                key_snp = key + f"_{snp}"
+                data_collection.add_data(
+                    SampleData.from_file(str(p_output), ASEFormat, key_snp)
+                )
+        # Return the last filename.
+        return data_collection
