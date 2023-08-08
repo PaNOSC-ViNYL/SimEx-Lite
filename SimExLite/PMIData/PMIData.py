@@ -5,6 +5,7 @@
 """Wavefront Data APIs"""
 
 from libpyvinyl import BaseData
+from .XMDYNFormat import XMDYNFormat
 
 
 class PMIData(BaseData):
@@ -18,7 +19,6 @@ class PMIData(BaseData):
         file_format_class=None,
         file_format_kwargs=None,
     ):
-
         expected_data = {}
 
         # A mock of the first time step
@@ -32,7 +32,7 @@ class PMIData(BaseData):
         time_step["positions"] = None
         # Identification number of each atom
         time_step["id"] = None
-        # Charge of each atom. 
+        # Charge of each atom.
         time_step["charge"] = None
         # Unique atom type id per atomic number
         time_step["atom_types"] = None
@@ -70,7 +70,9 @@ class PMIData(BaseData):
 
     @classmethod
     def supported_formats(self):
-        return {}
+        format_dict = {}
+        self._add_ioformat(format_dict, XMDYNFormat)
+        return format_dict
 
     @classmethod
     def from_file(cls, filename: str, format_class, key: str, **kwargs):
