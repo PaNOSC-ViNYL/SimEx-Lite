@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 import os
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from scipy.sparse import csr_matrix
 from libpyvinyl.BaseFormat import BaseFormat
 from . import writeemc, DetectorEMC

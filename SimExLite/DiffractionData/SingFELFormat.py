@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from libpyvinyl.BaseFormat import BaseFormat
 from extra_geom import GenericGeometry
 from extra_geom.base import DetectorGeometryBase

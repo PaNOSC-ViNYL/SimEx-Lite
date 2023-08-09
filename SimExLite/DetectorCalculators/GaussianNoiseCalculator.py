@@ -4,7 +4,7 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Gaussian Noise Detector Calculator Module"""
 
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 import copy
 import numpy as np
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
