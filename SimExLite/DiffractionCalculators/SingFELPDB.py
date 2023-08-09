@@ -4,7 +4,7 @@ import argparse
 import copy
 import os
 import sys
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 
 from pysingfel.FileIO import saveAsDiffrOutFile, prepH5
 from pysingfel.beam import Beam

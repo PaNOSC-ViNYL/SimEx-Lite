@@ -3,7 +3,7 @@ import h5py
 import numpy as np
 from pathlib import Path
 from tqdm.autonotebook import tqdm
-from ase.io import read, write
+from ase.io import write
 from ase import Atoms
 
 from libpyvinyl.BaseData import BaseData, DataCollection

@@ -4,7 +4,7 @@
 # See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
 """Diffraction Data APIs"""
 
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from pathlib import Path
 import h5py
 import numpy as np
