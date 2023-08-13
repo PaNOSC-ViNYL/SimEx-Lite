@@ -41,7 +41,7 @@ class EMCFormat(BaseFormat):
             raise ValueError("read() missing 'pattern_shape' argument.")
 
         index = parseIndex(index)
-        arr_size = len(range(getPatternTotal(filename))[index])
+        arr_size = len(np.arange(getPatternTotal(filename))[index])
         if isEMCH5(filename):
             ireadPattern = ireadPattern_h5
             # Flush to print it before tqdm
@@ -55,15 +55,14 @@ class EMCFormat(BaseFormat):
                 "This is not an EMC file, please provide the correct file type."
             )
 
-        arr_size = len(range(getPatternTotal(filename))[index])
         arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
-        if isinstance(index, (slice, str)):
-            with tqdm(total=arr_size) as progress_bar:
-                for i, pattern in enumerate(
-                    ireadPattern(filename, index, pattern_shape)
-                ):
-                    arr[i] = pattern
-                    progress_bar.update(1)  # update progress
+        # if isinstance(index, (slice, str)):
+        with tqdm(total=arr_size) as progress_bar:
+            for i, pattern in enumerate(
+                ireadPattern(filename, index, pattern_shape)
+            ):
+                arr[i] = pattern
+                progress_bar.update(1)  # update progress
 
         data_dict["img_array"] = arr
         # There is no quaternion in EMC pattern (?)
@@ -116,7 +115,7 @@ def ireadPattern_h5(filename, index=None, pattern_shape=None):
     """Iterator for reading diffraction patterns from a file."""
     index = parseIndex(index)
     pattern_total = getPatternTotal(filename)
-    indices = range(pattern_total)[index]
+    indices = np.arange(pattern_total)[index]
     for i in indices:
         yield getFrameArray(filename, i).reshape(pattern_shape)
 
@@ -126,7 +125,7 @@ def ireadPattern_binary(filename, index=None, pattern_shape=None):
     """Iterator for reading diffraction patterns from a file."""
     index = parseIndex(index)
     pattern_total = getPatternTotal(filename)
-    indices = range(pattern_total)[index]
+    indices = np.arange(pattern_total)[index]
     for i in indices:
         yield getFrameArrayBinary(filename, i).reshape(pattern_shape)
 
