@@ -7,4 +7,4 @@
 from .DiffractionData import *
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat, writeEMCGeom
-from .CondorFormat import CondorFormat
+from .CustomizedFormat import CustomizedFormat

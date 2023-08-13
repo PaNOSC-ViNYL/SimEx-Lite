@@ -13,7 +13,7 @@ from SimExLite.utils.analysis import linear
 from SimExLite.utils import rebin_sum
 from .SingFELFormat import SingFELFormat
 from .EMCFormat import EMCFormat
-from .CondorFormat import CondorFormat
+from .CustomizedFormat import CustomizedFormat
 from . import writeemc
 
 
@@ -61,7 +61,7 @@ class DiffractionData(BaseData):
         format_dict = {}
         self._add_ioformat(format_dict, SingFELFormat)
         self._add_ioformat(format_dict, EMCFormat)
-        self._add_ioformat(format_dict, CondorFormat)
+        self._add_ioformat(format_dict, CustomizedFormat)
         return format_dict
 
     @classmethod
