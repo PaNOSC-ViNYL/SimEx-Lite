@@ -1,3 +1,9 @@
+# Copyright (C) 2023 Juncheng E
+# Contact: Juncheng E <juncheng.e@xfel.eu>
+# This file is part of SimEx-Lite which is released under GNU General Public License v3.
+# See file LICENSE or go to <http://www.gnu.org/licenses> for full license details.
+
+
 import h5py
 import numpy as np
 from libpyvinyl.BaseFormat import BaseFormat
@@ -8,14 +14,14 @@ from SimExLite.PhotonBeamData import SimpleBeam
 from .EMCFormat import writeEMCGeom
 
 
-class CondorFormat(BaseFormat):
+class CustomizedFormat(BaseFormat):
     def __init__(self) -> None:
         super().__init__()
 
     @classmethod
     def format_register(self):
-        key = "condor"
-        description = "Condor format for DiffractionData"
+        key = "customized"
+        description = "A customized .h5 format for Diffraction Data"
         file_extension = ".h5"
         read_kwargs = ["index"]
         write_kwargs = [""]
