@@ -21,7 +21,14 @@ logger = setLogger("SingFELPDBDiffractionCalculator")
 
 
 class SingFELPDBDiffractionCalculator(BaseCalculator):
-    """SingFEL diffraction pattern from pdb file calculator."""
+    """
+    Calculator to calculate SingFEL diffraction pattern from a pdb file.
+
+    :param name: The name of the calculator.
+    :type name: string
+    :param input: [PhotonBeamData, SampleData], by default the first is photon data, the second is sample data.
+    :type input: DataCollection or list/tuple
+    """
 
     def __init__(
         self,
