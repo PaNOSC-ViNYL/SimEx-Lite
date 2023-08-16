@@ -2,7 +2,10 @@
 
 import pytest
 import os
-pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
+
+pytestmark = pytest.mark.skipif(
+    "TRAVIS" in os.environ, reason="Test skipped on Travis CI"
+)
 import numpy as np
 from SimExLite.SourceCalculators.GaussianSourceCalculator import (
     GaussianSourceCalculator,
@@ -169,7 +172,7 @@ def test_dump_and_load(tmp_path):
     gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
     # gsc.backengine()
     gsc.dump(tmpf)
-    gsc2 = GaussianSourceCalculator("fromdump")
+    gsc2 = GaussianSourceCalculator("fromdump", instrument_base_dir=str(tmp_path))
     gsc2.from_dump(tmpf)
     assert np.all(
         [

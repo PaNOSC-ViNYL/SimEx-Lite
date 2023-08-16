@@ -292,6 +292,8 @@ class CrystfelDiffractionCalculator(BaseCalculator):
                 point_group = self.parameters["point_group"].value
                 resolution = self.parameters["intensities_resolution"].value
 
+                input_fn = str(Path(input_fn).resolve())
+
                 command_sequence = [
                     "gen-sfs",
                     input_fn,
@@ -300,8 +302,15 @@ class CrystfelDiffractionCalculator(BaseCalculator):
                     str(point_group),
                 ]
                 # print(command_sequence)
+                run_dir = Path.cwd() / self.base_dir
                 # # Executing:
-                proc = Popen(command_sequence, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+                proc = Popen(
+                    command_sequence,
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    stderr=PIPE,
+                    cwd=str(run_dir),
+                )
 
                 while proc.poll() is None:
                     output = proc.stdout.readline()
