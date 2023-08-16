@@ -20,6 +20,8 @@ def parseIndex(index):
     """Parse the index parameter"""
     if isinstance(index, str):
         index = string2index(index)
+    elif isinstance(index, slice):
+        return index
     elif index is None:
         index = slice(None, None, None)
     elif is_list_like(index):
