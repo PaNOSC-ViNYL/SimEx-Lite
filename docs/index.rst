@@ -19,7 +19,8 @@ Welcome to SimEx-Lite's documentation!
    calculators
    backengines
    usage
-   modules
+   api
+   auto
 
 .. toctree::
    :maxdepth: 2
