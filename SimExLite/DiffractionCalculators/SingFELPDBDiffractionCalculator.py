@@ -8,10 +8,12 @@ from pathlib import Path
 import shutil
 from subprocess import Popen, PIPE
 import shlex
+import sys
 import h5py
 import numpy as np
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
+from SimExLite.utils import modules
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.PhotonBeamData import SimpleBeam
@@ -51,6 +53,8 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
             calculator_base_dir=calculator_base_dir,
             parameters=parameters,
         )
+        # Make sure it ends with ".h5"
+        self.output_filenames[0] = str(Path(self.output_filenames[0]).with_suffix(".h5"))
 
     def init_parameters(self):
         parameters = CalculatorParameters()
@@ -84,6 +88,9 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         mpi_command = parameters.new_parameter(
             "mpi_command", comment="The mpi command to run pysingfel"
         )
+        # python_command = parameters.new_parameter(
+        #     "python_command", comment="The python command to run pysingfel"
+        # )
 
         number_of_diffraction_patterns.value = 10
         pixel_size.value = 0.001
@@ -91,6 +98,7 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         pixels_y.value = 5
         distance.value = 0.13
         mpi_command.value = "mpirun"
+        # python_command.value = "python3"
         clean_previous_run.value = False
 
         self.parameters = parameters
@@ -99,6 +107,7 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         self.parse_input()
         sample_fn = self.sample_data.filename
         exec_bin = Path(__file__).parent / "SingFELPDB.py"
+
         output_stem = str(Path(self.output_file_paths[0]).stem)
         output_dir = Path(self.output_file_paths[0]).parent / output_stem
         geom_file = self.get_geometry_file()
@@ -109,6 +118,10 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
             "number_of_diffraction_patterns"
         ].value
         mpi_command = self.parameters["mpi_command"].value
+        python_command = str(sys.executable)
+        print("backengine python:", python_command)
+        # python_command = self.parameters["python_command"].value
+
         if self.parameters["clean_previous_run"].value:
             try:
                 shutil.rmtree(str(output_dir))
@@ -122,7 +135,7 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
         # fmt: off
         output_dir.mkdir(parents=True, exist_ok=False)
         # TODO: include single orientation
-        command_sequence = ['python3',             str(exec_bin),
+        command_sequence = [python_command,          str(exec_bin),
                             '--inputFile',         str(sample_fn),
                             '--outputDir',        str(output_dir),
                             '--geomFile',         str(geom_file),

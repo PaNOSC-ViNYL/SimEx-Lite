@@ -5,3 +5,4 @@
 """DiffractionData package for SimEx-Lite."""
 
 from .GaussianSourceCalculator import GaussianSourceCalculator
+from .PhenomSourceCalculator import PhenomSourceCalculator
