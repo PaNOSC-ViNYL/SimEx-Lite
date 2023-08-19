@@ -19,8 +19,7 @@ logger = setLogger("CrystfelDiffractionCalculator")
 
 
 class CrystfelDiffractionCalculator(BaseCalculator):
-    """Crystfel diffraction pattern calculator."""
-
+    """Diffraction pattern calculator with CrystFEL backend."""
     def __init__(
         self,
         name: str,

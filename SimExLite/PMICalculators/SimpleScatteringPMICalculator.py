@@ -17,7 +17,7 @@ from SimExLite.PMIData import PMIData, XMDYNFormat
 
 
 class SimpleScatteringPMICalculator(BaseCalculator):
-    """:class SimpleScatteringPMICalculator: Class representing simple elastic scattering process."""
+    """Class representing simple elastic scattering process."""
 
     def __init__(
         self,

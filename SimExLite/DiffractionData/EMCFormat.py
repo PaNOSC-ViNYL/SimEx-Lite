@@ -11,6 +11,7 @@ from SimExLite.utils.io import UnknownFileTypeError
 
 
 class EMCFormat(BaseFormat):
+    """Defines I/O for the EMC (Dragonfly orientation recovery) format ."""
     def __init__(self) -> None:
         super().__init__()
 

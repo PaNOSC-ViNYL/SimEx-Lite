@@ -20,7 +20,6 @@ Welcome to SimEx-Lite's documentation!
    backengines
    usage
    api
-   auto
 
 .. toctree::
    :maxdepth: 2

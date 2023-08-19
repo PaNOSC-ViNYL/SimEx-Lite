@@ -5,7 +5,7 @@ from ase import Atoms
 
 
 class ASEFormat(BaseFormat):
-    """:class ASEFormat: Class that interfacing data format supported by ASE."""
+    """Class that interfacing data format supported by ASE."""
 
     def __init__(self) -> None:
         super().__init__()

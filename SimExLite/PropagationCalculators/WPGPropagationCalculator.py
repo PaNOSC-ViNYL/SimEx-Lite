@@ -24,7 +24,7 @@ except ModuleNotFoundError:
 
 
 class WPGPropagationCalculator(BaseCalculator):
-    """:class WPGPropagationCalculator: Class representing photon propagation through X-ray optics."""
+    """Class representing photon propagation through X-ray optics."""
 
     def __init__(
         self,

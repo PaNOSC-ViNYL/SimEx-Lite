@@ -19,7 +19,7 @@ logger = setLogger("SingFELDiffractionCalculator")
 
 
 class SingFELDiffractionCalculator(BaseCalculator):
-    """SingFEL diffraction pattern calculator."""
+    """Diffraction pattern calculator with pysingfel backend."""
 
     def __init__(
         self,
