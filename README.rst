@@ -32,6 +32,8 @@ SimEx-Lite can be installed with Python 3.6 or later:
 
     $ pip install SimEx-Lite
 
+To test the latest updates, try the way of installation for developing below.  
+
 Developing
 ----------
 We encourage everyone to contribute to SimEx. For a detailed guide, please visit
