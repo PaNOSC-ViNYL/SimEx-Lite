@@ -6,5 +6,5 @@
 
 from .DiffractionData import *
 from .SingFELFormat import SingFELFormat
-from .EMCFormat import EMCFormat, writeEMCGeom
+from .EMCFormat import EMCFormat, writeEMCGeom, write_emc_balcklist
 from .CustomizedFormat import CustomizedFormat

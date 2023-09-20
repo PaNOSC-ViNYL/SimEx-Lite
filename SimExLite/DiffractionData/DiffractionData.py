@@ -195,7 +195,7 @@ def write_multiple_file_to_emc(
     multiply=None,
     fluct_sample_interval=None,
     background=None,
-    geom = None,
+    geom=None,
     **kwargs,
 ):
     """Write multiple diffraction files to a single EMC h5 file"""
@@ -221,7 +221,7 @@ def write_multiple_file_to_emc(
         if background is not None:
             arr[:] += background
         if stop_rad is not None:
-            dd_in_dict.addBeamStop(stop_rad)
+            dd_in_dict.add_beam_stop(stop_rad)
         if geom is not None:
             dd_in_dict.apply_geom_mask(geom)
 
@@ -233,8 +233,9 @@ def write_multiple_file_to_emc(
         for photons in tqdm(arr):
             emcwriter.write_frame(photons.astype(np.int32).ravel())
     if fluct_sample_interval is not None:
-        fluct_fn = str(Path(filename).with_suffix(".fluct.h5"))
-        with h5py.File(fluct_fn, "w") as h5:
+        # fluct_fn = str(Path(filename).with_suffix(".fluct.h5"))
+        # with h5py.File(fluct_fn, "w") as h5:
+        with h5py.File(filename, "a") as h5:
             h5["fluct_I"] = np.array(fluct_I).ravel()
 
 
