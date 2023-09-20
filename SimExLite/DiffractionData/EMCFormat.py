@@ -12,6 +12,7 @@ from SimExLite.utils.io import UnknownFileTypeError
 
 class EMCFormat(BaseFormat):
     """Defines I/O for the EMC (Dragonfly orientation recovery) format ."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -59,9 +60,7 @@ class EMCFormat(BaseFormat):
         arr = np.zeros((arr_size, pattern_shape[0], pattern_shape[1]))
         # if isinstance(index, (slice, str)):
         with tqdm(total=arr_size) as progress_bar:
-            for i, pattern in enumerate(
-                ireadPattern(filename, index, pattern_shape)
-            ):
+            for i, pattern in enumerate(ireadPattern(filename, index, pattern_shape)):
                 arr[i] = pattern
                 progress_bar.update(1)  # update progress
 
@@ -450,3 +449,16 @@ def writeEMCGeom(
     det.ewald_rad = ewald_rad
     print("Writing detector file to", out_fn)
     det.write(out_fn)
+
+
+def write_emc_balcklist(fn: str, sel: list, total: int):
+    """Write a emc black list selecting patterns to be included in dragonfly reconstruction.
+
+    Args:
+        fn (str): The file name of the blacklist.
+        sel (list): The selection indices of the patterns to be included in reconstruction (set to 0 in the blacklist).
+        total (int): The total number of the dataset.
+    """
+    black_list = np.ones(total)
+    black_list[sel] = 0
+    np.savetxt(fn, black_list, fmt="%d")
