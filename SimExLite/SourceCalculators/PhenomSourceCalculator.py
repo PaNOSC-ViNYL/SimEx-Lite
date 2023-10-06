@@ -1,12 +1,13 @@
 """:module PhenomCalculator: Module that holds the PhenomCalculator class.  """
 
-import numpy as np
-from pathlib import Path
-from SimExLite.utils.Logger import setLogger
-
-from libpyvinyl import BaseCalculator, CalculatorParameters
+### CFG: observe flake8 rules for empty lines, ordering of imports, structure of docstrings etc.
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
+from SimExLite.utils.Logger import setLogger
+from libpyvinyl import BaseCalculator, CalculatorParameters
+from pathlib import Path
 from phenom.source import sase_pulse
+
+import numpy as np
 
 # WPG is necessary to execute the calculator, but it's not a hard dependency of SimExLite.
 try:
@@ -19,7 +20,6 @@ except ModuleNotFoundError:
     WPG_AVAILABLE = False
 
 import h5py
-
 
 logger = setLogger("PhenomSourceCalculator")
 
@@ -50,12 +50,15 @@ class PhenomSourceCalculator(BaseCalculator):
         calculator_base_dir="PhenomSourceCalculator",
         parameters=None,
     ):
+        # Issue a warning if WPG is not available.
         if not WPG_AVAILABLE:
             logger.warning(
                 'Cannot find the "WPG" module, which is required to run\n'
-                "GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?\n"
-                "If not, set your WPG path with 'import sys; sys.path.append(WPG_PATH)' before import this module."
+                "PhenomSourceCalculator.backengine(). Is it included in PYTHONPATH?\n"
+                "If not, set your WPG path with 'import sys; sys.path.append(WPG_PATH)' before importing this module."
             )
+
+        # Init parent class.
         super().__init__(
             name,
             None,
@@ -68,6 +71,10 @@ class PhenomSourceCalculator(BaseCalculator):
         )
 
     def init_parameters(self):
+        ### Does this have to be a public method?
+        """
+        Initialize calculator parameters.
+        """
         parameters = CalculatorParameters()
 
         range_x = parameters.new_parameter(
@@ -144,11 +151,16 @@ class PhenomSourceCalculator(BaseCalculator):
         return self.parameters[param].value_no_conversion.to(unit).magnitude
 
     def backengine(self):
+        """
+        DOCSTRING MISSING
+        """
+
         # check for WPG first
+        ### CFG: Why again? This is already performed at instantiation time.
         if not WPG_AVAILABLE:
             raise ModuleNotFoundError(
                 'Cannot find the "WPG" module, which is required to run\n'
-                "GaussianSourceCalculator.backengine(). Is it included in PYTHONPATH?\n"
+                "PhenomSourceCalculator.backengine(). Is it included in PYTHONPATH?\n"
                 "If not, set your WPG path with 'import sys; sys.path.append(WPG_PATH)' before import this module."
             )
 
@@ -166,6 +178,7 @@ class PhenomSourceCalculator(BaseCalculator):
         y = np.linspace(range_y[0], range_y[1], self.parameters["num_y"].value)
         t = np.linspace(range_t[0], range_t[1], self.parameters["num_t"].value)
 
+        # Construct the pulse.
         pulse = sase_pulse(
             x=x,
             y=y,
@@ -176,6 +189,7 @@ class PhenomSourceCalculator(BaseCalculator):
             bandwidth=bandwidth,
             sigma=sigma,
             div=div,
+            ### CFG: Can this be named divergence instead of div?
             x0=0.0,
             y0=0.0,
             t0=0.0,
@@ -221,6 +235,8 @@ class PhenomSourceCalculator(BaseCalculator):
         #     for key in list(hf.keys()):
         #         wfr = wpg_converter(save_loc, key=key)
         #         wfr.store_hdf5(filename)
+        ### CFG: don't leave commented code in release!
+
         wfr.store_hdf5(filename)
 
         output_data.set_file(filename, WPGFormat)
