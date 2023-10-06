@@ -32,7 +32,7 @@ SimEx-Lite can be installed with Python 3.6 or later:
 
     $ pip install SimEx-Lite
 
-To test the latest updates, try the way of installation for developing below.  
+To test the latest updates, install from sources as shown below.
 
 Developing
 ----------
@@ -71,19 +71,20 @@ Tests
 Features
 --------
 
-* Provide the python interface of calculators for the SIMEX platform.
+SimEx-Lite provides
+* python interfaces SIMEX backengines (aka "Calculators")
     * SourceCalculators
     * PropagationCalculators
     * PMICalculators (PhotonMattterInteractionCalculators)
     * DiffractionCalculators
-    * DetectorClaculators
-* Provide data APIs for different data formats.
-    * PMI (Photon matter interaction) Data
+    * DetectorCalculators
+* data APIs for different data formats.
+    * PMI (Photon matter interaction) data
     * Wavefront data
     * Diffraction data
 
-Acknowledgement
----------------
+Acknowledgements
+----------------
 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
@@ -91,4 +92,3 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 
 This project has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823852.
-
