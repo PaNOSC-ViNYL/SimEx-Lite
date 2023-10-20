@@ -7,6 +7,7 @@ import shutil
 import sys
 import os
 import tempfile
+###CFG Sort imports (or run through black or flake8)
 
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
@@ -30,6 +31,7 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         calculator_base_dir="SimpleScatteringPMICalculator",
         parameters=None,
     ):
+        ###CFG: docstring missing
         super().__init__(
             name,
             input,
@@ -63,15 +65,18 @@ class SimpleScatteringPMICalculator(BaseCalculator):
             )
 
     def backengine(self):
+        ### docstring missing
 
         # Prepare input files
         self.__check_input_type()
         Path(self.base_dir).mkdir(parents=True, exist_ok=True)
+        ### don't use assert in production code, it's deprecated
         assert len(self.output_filenames) == 1
         output_fn = str(Path(self.base_dir) / self.output_filenames[0])
         sample_data, wavefront_data = self.input.to_list()
         wavefront_fn = prepare_wavefront_file(wavefront_data)
 
+        ### comments needed to understand what's going on here
         f_h5_out2in(wavefront_fn, output_fn)
 
         pmi_scattering = PMIScattering()
@@ -86,6 +91,8 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         pmi_scattering.g_s2e["random_rotation"] = False
         pmi_scattering.g_s2e["setup"]["pmi_out"] = output_fn
 
+        ### why these hard coded values?
+
         pmi_scattering.f_dbase_setup()
         pmi_scattering.f_save_info()
         pmi_scattering.f_load_pulse(pmi_scattering.g_s2e["prop_out"])
@@ -96,6 +103,7 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         pmi_scattering.f_time_evolution()
 
         assert len(self.output_keys) == 1
+        ### don't assert (see above)
         key = self.output_keys[0]
         output_data = self.output[key]
         output_data.set_file(output_fn, XMDYNFormat)
@@ -105,17 +113,22 @@ class SimpleScatteringPMICalculator(BaseCalculator):
 
 def prepare_wavefront_file(wavefront_data: WavefrontData):
     """Prepare the wavefront file for the backengine"""
+    ### document parameters
+    
     if wavefront_data.mapping_type == WPGFormat:
         wavefront_fn = wavefront_data.filename
     else:
         temp_name = next(tempfile._get_candidate_names())
         wavefront_fn = "input_wavefront_" + temp_name + ".h5"
         wavefront_data.write(wavefront_fn, WPGFormat)
+        
     return wavefront_fn
 
 
 def SampleData_to_atoms_dict(sample_data: SampleData) -> dict:
     """Read the sampleData object into an atoms_dict for the backengine"""
+    ### document parameters
+
     atoms_dict = {
         "Z": [],  # Atomic number.
         "r": [],  # Cartesian coordinates.
@@ -128,17 +141,22 @@ def SampleData_to_atoms_dict(sample_data: SampleData) -> dict:
     atoms_dict["N"] = len(input_dict["atomic_numbers"])
     for sel_Z in numpy.unique(atoms_dict["Z"]):
         atoms_dict["selZ"][sel_Z] = numpy.nonzero(atoms_dict["Z"] == sel_Z)[0]
+
+    # empty line before return is recommended to enhance readability
     return atoms_dict
+    
 
 
 class PMIScattering(object):
     def __init__(self):
+        ### docstring
         self.g_s2e = {}
         self.g_dbase = {}
 
         self.f_s2e_setup()
 
     def f_s2e_setup(self):
+        ### docstring
         self.g_s2e["setup"] = dict()
         self.g_s2e["sys"] = dict()
         self.g_s2e["setup"]["num_digits"] = 7
@@ -148,6 +166,7 @@ class PMIScattering(object):
     ##############################################################################
 
     def f_save_info(self):
+        ### docstring
         pmi_file = self.g_s2e["setup"]["pmi_out"]
 
         grp = "/info"
@@ -161,6 +180,7 @@ class PMIScattering(object):
         #    xfp[ grp + '/Sq_free' ] = g_dbase['Sq_free']
         xfp.close()
 
+    ### remove commented code
     ##############################################################################
 
     # def f_init_random(self):
@@ -250,6 +270,8 @@ class PMIScattering(object):
         return xsnp
 
     def f_load_snp_from_dir(self, path_to_snapshot):
+        ### don't use f_ prefix for functions, not needed.
+        
         """Load xmdyn output from an xmdyn directory.
 
         :param path: The directory path to xmdyn output.
@@ -360,6 +382,8 @@ class PMIScattering(object):
             1
         grp_hist_parent = xfp.create_group(grp)
         dt = 1e-15  # s
+        ### hard coded values
+        
         xfp["misc/time/snp_" + str(a_snp).zfill(self.g_s2e["setup"]["num_digits"])] = (
             a_snp * dt
         )
