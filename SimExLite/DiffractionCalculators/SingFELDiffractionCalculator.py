@@ -6,8 +6,20 @@
 import os
 from pathlib import Path
 from subprocess import Popen, PIPE
+import sys
 import shlex
 import h5py
+import numpy as np
+from tqdm.autonotebook import tqdm
+
+try:
+    from pysingfel.detector import Detector
+    from pysingfel.beam import Beam
+    from pysingfel.radiationDamage import setEnergyFromFile
+
+    PYSINGFEL_AVAILABLE = True
+except ModuleNotFoundError:
+    PYSINGFEL_AVAILABLE = False
 from libpyvinyl.BaseCalculator import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
 from SimExLite.DiffractionData import DiffractionData, SingFELFormat
@@ -19,7 +31,33 @@ logger = setLogger("SingFELDiffractionCalculator")
 
 
 class SingFELDiffractionCalculator(BaseCalculator):
-    """Diffraction pattern calculator with pysingfel backend."""
+    """Diffraction pattern calculator with pysingfel backend.
+
+    Args:
+        name (str): The name of this calculator.
+        input (PMIData): The input data in `PMIData` class.
+
+    :param output_keys: The key(s) of this calculator's output data.
+
+    :param output_data_types: The data type(s), i.e., classes, of each output.
+                                It's a list of the data classes or a single data class.
+                                The available data classes are based on `BaseData`.
+    :param output_filenames: The name(s) of the output file(s).
+                                It can be a str of a filename or a list of filenames.
+                                If the mapping is dict mapping, the name is `None`.
+                                Defaults to None.
+
+    :param instrument_base_dir: The base directory for the instrument to which
+                                this calculator belongs.
+                                The final exact output file path depends on `instrument_base_dir` and `calculator_base_dir`: `instrument_base_dir`/`calculator_base_dir`/filename
+
+    :param calculator_base_dir: The base directory for this calculator. The final
+                                exact output file path depends on `instrument_base_dir` and
+                                `calculator_base_dir`: `instrument_base_dir`/`calculator_base_dir`/filename
+
+    :param parameters: The parameters for this calculator.
+
+    """
 
     def __init__(
         self,
@@ -62,6 +100,10 @@ class SingFELDiffractionCalculator(BaseCalculator):
             "slice_index_upper",
             comment="The upper limit of the slice index for diffraction calculation ",
         )
+        back_rotation = parameters.new_parameter(
+            "back_rotation",
+            comment="Before applying diffraction rotation, rotate the sample back to its original position before photon matter interaction.",
+        )
         pmi_start_ID = parameters.new_parameter(
             "pmi_start_ID", comment="The start ID of the pmi files"
         )
@@ -87,8 +129,12 @@ class SingFELDiffractionCalculator(BaseCalculator):
         mpi_command = parameters.new_parameter(
             "mpi_command", comment="The mpi command to run pysingfel"
         )
+        allow_rewrite = parameters.new_parameter(
+            "allow_rewrite", comment="Allow rewrite the ouput."
+        )
 
         calculate_Compton.value = False
+        back_rotation.value = False
         slice_interval.value = 100
         slice_index_upper.value = 1
         pmi_start_ID.value = 1
@@ -99,6 +145,7 @@ class SingFELDiffractionCalculator(BaseCalculator):
         pixels_y.value = 5
         distance.value = 0.13
         mpi_command.value = "mpirun -n 2"
+        allow_rewrite.value = False
 
         self.parameters = parameters
 
@@ -119,14 +166,28 @@ class SingFELDiffractionCalculator(BaseCalculator):
         number_of_diffraction_patterns = self.parameters[
             "number_of_diffraction_patterns"
         ].value
+
         mpi_command = self.parameters["mpi_command"].value
+        python_command = str(sys.executable)
         # fmt: off
-        output_dir.mkdir(parents=True, exist_ok=False)
-        command_sequence = ['radiationDamageMPI',
+        if self.parameters["allow_rewrite"].value is True:
+            output_dir.mkdir(parents=True, exist_ok=True)
+        else:
+            output_dir.mkdir(parents=True, exist_ok=False)
+        
+        err_info = "Cannot find the 'pysingfel' module, which is required to run" + "SingFELDiffractionCalculator.backengine(). Did you install it following the instruction: https://simex-lite.readthedocs.io/en/latest/backengines/pysingfel.html"
+
+        try:
+            import pysingfel
+        except ModuleNotFoundError:
+            raise ModuleNotFoundError(err_info)
+        
+        command_sequence = [python_command, pysingfel.__path__[0]+'/radiationDamageMPI.py',
                             '--inputDir',         str(input_dir),
                             '--outputDir',        str(output_dir),
                             '--geomFile',         str(geom_file),
                             '--configFile',       "/dev/null",
+                            '--backRotation',     str(self.parameters["back_rotation"].value),
                             '--uniformRotation',  str(uniform_rotation),
                             '--calculateCompton', str(calculate_Compton),
                             '--sliceInterval',    str(slice_interval),
@@ -230,7 +291,6 @@ def saveH5(path_to_files):
 
     # Setup new file.
     with h5py.File(path_to_files + ".h5", "w") as h5_outfile:
-
         # Files to read from.
         individual_files = [
             os.path.join(path_to_files, f) for f in os.listdir(path_to_files)
@@ -243,7 +303,6 @@ def saveH5(path_to_files):
         for ind_file in individual_files:
             # Open file.
             with h5py.File(ind_file, "r") as h5_infile:
-
                 # Links must be relative.
                 relative_link_target = os.path.relpath(
                     path=ind_file, start=os.path.dirname(os.path.dirname(ind_file))
@@ -263,9 +322,161 @@ def saveH5(path_to_files):
                     )
 
                 for key in h5_infile["data"]:
-
                     # Link in the data.
                     ds_path = "data/%s" % (key)
                     h5_outfile[ds_path] = h5py.ExternalLink(
                         relative_link_target, ds_path
                     )
+
+
+def get_solid_angle(geom_fn: str):
+    """Get the solid angle array from a pysingfel geom file.
+
+    Args:
+        geom_fn (str): The geometry file in pysingfel format.
+
+    Returns:
+        ndarray: A 2D array of solid angles.
+    """
+    if not PYSINGFEL_AVAILABLE:
+        err_info = (
+            "Cannot find the 'pysingfel' module, which is required to run"
+            + "SingFELDiffractionCalculator.backengine(). Did you install it following the instruction: https://simex-lite.readthedocs.io/en/latest/backengines/pysingfel.html"
+        )
+        raise ModuleNotFoundError(err_info)
+    det = Detector(geom_fn)
+    solidAngle = np.zeros((det.py, det.px))
+    for ind_x in range(det.px):
+        for ind_y in range(det.py):
+            rx = (ind_x - det.cx) * det.pix_width
+            ry = (ind_y - det.cy) * det.pix_height
+            r = np.sqrt(rx**2 + ry**2)
+            pixDist = np.sqrt(r**2 + det.d**2)
+            ss = det.pix_width**2 / (4 * pixDist**2 + det.pix_width**2)
+            solidAngle[ind_y, ind_x] = 4 * np.arcsin(ss)
+    return solidAngle
+
+
+def get_qmap(geom_fn: str, PMI_file: str):
+    """Get the reciprocal space magnitude map from pysingfel geom and PMI file. q=2sin(theta)/lambda
+
+    Args:
+        geom_fn (str): The geometry file in pysingfel format.
+        PMI_file (str): The PMI file in XMDYN format.
+
+    Returns:
+        ndarray: A 2D array of qmap.
+    """
+    if not PYSINGFEL_AVAILABLE:
+        err_info = (
+            "Cannot find the 'pysingfel' module, which is required to run"
+            + "SingFELDiffractionCalculator.backengine(). Did you install it following the instruction: https://simex-lite.readthedocs.io/en/latest/backengines/pysingfel.html"
+        )
+        raise ModuleNotFoundError(err_info)
+    det = Detector(geom_fn)
+    beam = Beam(None)
+    setEnergyFromFile(PMI_file, beam)
+    print("Beam energy =", beam.photon_energy)
+    det.init_dp(beam)
+    return det.q_mod / 1e10
+
+
+def get_radial_map(arr):
+    """Get the radial map of a 2D array"""
+    pmap = np.indices(arr.shape)
+    center = np.array(arr.shape) / 2.0
+    center = center[:, np.newaxis, np.newaxis]
+    r_map = pmap - center
+    pixel_map = np.linalg.norm(r_map, axis=0)
+    return pixel_map
+
+
+def get_q(Rs, distance, wavelength):
+    """Rs is a collection of the radial distance of pixels.
+    distance is the sample to detector distance in pixel unit (distance = real_distance/pixel_size).
+    """
+
+    # Convert it to numpy array
+    Rs = np.array(Rs)
+    twotheta = np.arctan2(Rs, distance)
+    q = (2 * np.sin(twotheta / 2.0)) / wavelength
+    return q
+
+
+def R_d(pix_range, img, img_ref, sa_array):
+    """Get R factor for a certain q range. (See E et. al. 10.1038/s41598-021-97142-5).
+    Here it assumes that the solid angles have already been applied to the input image and reference image,
+    and the input solid angles are used to get the square root of intensity withtout solid angles.
+
+    Args:
+        pix_range (ndarray): A 1D array specifying the indices of pixels of the image for R factor calculation.
+        img (ndarray): A 2D array of the image for R factor analysis.
+        img_ref (ndarray): A 2D array of the reference image for R factor analysis.
+        sa_array (ndarray): The solid angle of each pixel for the diffraction image.
+
+    Returns:
+        ndarray: The R factor for this certain pixel range.
+    """
+
+    # Make sure it's a 1D array.
+    pix_range = np.ravel(pix_range)
+    img = np.moveaxis(img, 0, 2)
+    img = img.reshape(len(pix_range), -1)
+    img_ref = np.moveaxis(img_ref, 0, 2)
+    img_ref = img_ref.reshape(len(pix_range), -1)
+    sa_array = np.ravel(sa_array)
+    sa_sub = sa_array[pix_range]
+    sa_sub = sa_sub[:, np.newaxis]
+
+    N_real_sub = img[pix_range] / sa_sub
+    N_ideal_sub = img_ref[pix_range] / sa_sub
+
+    N_d = np.sum(np.sqrt(N_real_sub) * sa_sub, axis=0)
+    N_ideal_d = np.sum(np.sqrt(N_ideal_sub) * sa_sub, axis=0)
+
+    eqs = abs(np.sqrt(N_real_sub) / N_d - np.sqrt(N_ideal_sub) / N_ideal_d) * sa_sub
+
+    return np.sum(eqs, axis=0)
+
+
+def get_rfactor(
+    img, img_ref, sa_array, pixel_map=None, bin_range=None, bin_size: float = 1.0
+):
+    """Get the residual factor between two reciprocal space volumes.
+
+    Args:
+        img (ndarray): A 3D array (num_snapshot, ny, nx).
+        img_ref (ndarray): A 3D reference array (num_snapshot, ny, nx).
+        sa_array (ndarray): A 2D array of the solid angle of each pixel for the detector.
+        pixel_map (ndarray): A 2D array defines the map the pixels, defaults to the array's indices.
+        bin_range (float): The range of bins in the unit of the pixel map, defaults to cover the whole 2D pattern.
+        bin_size (float): The pixel interval between two bins, defaults to 1.0.
+
+    Returns:
+        (bins, R_factors): A tuple of the r factors and their corresponding radial pixel indices.
+    """
+    if len(img.shape) != 3 or len(img_ref.shape) != 3:
+        raise ValueError(
+            "The shape of the input array has to be (num_snapshot, ny, nx)"
+        )
+    if pixel_map is None:
+        pmap = np.indices(img[0].shape)
+        center = np.array(img[0].shape) / 2.0
+        center = center[:, np.newaxis, np.newaxis]
+        # Radial map
+        r_map = pmap - center
+        pixel_map = np.linalg.norm(r_map, axis=0)
+    else:
+        pass
+
+    if bin_range is None:
+        bin_range = [pixel_map.min(), pixel_map.max()]
+    else:
+        pass
+
+    bins = np.arange(bin_range[0], bin_range[1] + bin_size, bin_size)
+    R_factors = []
+    for i in tqdm(bins):
+        pixel_range = np.ravel(pixel_map <= i)
+        R_factors.append(R_d(pixel_range, img, img_ref, sa_array))
+    return bins, np.array(R_factors)
