@@ -9,5 +9,4 @@ libpyvinyl>=1.0.0
 extra-geom>=1.5
 cfelpyutils>=2.0.0
 setuptools
-phenom-xfel
 tqdm
