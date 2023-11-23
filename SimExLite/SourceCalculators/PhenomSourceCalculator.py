@@ -6,7 +6,14 @@ from SimExLite.utils.Logger import setLogger
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
-from phenom.source import sase_pulse
+
+try:
+    from phenom.source import sase_pulse
+
+    PHENOM_AVAILABLE = True
+except ModuleNotFoundError:
+    PHENOM_AVAILABLE = False
+
 
 # WPG is necessary to execute the calculator, but it's not a hard dependency of SimExLite.
 try:
