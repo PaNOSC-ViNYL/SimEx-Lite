@@ -3,8 +3,7 @@
 import pytest
 import os
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
-pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
+pytestmark = pytest.mark.skipif(('TRAVIS' in os.environ or IN_GITHUB_ACTIONS), reason='Test skipped on Travis CI or GITHUB_ACTIONS')
 
 from pathlib import Path
 from SimExLite.SampleData import SampleData, ASEFormat
