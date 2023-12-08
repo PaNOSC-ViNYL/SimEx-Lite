@@ -3,9 +3,7 @@
 import pytest
 import os
 
-IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-pytest.mark.skipif(IN_GITHUB_ACTIONS, reason="Test doesn't work in Github Actions.")
-pytest.mark.skipif("TRAVIS" in os.environ, reason="Test skipped on Travis CI")
+wpg = pytest.importorskip("wpg")
 
 import numpy as np
 from SimExLite.SourceCalculators.GaussianSourceCalculator import (
