@@ -3,9 +3,8 @@
 import pytest
 import os
 
-pytestmark = pytest.mark.skipif(
-    "TRAVIS" in os.environ, reason="Test skipped on Travis CI"
-)
+wpg = pytest.importorskip("wpg")
+
 import numpy as np
 from SimExLite.SourceCalculators.GaussianSourceCalculator import (
     GaussianSourceCalculator,

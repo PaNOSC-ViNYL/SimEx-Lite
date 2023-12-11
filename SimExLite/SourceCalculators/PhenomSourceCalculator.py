@@ -3,9 +3,15 @@
 ### CFG: observe flake8 rules for empty lines, ordering of imports, structure of docstrings etc.
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 from SimExLite.utils.Logger import setLogger
-from libpyvinyl import BaseCalculator, CalculatorParameters
-from pathlib import Path
-from phenom.source import sase_pulse
+
+from SimExLite.WavefrontData import WavefrontData, WPGFormat
+
+try:
+    from phenom.source import sase_pulse
+
+    PHENOM_AVAILABLE = True
+except ModuleNotFoundError:
+    PHENOM_AVAILABLE = False
 
 import numpy as np
 

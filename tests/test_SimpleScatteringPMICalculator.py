@@ -2,8 +2,9 @@
 
 import pytest
 import os
-pytestmark = pytest.mark.skipif('TRAVIS' in os.environ, reason='Test skipped on Travis CI')
 
+IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
+pytestmark = pytest.mark.skipif(("TRAVIS" in os.environ or IN_GITHUB_ACTIONS), reason="Test skipped on Travis CI and github")
 from SimExLite import DataCollection
 from SimExLite.SampleData import SampleData, ASEFormat
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
