@@ -3,6 +3,8 @@ import h5py
 import numpy as np
 from SimExLite.utils.Logger import setLogger
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
+from SimExLite.utils.Logger import setLogger
+from libpyvinyl import BaseCalculator, CalculatorParameters
 
 try:
     from phenom.source import sase_pulse
@@ -21,6 +23,7 @@ try:
     WPG_AVAILABLE = True
 except ModuleNotFoundError:
     WPG_AVAILABLE = False
+
 
 logger = setLogger("PhenomSourceCalculator")
 
