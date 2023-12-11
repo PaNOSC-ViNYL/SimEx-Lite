@@ -4,7 +4,7 @@ import pytest
 import os
 
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-pytest.mark.skipif(("TRAVIS" in os.environ or IN_GITHUB_ACTIONS), reason="Test skipped on Travis CI")
+pytestmark = pytest.mark.skipif(("TRAVIS" in os.environ or IN_GITHUB_ACTIONS), reason="Test skipped on Travis CI and github")
 
 
 from pathlib import Path
