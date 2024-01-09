@@ -1,9 +1,7 @@
 """:module PhenomCalculator: Module that holds the PhenomCalculator class.  """
-
-### CFG: observe flake8 rules for empty lines, ordering of imports, structure of docstrings etc.
-from SimExLite.WavefrontData import WavefrontData, WPGFormat
+import h5py
+import numpy as np
 from SimExLite.utils.Logger import setLogger
-
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 
 try:
@@ -13,19 +11,16 @@ try:
 except ModuleNotFoundError:
     PHENOM_AVAILABLE = False
 
-import numpy as np
 
 # WPG is necessary to execute the calculator, but it's not a hard dependency of SimExLite.
 try:
-    from wpg.srw import srwlpy
-    from wpg import Wavefront
     from phenom.wpg import complex_to_wpg
+    from wpg import Wavefront
+    from wpg.srw import srwlpy
 
     WPG_AVAILABLE = True
 except ModuleNotFoundError:
     WPG_AVAILABLE = False
-
-import h5py
 
 logger = setLogger("PhenomSourceCalculator")
 
