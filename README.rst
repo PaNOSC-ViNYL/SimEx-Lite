@@ -72,7 +72,8 @@ Features
 --------
 
 SimEx-Lite provides
-* python interfaces SIMEX backengines (aka "Calculators")
+
+* python interfaces for SIMEX backengines (aka "Calculators")
     * SourceCalculators
     * PropagationCalculators
     * PMICalculators (PhotonMattterInteractionCalculators)
