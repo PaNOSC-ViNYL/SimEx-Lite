@@ -1,21 +1,19 @@
 """:module SimpleScatteringPMICalculator: Module that holds the SimpleScatteringPMICalculator class."""
 
-import h5py
-import numpy
-from pathlib import Path
+import os
 import shutil
 import sys
-import os
 import tempfile
-###CFG Sort imports (or run through black or flake8)
+from pathlib import Path
 
+import h5py
+import numpy
 
 from libpyvinyl import BaseCalculator, CalculatorParameters
 from libpyvinyl.BaseData import DataCollection
-from SimExLite.SampleData import SampleData, ASEFormat
-from SimExLite.WavefrontData import WavefrontData, WPGFormat
 from SimExLite.PMIData import PMIData, XMDYNFormat
-
+from SimExLite.SampleData import ASEFormat, SampleData
+from SimExLite.WavefrontData import WavefrontData, WPGFormat
 
 class SimpleScatteringPMICalculator(BaseCalculator):
     """Class representing simple elastic scattering process."""
