@@ -75,7 +75,6 @@ class PhenomSourceCalculator(BaseCalculator):
         )
 
     def init_parameters(self):
-        ### Does this have to be a public method?
         """
         Initialize calculator parameters.
         """
