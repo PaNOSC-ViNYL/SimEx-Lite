@@ -155,12 +155,8 @@ class PhenomSourceCalculator(BaseCalculator):
         return self.parameters[param].value_no_conversion.to(unit).magnitude
 
     def backengine(self):
-        """
-        DOCSTRING MISSING
-        """
 
         # check for WPG first
-        ### CFG: Why again? This is already performed at instantiation time.
         if not WPG_AVAILABLE:
             raise ModuleNotFoundError(
                 'Cannot find the "WPG" module, which is required to run\n'
@@ -193,7 +189,6 @@ class PhenomSourceCalculator(BaseCalculator):
             bandwidth=bandwidth,
             sigma=sigma,
             div=div,
-            ### CFG: Can this be named divergence instead of div?
             x0=0.0,
             y0=0.0,
             t0=0.0,
@@ -232,14 +227,6 @@ class PhenomSourceCalculator(BaseCalculator):
 
         wfr.data.arrEhor = complex_to_wpg(pulse)
         srwlpy.SetRepresElecField(wfr._srwl_wf, "frequency")
-
-        # save_loc = str(Path(self.base_dir) / "./sase_field.h5")
-        # src.generate_pulses(save_loc)
-        # with h5py.File(save_loc) as hf:
-        #     for key in list(hf.keys()):
-        #         wfr = wpg_converter(save_loc, key=key)
-        #         wfr.store_hdf5(filename)
-        ### CFG: don't leave commented code in release!
 
         wfr.store_hdf5(filename)
 

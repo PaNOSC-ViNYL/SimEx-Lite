@@ -31,7 +31,6 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         calculator_base_dir="SimpleScatteringPMICalculator",
         parameters=None,
     ):
-        ###CFG: docstring missing
         super().__init__(
             name,
             input,
