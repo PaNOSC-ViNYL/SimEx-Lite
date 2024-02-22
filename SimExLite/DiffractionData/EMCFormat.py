@@ -40,7 +40,10 @@ class EMCFormat(BaseFormat):
         data_dict = {}
 
         if pattern_shape is None:
-            raise ValueError("read() missing 'pattern_shape' argument.")
+            frame_shape_guessed = guessFrameShape(filename)
+            raise ValueError(
+                f"read() missing 'pattern_shape' argument, it might be ({frame_shape_guessed}, {frame_shape_guessed})."
+            )
 
         index = parseIndex(index)
         arr_size = len(np.arange(getPatternTotal(filename))[index])
@@ -156,18 +159,13 @@ class PatternsSOne:
     """A class to store the EMC photon sparse data. `Format introduction
     <https://github.com/duaneloh/Dragonfly/wiki/Data-stream-simulator#make_data>`_
 
-    :param num_pix: Number of pixels per pattern
-    :type num_pix: int
-    :param ones: Number of one-photon events in each pattern
-    :type ones: numpy.1darray
-    :param multi: Number of multi-photon events in each pattern
-    :type multi: numpy.1darray
-    :param place_ones: The locations of the single photon pixels in each pattern
-    :type place_ones: numpy.1darray
-    :param place_multi: The locations of the multiple photon pixels in each pattern
-    :type place_multi: numpy.1darray
-    :param count_multi: Number of photons in each of those multiple photon pixels
-    :type count_multi: numpy.1darray
+    Args:
+        num_pix (int): Number of pixels per pattern
+        ones (numpy.1darray): Number of one-photon events in each pattern
+        multi (numpy.1darray): Number of multi-photon events in each pattern
+        place_ones (numpy.1darray): The locations of the single photon pixels in each pattern
+        place_multi (numpy.1darray): The locations of the multiple photon pixels in each pattern
+        count_multi (numpy.1darray): Number of photons in each of those multiple photon pixels
     """
 
     ATTRS = ["ones", "multi", "place_ones", "place_multi", "count_multi"]
@@ -253,11 +251,11 @@ class PatternsSOne:
 def dense_to_PatternsSOne(arr: np.ndarray) -> PatternsSOne:
     """Convert diffraction pattern array data to EMC sparse data
 
-    :param arr: A multi-snapshot array with diffraction patterns flattened
-    :type arr: np.2darray
+    Args:
+        arr (np.2darray): A multi-snapshot array with diffraction patterns flattened
 
-    :return: EMC photon sparse data
-    :rtype: PatternsSOne
+    Returns:
+        PatternsSOne: EMC photon sparse data
     """
     mask_one = arr == 1
     mask_multi = arr > 1
@@ -276,11 +274,11 @@ def dense_to_PatternsSOne(arr: np.ndarray) -> PatternsSOne:
 def parse_bin_PatternsSOne(fn: str):
     """Parse a EMC sparse binary file
 
-    :param fn: The name of the sparse binary file
-    :type fn: str
+    Args:
+        fn (str): The name of the sparse binary file
 
-    :return: EMC photon sparse data
-    :rtype: PatternsSOne
+    Returns:
+        PatternsSOne: EMC photon sparse data
     """
     path = Path(fn)
     with path.open("rb") as fin:
@@ -353,6 +351,23 @@ def readBinaryframe(fname, frame_num):
     return num_pix, ones, multi, place_ones, place_multi, count_multi
 
 
+def guessFrameShape(filename: str):
+    """Guess the frame shape of a EMC file. It can be a binary or HDF5 file.
+
+    Args:
+        filename (str): The filename.
+    """
+    if isEMCH5(filename):
+        num_pix, *_ = readH5frame(filename, 1)
+    elif isEMCBinary(filename):
+        num_pix, *_ = readBinaryframe(filename, 1)
+    else:
+        raise UnknownFileTypeError(
+            "This is not an EMC file, please provide the correct file type."
+        )
+    return int(np.sqrt(num_pix))
+
+
 def getFrameArray(fn, idx=0):
     """Get a flatten diffraction array from a EMC HDF file"""
     sPattern = PatternsSOne(*readH5frame(fn, idx))
@@ -390,22 +405,16 @@ def writeEMCGeom(
     in_wavelength: float,
     stoprad: float,
 ):
-    """Get EMC geom from several parameters.
+    """Get EMC geometry from several parameters.
 
-    :param out_fn: Output filename
-    :type out_fn: str
-    :param det_dist: Sample to detector distance (mm)
-    :type det_dist: float
-    :param dets_x: Number of pixels in x direction
-    :type dets_x: int
-    :param dets_y: Number of pixels in y direction
-    :type dets_y: int
-    :param pix_size: Pixel size (mm)
-    :type pix_size: float
-    :param in_wavelength: X-ray wavelength (angstrom)
-    :type in_wavelength: float
-    :param stoprad: Beamstop radius in pixels
-    :type stoprad: float
+    Args:
+        out_fn (str): Output filename
+        det_dist (float): Sample to detector distance (mm)
+        dets_x (int): Number of pixels in x direction
+        dets_y (int): Number of pixels in y direction
+        pix_size (float): Pixel size (mm)
+        in_wavelength (float): X-ray wavelength (angstrom)
+        stoprad (float): Beamstop radius in pixels
     """
     # Reference: https://github.com/JunCEEE/Dragonfly/blob/8e9075818f00f5d2c45756d2b98803509be67cf0/utils/convert/geomtodet.py#L23
     # Sample to detector distance
