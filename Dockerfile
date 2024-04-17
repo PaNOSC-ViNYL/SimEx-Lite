@@ -1,8 +1,19 @@
+ARG SIMEX_LITE_VERSION=233190d4c68c8454eef274e3d0efb2d3584277e8
+ARG CCP4_VERSION=8.0.0
+ARG CRYSTFEL_VERSION=0.10.2
+ARG MMDB2_VERSION=2.0.22
+ARG MOSFLM_VERSION="ver740"
+ARG PYSINGFEL_VERSION=ff535c0323bd03af1b09e56c770334b6a89cfd1f
+ARG WPG_VERSION=1f00e866a6f05f48658ec1892cba6f346123f4da
+
+
 FROM alpine:3.19.1 AS build-mosflm
+
+ARG MOSFLM_VERSION
 
 WORKDIR /src
 
-ADD https://www.mrc-lmb.cam.ac.uk/mosflm/mosflm/ver740/pre-built/mosflm-linux-64-noX11.zip /src/mosflm.zip
+ADD https://www.mrc-lmb.cam.ac.uk/mosflm/mosflm/$MOSFLM_VERSION/pre-built/mosflm-linux-64-noX11.zip /src/mosflm.zip
 
 RUN apk add --no-cache unzip && \
     unzip /src/mosflm.zip && \
@@ -11,6 +22,8 @@ RUN apk add --no-cache unzip && \
 
 
 FROM ubuntu:23.10 AS build-crystfel
+
+ARG CRYSTFEL_VERSION
 
 WORKDIR /src
 
@@ -51,7 +64,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Use 0.10.2 - recent dev versions remove pattern_sim which is used by simex-lite
 #   - https://gitlab.desy.de/thomas.white/crystfel/-/blob/3a62ae8eb067baacc12bb23404211275c3ed3d38/ChangeLog#L7
-ADD https://gitlab.desy.de/thomas.white/crystfel.git#0.10.2 /src
+ADD https://gitlab.desy.de/thomas.white/crystfel.git#$CRYSTFEL_VERSION /src
 
 COPY --link --from=build-mosflm /build/bin/mosflm /build/bin/mosflm
 
@@ -64,6 +77,9 @@ RUN cp /src/scripts/gen-sfs /build/bin/gen-sfs  # required by simex-lite
 
 FROM ubuntu:23.10 AS build-ccp4
 
+ARG CCP4_VERSION
+ARG MMDB2_VERSION
+
 RUN apt update && apt install -y \
   bison \
   build-essential \
@@ -74,26 +90,28 @@ RUN apt update && apt install -y \
   && \
   apt clean && rm -rf /var/lib/apt/lists/*
 
-ADD https://ftp.ccp4.ac.uk/opensource/libccp4-8.0.0.tar.gz /src/
+ADD https://ftp.ccp4.ac.uk/opensource/libccp4-$CCP4_VERSION.tar.gz /src/
 
 WORKDIR /src
 
-RUN tar -xzf libccp4-8.0.0.tar.gz && \
-    cd libccp4-8.0.0 && \
+RUN tar -xzf libccp4-$CCP4_VERSION.tar.gz && \
+    cd libccp4-$CCP4_VERSION && \
     ./configure --prefix /build && \
     make && \
     make install
 
-ADD https://ftp.ccp4.ac.uk/opensource/mmdb2-2.0.22.tar.gz /src/
+ADD https://ftp.ccp4.ac.uk/opensource/mmdb2-$MMDB2_VERSION.tar.gz /src/
 
-RUN tar -xzf mmdb2-2.0.22.tar.gz && \
-    cd mmdb2-2.0.22 && \
+RUN tar -xzf mmdb2-$MMDB2_VERSION.tar.gz && \
+    cd mmdb2-$MMDB2_VERSION && \
     ./configure --prefix /build && \
     make && \
     make install
 
 
 FROM python:3.9 AS build-wpg
+
+ARG WPG_VERSION
 
 WORKDIR /src
 
@@ -104,7 +122,7 @@ RUN apt update && apt install -y \
     && \
     apt clean && rm -rf /var/lib/apt/lists/*
 
-ADD --link https://github.com/JunCEEE/WPG.git#1f00e866a6f05f48658ec1892cba6f346123f4da /src
+ADD --link https://github.com/JunCEEE/WPG.git#$WPG_VERSION /src
 ADD --link https://github.com/SergeyYakubov/SRW/archive/openmp_memoryfix.zip /src/build/sources/srw.zip
 
 RUN make
@@ -135,9 +153,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 FROM python:3.9-alpine AS build-pysingfel
 
+ARG PYSINGFEL_VERSION
+
 WORKDIR /src
 
-ADD https://github.com/JunCEEE/pysingfel.git#ff535c0323bd03af1b09e56c770334b6a89cfd1f /src
+ADD https://github.com/JunCEEE/pysingfel.git#$PYSINGFEL_VERSION /src
 
 RUN --mount=type=cache,target=/root/.cache/pip \
   python3 -m pip install build && python3 -m build && mv dist /dist
@@ -145,9 +165,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 FROM python:3.9-alpine AS build-simex-lite
 
+ARG SIMEX_LITE_VERSION
+
 WORKDIR /src
 
-ADD https://github.com/PaNOSC-ViNYL/SimEx-Lite.git#233190d4c68c8454eef274e3d0efb2d3584277e8 /src
+ADD https://github.com/PaNOSC-ViNYL/SimEx-Lite.git#$SIMEX_LITE_VERSION /src
 
 RUN --mount=type=cache,target=/root/.cache/pip \
   python3 -m pip install build && python3 -m build && mv dist /dist
@@ -156,6 +178,23 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # Use 3.9, 3.10+ has some changes that are not compatible with SimEx-Lite
 # TODO: PR to update SimEx-Lite for 3.10+?
 FROM python:3.9
+
+ARG SIMEX_LITE_VERSION
+ARG CCP4_VERSION
+ARG CRYSTFEL_VERSION
+ARG MMDB2_VERSION
+ARG MOSFLM_VERSION
+ARG PYSINGFEL_VERSION
+ARG WPG_VERSION
+
+LABEL simex_lite.version="$SIMEX_LITE_VERSION"
+
+LABEL simex_lite.deps.ccp4.version="$CCP4_version" \
+      simex_lite.deps.crystfel.version="$CRYSTFEL_VERSION" \
+      simex_lite.deps.mmdb2.version="$MMDB2_VERSION" \
+      simex_lite.deps.mosflm.version="MOSFLM_VERSION" \
+      simex_lite.deps.pysingfel.version="$PYSINGFEL_VERSION" \
+      simex_lite.deps.wpg.version="$WPG_VERSION"
 
 # Crystfel requirements
 RUN apt-get update && apt-get install -y \
@@ -181,13 +220,11 @@ COPY --link --from=build-simex-lite /dist /dist
 
 WORKDIR /src
 
-ADD --link https://github.com/PaNOSC-ViNYL/SimEx-Lite.git#233190d4c68c8454eef274e3d0efb2d3584277e8 /src
+ADD --link https://github.com/PaNOSC-ViNYL/SimEx-Lite.git#$SIMEX_LITE_VERSION /src
 
 RUN --mount=type=cache,target=/root/.cache/pip \
   python3 -m pip install --break-system-packages --find-links /dist pysingfel wpg SimEx-Lite && \
   python3 -m pip install -r /src/requirements_dev.txt && \
   python3 -m pip install jupyter jupyterlab ipykernel && \
   python3 -m pip install -e /src
-
-COPY ./docker-kernel.sh /docker-kernel.sh
 
