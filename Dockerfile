@@ -15,10 +15,12 @@ WORKDIR /src
 
 ADD https://www.mrc-lmb.cam.ac.uk/mosflm/mosflm/$MOSFLM_VERSION/pre-built/mosflm-linux-64-noX11.zip /src/mosflm.zip
 
-RUN apk add --no-cache unzip && \
-    unzip /src/mosflm.zip && \
-    mkdir -p /build/bin && \
-    mv mosflm-linux-64-noX11 /build/bin/mosflm
+RUN <<EOT
+  apk add --no-cache unzip
+  unzip /src/mosflm.zip
+  mkdir -p /build/bin
+  mv mosflm-linux-64-noX11 /build/bin/mosflm
+EOT
 
 
 FROM ubuntu:23.10 AS build-crystfel
@@ -27,7 +29,10 @@ ARG CRYSTFEL_VERSION
 
 WORKDIR /src
 
-RUN apt update && apt install -y \
+RUN <<EOT
+  apt update
+
+  apt install -y \
     bison \
     build-essential \
     cmake \
@@ -56,8 +61,12 @@ RUN apt update && apt install -y \
     python3-setuptools \
     python3-wheel \
     unzip \
-    wget && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    wget
+
+  apt clean
+
+  rm -rf /var/lib/apt/lists/*
+EOT
 
 RUN --mount=type=cache,target=/root/.cache/pip \
   python3 -m pip install --break-system-packages meson
@@ -68,11 +77,13 @@ ADD https://gitlab.desy.de/thomas.white/crystfel.git#$CRYSTFEL_VERSION /src
 
 COPY --link --from=build-mosflm /build/bin/mosflm /build/bin/mosflm
 
-RUN meson build -Dprefix=/build
-RUN ninja -C build
-RUN ninja -C build test
-RUN ninja -C build install
-RUN cp /src/scripts/gen-sfs /build/bin/gen-sfs  # required by simex-lite
+RUN <<EOT
+  meson build -Dprefix=/build
+  ninja -C build
+  ninja -C build test
+  ninja -C build install
+  cp /src/scripts/gen-sfs /build/bin/gen-sfs  # required by simex-lite
+EOT
 
 
 FROM ubuntu:23.10 AS build-ccp4
@@ -80,33 +91,43 @@ FROM ubuntu:23.10 AS build-ccp4
 ARG CCP4_VERSION
 ARG MMDB2_VERSION
 
-RUN apt update && apt install -y \
-  bison \
-  build-essential \
-  flex \
-  gfortran \
-  m4 \
-  yasm \
-  && \
-  apt clean && rm -rf /var/lib/apt/lists/*
+RUN <<EOT
+  apt update
+
+  apt install -y \
+    bison \
+    build-essential \
+    flex \
+    gfortran \
+    m4 \
+    yasm
+
+  apt clean
+
+  rm -rf /var/lib/apt/lists/*
+EOT
 
 ADD https://ftp.ccp4.ac.uk/opensource/libccp4-$CCP4_VERSION.tar.gz /src/
 
 WORKDIR /src
 
-RUN tar -xzf libccp4-$CCP4_VERSION.tar.gz && \
-    cd libccp4-$CCP4_VERSION && \
-    ./configure --prefix /build && \
-    make && \
-    make install
+RUN <<EOT
+  tar -xzf libccp4-$CCP4_VERSION.tar.gz
+  cd libccp4-$CCP4_VERSION
+  ./configure --prefix /build
+  make
+  make install
+EOT
 
 ADD https://ftp.ccp4.ac.uk/opensource/mmdb2-$MMDB2_VERSION.tar.gz /src/
 
-RUN tar -xzf mmdb2-$MMDB2_VERSION.tar.gz && \
-    cd mmdb2-$MMDB2_VERSION && \
-    ./configure --prefix /build && \
-    make && \
-    make install
+RUN <<EOT
+  tar -xzf mmdb2-$MMDB2_VERSION.tar.gz
+  cd mmdb2-$MMDB2_VERSION
+  ./configure --prefix /build
+  make
+  make install
+EOT
 
 
 FROM python:3.9 AS build-wpg
@@ -115,12 +136,16 @@ ARG WPG_VERSION
 
 WORKDIR /src
 
-RUN apt update && apt install -y \
+RUN <<EOT
+  apt update && apt install -y \
     build-essential \
     unzip \
-    wget \
-    && \
-    apt clean && rm -rf /var/lib/apt/lists/*
+    wget
+
+  apt clean
+
+  rm -rf /var/lib/apt/lists/*
+EOT
 
 ADD --link https://github.com/JunCEEE/WPG.git#$WPG_VERSION /src
 ADD --link https://github.com/SergeyYakubov/SRW/archive/openmp_memoryfix.zip /src/build/sources/srw.zip
@@ -129,26 +154,38 @@ RUN make
 
 # Use pyproject toml to make building wheels easier, include .so files, include deps
 # TODO: PR to upstream `pyproject.toml` file?
-RUN rm -f ./setup.py && mkdir src && mv wpg ./src/wpg && mv s2e ./src/s2e && printf "[build-system] \n\
-requires = ['setuptools', 'wheel'] \n\
-build-backend = 'setuptools.build_meta' \n\
-[project] \n\
-name = 'wpg' \n\
-version = '2019.12' \n\
-dependencies =[ \n\
-  'numpy >= 1.9', \n\
-  'scipy', \n\
-  'matplotlib', \n\
-  'h5py', \n\
-  'requests', \n\
-] \n\
-[tool.setuptools.packages.find] \n\
-where = ['src'] \n\
-[tool.setuptools.package-data] \n\
-wpg = ['srw/*.so']" > pyproject.toml
+RUN <<EOT
+  rm -f ./setup.py
+  mkdir src
+  mv wpg ./src/wpg
+  mv s2e ./src/s2e
+EOT
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-  python3 -m pip install build && python3 -m build && mv dist /dist
+COPY <<EOF pyproject.toml
+[build-system]
+requires = ['setuptools', 'wheel']
+build-backend = 'setuptools.build_meta'
+[project]
+name = 'wpg'
+version = '2019.12'
+dependencies =[
+  'numpy >= 1.9',
+  'scipy',
+  'matplotlib',
+  'h5py',
+  'requests',
+]
+[tool.setuptools.packages.find]
+where = ['src']
+[tool.setuptools.package-data]
+wpg = ['srw/*.so']
+EOF
+
+RUN --mount=type=cache,target=/root/.cache/pip <<EOT
+  python3 -m pip install build
+  python3 -m build
+  mv dist /dist
+EOT
 
 
 FROM python:3.9-alpine AS build-pysingfel
@@ -159,8 +196,11 @@ WORKDIR /src
 
 ADD https://github.com/JunCEEE/pysingfel.git#$PYSINGFEL_VERSION /src
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-  python3 -m pip install build && python3 -m build && mv dist /dist
+RUN --mount=type=cache,target=/root/.cache/pip <<EOT
+  python3 -m pip install build
+  python3 -m build
+  mv dist /dist
+EOT
 
 
 FROM python:3.9-alpine AS build-simex-lite
@@ -197,21 +237,28 @@ LABEL simex_lite.deps.ccp4.version="$CCP4_version" \
       simex_lite.deps.wpg.version="$WPG_VERSION"
 
 # Crystfel requirements
-RUN apt-get update && apt-get install -y \
-  libcairo2 \
-  libfftw3-double3 \
-  libgdk-pixbuf2.0 \
-  libgslcblas0 \
-  libgtk-3-0 \
-  libhdf5-103 \
-  libmsgpackc2 \
-  libncurses6 \
-  libpango1.0 \
-  libpng16-16 \
-  libtiff5-dev \
-  libzmq5 \
-  mpich && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN <<EOT
+  apt-get update
+
+  apt-get install -y \
+    libcairo2 \
+    libfftw3-double3 \
+    libgdk-pixbuf2.0 \
+    libgslcblas0 \
+    libgtk-3-0 \
+    libhdf5-103 \
+    libmsgpackc2 \
+    libncurses6 \
+    libpango1.0 \
+    libpng16-16 \
+    libtiff5-dev \
+    libzmq5 \
+    mpich
+
+  apt-get clean
+
+  rm -rf /var/lib/apt/lists/*
+EOT
 
 COPY --link --from=build-crystfel /build /usr/local
 COPY --link --from=build-wpg /dist /dist
@@ -222,9 +269,10 @@ WORKDIR /src
 
 ADD --link https://github.com/PaNOSC-ViNYL/SimEx-Lite.git#$SIMEX_LITE_VERSION /src
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-  python3 -m pip install --break-system-packages --find-links /dist pysingfel wpg SimEx-Lite && \
-  python3 -m pip install -r /src/requirements_dev.txt && \
-  python3 -m pip install jupyter jupyterlab ipykernel && \
+RUN --mount=type=cache,target=/root/.cache/pip <<EOT
+  python3 -m pip install --break-system-packages --find-links /dist pysingfel wpg SimEx-Lite
+  python3 -m pip install -r /src/requirements_dev.txt
+  python3 -m pip install jupyter jupyterlab ipykernel
   python3 -m pip install -e /src
+EOT
 
