@@ -12,8 +12,6 @@ Quickstart
         :alt: Documentation Status
 
 
-
-
 SimEx-Lite is the core package of the SIMEX platform providing the calculator interfaces and data APIs.
 
 
