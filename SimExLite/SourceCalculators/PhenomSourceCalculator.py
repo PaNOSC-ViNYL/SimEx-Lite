@@ -1,22 +1,16 @@
 """:module PhenomCalculator: Module that holds the PhenomCalculator class.  """
 import h5py
 import numpy as np
+from pathlib import Path
 from SimExLite.utils.Logger import setLogger
 from SimExLite.WavefrontData import WavefrontData, WPGFormat
 from SimExLite.utils.Logger import setLogger
 from libpyvinyl import BaseCalculator, CalculatorParameters
 
-try:
-    from phenom.source import sase_pulse
-
-    PHENOM_AVAILABLE = True
-except ModuleNotFoundError:
-    PHENOM_AVAILABLE = False
 
 
 # WPG is necessary to execute the calculator, but it's not a hard dependency of SimExLite.
 try:
-    from phenom.wpg import complex_to_wpg
     from wpg import Wavefront
     from wpg.srw import srwlpy
 
@@ -24,6 +18,13 @@ try:
 except ModuleNotFoundError:
     WPG_AVAILABLE = False
 
+try:
+    from phenom.wpg import wpg_converter
+    from phenom.source import SASE_Source
+
+    PHENOM_AVAILABLE = True
+except ModuleNotFoundError:
+    PHENOM_AVAILABLE = False
 
 logger = setLogger("PhenomSourceCalculator")
 
@@ -75,35 +76,34 @@ class PhenomSourceCalculator(BaseCalculator):
         )
 
     def init_parameters(self):
-        ### Does this have to be a public method?
         """
         Initialize calculator parameters.
         """
         parameters = CalculatorParameters()
+
 
         range_x = parameters.new_parameter(
             "range_x",
             comment="The spacial mesh range in x direction. [start, end]",
             unit="meter",
         )
-        range_x.value = [-250e-6, 250e-6]
+
 
         num_x = parameters.new_parameter(
             "num_x", comment="Number of mesh points in x direction."
         )
-        num_x.value = 500
+        num_x.value = 512
 
         range_y = parameters.new_parameter(
             "range_y",
             comment="The spacial mesh range in y direction. [start, end]",
             unit="meter",
         )
-        range_y.value = [-250e-6, 250e-6]
 
         num_y = parameters.new_parameter(
             "num_y", comment="Number of mesh points in y direction."
         )
-        num_y.value = 500
+        num_y.value = 512
 
         range_t = parameters.new_parameter(
             "range_t", comment="The temporal range. [start, end]", unit="s"
@@ -132,19 +132,21 @@ class PhenomSourceCalculator(BaseCalculator):
 
         spectral_bandwidth = parameters.new_parameter(
             "spectral_bandwidth",
-            comment="The bandwith of the beam spectrum (\delta E/E)",
+            comment="The bandwith of the beam spectrum",
         )
-        spectral_bandwidth.value = 1e-3
+        spectral_bandwidth.value = 1e-12
 
         sigma = parameters.new_parameter(
             "sigma",
-            comment="sigma value",
+            comment="pulse width",
         )
         sigma.value = 50e-06
+        range_x.value = [-sigma.value*4, sigma.value*4]
+        range_y.value = [-sigma.value*4, sigma.value*4]
 
         div = parameters.new_parameter(
             "div",
-            comment="div value",
+            comment="pulse divergence",
         )
         div.value = 2.5e-03
 
@@ -169,6 +171,8 @@ class PhenomSourceCalculator(BaseCalculator):
         pulse_duration = self._ensure_unit("pulse_duration", "second")
         bandwidth = self.parameters["spectral_bandwidth"].value
         sigma = self.parameters["sigma"].value
+        if type(sigma) == np.float64:
+            sigma = float(sigma)
         div = self.parameters["div"].value
         range_x = self._ensure_unit("range_x", "meter")
         range_y = self._ensure_unit("range_y", "meter")
@@ -179,7 +183,7 @@ class PhenomSourceCalculator(BaseCalculator):
         t = np.linspace(range_t[0], range_t[1], self.parameters["num_t"].value)
 
         # Construct the pulse.
-        pulse = sase_pulse(
+        src = SASE_Source(
             x=x,
             y=y,
             t=t,
@@ -200,35 +204,11 @@ class PhenomSourceCalculator(BaseCalculator):
         filename = self.output_file_paths[0]
         output_data = self.output[key]
 
-        photon_energy = photon_energy
-        nx, ny, nt = pulse.shape
-        wfr = Wavefront()
-        # Setup E-field.
-        wfr.data.arrEhor = np.zeros(shape=(nx, ny, nt, 2))
-        wfr.data.arrEver = np.zeros(shape=(nx, ny, nt, 2))
+        save_loc = str(Path(self.calculator_base_dir) / "sase_field.h5")
 
-        wfr.params.wEFieldUnit = "sqrt(W/mm^2)"
-        wfr.params.photonEnergy = photon_energy
-        wfr.params.wDomain = "time"
-        wfr.params.Mesh.nSlices = nt
-        wfr.params.Mesh.nx = nx
-        wfr.params.Mesh.ny = ny
-
-        wfr.params.Mesh.sliceMin = np.min(t)
-        wfr.params.Mesh.sliceMax = np.max(t)
-
-        wfr.params.Mesh.xMin = np.min(x)
-        wfr.params.Mesh.xMax = np.max(x)
-        wfr.params.Mesh.yMin = np.min(y)
-        wfr.params.Mesh.yMax = np.max(y)
-
-        wfr.params.Rx = 1
-        wfr.params.Ry = 1
-
-        wfr.data.arrEhor = complex_to_wpg(pulse)
-        srwlpy.SetRepresElecField(wfr._srwl_wf, "frequency")
-
-        wfr.store_hdf5(filename)
+        src.generate_pulses(save_loc)
+        wfr = wpg_converter(save_loc, key = "pulse000")
+        wfr.store_hdf5(filename.format(key))
 
         output_data.set_file(filename, WPGFormat)
 
