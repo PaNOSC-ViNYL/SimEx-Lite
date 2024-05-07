@@ -64,13 +64,11 @@ class SimpleScatteringPMICalculator(BaseCalculator):
             )
 
     def backengine(self):
-        ### docstring missing
 
         # Prepare input files
         self.__check_input_type()
         Path(self.base_dir).mkdir(parents=True, exist_ok=True)
 
-        ### don't use assert in production code, it's deprecated
         if len(self.output_filenames) != 1:
             raise RuntimeError(
                 "The number of output_filenames has to be 1 for this calculator."
@@ -79,7 +77,6 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         sample_data, wavefront_data = self.input.to_list()
         wavefront_fn = prepare_wavefront_file(wavefront_data)
 
-        ### comments needed to understand what's going on here
         # Initialize the output HDF5 file with the file structure defined for XMDYN.
         f_h5_out2in(wavefront_fn, output_fn)
 
@@ -97,7 +94,6 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         pmi_scattering.g_s2e["random_rotation"] = False
         pmi_scattering.g_s2e["setup"]["pmi_out"] = output_fn
 
-        ### why these hard coded values?
 
         pmi_scattering.f_dbase_setup()
         pmi_scattering.f_save_info()
@@ -109,7 +105,6 @@ class SimpleScatteringPMICalculator(BaseCalculator):
         pmi_scattering.f_time_evolution()
 
         assert len(self.output_keys) == 1
-        ### don't assert (see above)
         key = self.output_keys[0]
         output_data = self.output[key]
         output_data.set_file(output_fn, XMDYNFormat)
@@ -119,7 +114,6 @@ class SimpleScatteringPMICalculator(BaseCalculator):
 
 def prepare_wavefront_file(wavefront_data: WavefrontData):
     """Prepare the wavefront file for the backengine"""
-    ### document parameters
 
     if wavefront_data.mapping_type == WPGFormat:
         wavefront_fn = wavefront_data.filename
@@ -133,7 +127,6 @@ def prepare_wavefront_file(wavefront_data: WavefrontData):
 
 def SampleData_to_atoms_dict(sample_data: SampleData) -> dict:
     """Read the sampleData object into an atoms_dict for the backengine"""
-    ### document parameters
 
     atoms_dict = {
         "Z": [],  # Atomic number.
@@ -182,8 +175,6 @@ class PMIScattering(object):
         except:
             1
         xfp.close()
-
-    ### remove commented code
 
     def f_dbase_Zq2id(self, a_Z, a_q):
         # This is not clear.
@@ -266,7 +257,6 @@ class PMIScattering(object):
         return xsnp
 
     def f_load_snp_from_dir(self, path_to_snapshot):
-        ### don't use f_ prefix for functions, not needed.
         """
         Loads xmdyn output from an xmdyn directory.
 
