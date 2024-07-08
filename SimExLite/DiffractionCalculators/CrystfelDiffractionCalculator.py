@@ -241,21 +241,27 @@ class CrystfelDiffractionCalculator(BaseCalculator):
                 raise
         output, err = proc.communicate(input=param["orientation"].value)
 
-        while proc.poll() is None:
-            # Here the output of crystfel is in stderr
-            output = proc.stderr.readline()
-            if output:
-                # logger.info(output.decode("ascii").strip())
-                logger.info(output.strip())
+        # This doesn't work if one is using proc.communicate.
+        # while proc.poll() is None:
+        # Here the output of crystfel is in stderr
+        # if std_output:
+        # std_output = proc.stderr.readline()
+        # logger.info(output.decode("ascii").strip())
+        # logger.info(std_output.strip())
 
         # t0 = time.process_time()
         # t1 = time.process_time()
         # print("Time spent", t1 - t0)
 
+        print(output)
+        print(err)
         rc = proc.returncode
         if rc != 0:
-            print(output)
-            raise RuntimeError(err)
+            if "Orientation modulus is not zero" in err:
+                pass
+            else:
+                err_last = err.splitlines()[-1]
+                raise RuntimeError(err_last)
             # print(output.decode("ascii"))
             # raise RuntimeError(err.decode("ascii"))
 
