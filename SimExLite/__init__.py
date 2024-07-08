@@ -9,6 +9,7 @@ __email__ = 'juncheng.e@xfel.eu'
 __version__ = '1.0.0'
 
 from libpyvinyl.BaseData import DataCollection
+from libpyvinyl.Instrument  import Instrument
 from SimExLite.utils import modules
 # Using pint in the whole project
 # https://pint.readthedocs.io/en/0.10.1/tutorial.html#using-pint-in-your-projects

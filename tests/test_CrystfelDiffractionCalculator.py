@@ -2,8 +2,13 @@
 
 import pytest
 import os
+import shutil
+
 IN_GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-pytestmark = pytest.mark.skipif(('TRAVIS' in os.environ or IN_GITHUB_ACTIONS), reason='Test skipped on Travis CI or GITHUB_ACTIONS')
+pytestmark = pytest.mark.skipif(
+    ("TRAVIS" in os.environ or IN_GITHUB_ACTIONS),
+    reason="Test skipped on Travis CI or GITHUB_ACTIONS",
+)
 
 from pathlib import Path
 from SimExLite.SampleData import SampleData, ASEFormat
@@ -46,9 +51,26 @@ def test_construct_calculator_run_with_intensities_fn(tmpdir):
         instrument_base_dir=str(tmpdir),
     )
     # Lysozyme
+    diffraction.parameters["geometry_fn"] = "./testFiles/simple_crystfel.geom"
     diffraction.parameters["point_group"] = "422"
     diffraction.parameters["intensities_fn"] = "./testFiles/3WUL.pdb.hkl"
     print(diffraction.parameters)
+    diffraction.backengine()
+
+
+def test_geometry_override(tmpdir):
+    geom_fn_src = "./testFiles/simple_crystfel.geom"
+    geom_fn_tmp = str(tmpdir / "tmp.geom")
+    shutil.copy(geom_fn_src, geom_fn_tmp)
+
+    diffraction = CrystfelDiffractionCalculator(
+        name="CrystfelCalculator",
+        input=sample_data,
+        instrument_base_dir=str(tmpdir),
+    )
+
+    diffraction.parameters["geometry_fn"].value = geom_fn_tmp
+    diffraction.parameters["photon_energy"].value = 13000
     diffraction.backengine()
 
 

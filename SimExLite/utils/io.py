@@ -6,6 +6,7 @@
 
 from typing import List, Optional
 from collections.abc import Iterable
+import re
 
 
 def is_list_like(variable):
@@ -50,3 +51,24 @@ def string2index(string: str):
             i.append(int(s))
     i += (3 - len(i)) * [None]
     return slice(*i)
+
+
+def replace_after_substring_in_file(
+    file_path, substring, replacement, output_file_path=None
+):
+    # Read the content of the file
+    with open(file_path, "r") as file:
+        content = file.read()
+
+    # Define the pattern to match the substring followed by anything until the end of the line
+    pattern = re.compile(f"({substring}.*$)", re.MULTILINE)
+    # Replace the matched pattern with the replacement
+    new_content = pattern.sub(replacement, content)
+
+    # Write the new content back to the file or to a new file
+    if output_file_path:
+        with open(output_file_path, "w") as file:
+            file.write(new_content)
+    else:
+        with open(file_path, "w") as file:
+            file.write(new_content)
