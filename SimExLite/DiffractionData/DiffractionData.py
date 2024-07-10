@@ -143,7 +143,7 @@ class DiffractionData(BaseData):
     def apply_geom_mask(self, geom):
         """Apply the mask from a detector geom to the data, detector gaps will be filled with -1.
 
-        Args: 
+        Args:
             geom (ExtraGeomDetectorGeometry): extra_geom instance
         """
         self.__operation_check()
@@ -172,7 +172,7 @@ def addBeamStop(img, stop_rad):
     Args:
         img (ndarray): Diffraction pattern
         stop_rad (float): The radius of the beamstop in pixel unit (float)
-    
+
     Returns:
         ndarray: Beamstop masked 2D array
     """
@@ -216,10 +216,10 @@ def write_multiple_file_to_emc(
             fluct_I.append(I)
         if multiply is not None:
             dd_in_dict.multiply(multiply)
-        if poissonize:
-            dd_in_dict.poissonize()
         if background is not None:
             arr[:] += background
+        if poissonize:
+            dd_in_dict.poissonize()
         if stop_rad is not None:
             dd_in_dict.add_beam_stop(stop_rad)
         if geom is not None:
