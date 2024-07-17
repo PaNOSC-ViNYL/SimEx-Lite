@@ -262,24 +262,24 @@ def prepH5(filename):
         # Write metadata
         # Package format version
         f.create_dataset(
-            "info/package_version", data=np.string_("SimExLite" + SimExLite.__version__)
+            "info/package_version", data=np.bytes_("SimExLite" + SimExLite.__version__)
         )
         # Contact
         f.create_dataset(
             "info/contact",
-            data=np.string_(
+            data=np.bytes_(
                 "{} <{}>".format(SimExLite.__author__, SimExLite.__email__)
             ),
         )
         # Data Description
         f.create_dataset(
             "info/data_description",
-            data=np.string_(
+            data=np.bytes_(
                 "This dataset contains diffraction patterns written using SimEx singfelDiffr API."
             ),
         )
         # Data format version
-        f.create_dataset("version", data=np.string_("0.2"))
+        f.create_dataset("version", data=np.bytes_("0.2"))
 
 
 def write_singfelDiffr(
@@ -313,7 +313,7 @@ def write_singfelDiffr(
     prepH5(filename)
     # Method Description
     with h5py.File(filename, "a") as f:
-        f.create_dataset("info/method_description", data=np.string_(method_desciption))
+        f.create_dataset("info/method_description", data=np.bytes_(method_desciption))
         # Flush to print it before tqdm
         print("Writing singfelDiffr data: diffr...", flush=True)
         for i, pattern_counts in enumerate(tqdm(arr_ideal)):
