@@ -144,7 +144,9 @@ class SingFELPDBDiffractionCalculator(BaseCalculator):
                             '--numDP',            str(number_of_diffraction_patterns),
                             ]
         # fmt: on
-        args = shlex.split(mpi_command) + command_sequence
+        # Using the -v option to make sure the parameters are passed to the mpirun.
+        args = shlex.split(mpi_command + " -v") + command_sequence
+        print(args)
         proc = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         # proc.wait()
         # The above one can be replaced by proc.communicate()
