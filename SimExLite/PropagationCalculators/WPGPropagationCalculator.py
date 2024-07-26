@@ -1,6 +1,7 @@
 """:module WPGPropagationCalculator: Module that holds the WPGPropagationCalculator class."""
 
 from pathlib import Path
+import importlib
 import shutil
 import sys
 
@@ -79,6 +80,7 @@ class WPGPropagationCalculator(BaseCalculator):
     def prep_beamline_config(self):
         """Copy the beamline config file to the working dir to import the beamline module."""
         beamline_config_fn = self.parameters["beamline_config_file"].value
+        logger.info(f"Using beamline_config_file: {beamline_config_fn}")
         Path(self.base_dir).mkdir(parents=True, exist_ok=True)
         dst_path = Path(self.base_dir) / "WPG_beamline.py"
         shutil.copyfile(beamline_config_fn, str(dst_path))
@@ -113,6 +115,7 @@ class WPGPropagationCalculator(BaseCalculator):
         self.prep_beamline_config()
         sys.path.insert(0, self.base_dir)
         import WPG_beamline
+        importlib.reload(WPG_beamline) 
 
         input_fn = self.get_input_fn()
         output_fn = str(Path(self.base_dir) / self.output_filenames[0])
