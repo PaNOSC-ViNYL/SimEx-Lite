@@ -24,10 +24,10 @@ def test_dump_directly(tmp_path):
     # gsc.from_dump(tmpf)
 
 
-# def test_dump_and_load(tmp_path):
-#     "Check if dumping and loading an instrument works and leaves parameters unchanged."
-#     tmpf = str(tmp_path / "dumptest.dump")
-#     gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
-#     # gsc.backengine()
-#     gsc.dump(tmpf, byref=True)
-#     GaussianSourceCalculator.from_dump(tmpf)
+def test_dump_and_load(tmp_path):
+    "Check if dumping and loading an instrument works and leaves parameters unchanged."
+    tmpf = str(tmp_path / "dumptest.dump")
+    gsc = GaussianSourceCalculator("gaussian_source", instrument_base_dir=str(tmp_path))
+    # gsc.backengine()
+    gsc.dump(tmpf, byref=True)
+    GaussianSourceCalculator.from_dump(tmpf)
