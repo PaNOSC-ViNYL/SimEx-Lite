@@ -6,7 +6,7 @@
 
 __author__ = """Juncheng E"""
 __email__ = 'juncheng.e@xfel.eu'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 
 from libpyvinyl.BaseData import DataCollection
 from libpyvinyl.Instrument  import Instrument
